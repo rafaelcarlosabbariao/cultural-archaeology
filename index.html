@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,9 +12,6 @@
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-  --bg: #0a0908;
-  --text: #ede8df;
-  --text-dim: #8a8578;
   --signal: #c85318;
   --counter: #1a6ea8;
   --science: #7048c0;
@@ -23,11 +20,32 @@
   --platform: #1a6ea8;
   --cultural: #1D9E75;
   --counter-node: #888780;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-mono: 'DM Mono', 'Courier New', monospace;
+}
+
+[data-theme="light"] {
+  --bg: #FAFAF8;
+  --text: #1A1815;
+  --text-dim: #6B665E;
+  --surface: #F0EDE8;
+  --surface-2: #E8E4DE;
+  --border: #D9D3CB;
+  --edge-color: rgba(0,0,0,0.12);
+  --edge-hover: rgba(0,0,0,0.35);
+  --node-stroke: #FAFAF8;
+}
+
+[data-theme="dark"] {
+  --bg: #0a0908;
+  --text: #ede8df;
+  --text-dim: #8a8578;
   --surface: #161412;
   --surface-2: #1e1b18;
   --border: #2a2520;
-  --font-display: 'Playfair Display', Georgia, serif;
-  --font-mono: 'DM Mono', 'Courier New', monospace;
+  --edge-color: rgba(255,255,255,0.1);
+  --edge-hover: rgba(255,255,255,0.3);
+  --node-stroke: #0a0908;
 }
 
 html, body {
@@ -152,6 +170,23 @@ html, body {
 }
 
 #settings-btn:hover { color: var(--text); border-color: var(--text-dim); }
+
+#theme-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+#theme-btn:hover { color: var(--text); border-color: var(--text-dim); }
 
 #memory-btn {
   background: none;
@@ -776,6 +811,7 @@ html, body {
     <button class="pb-btn" id="btn-step-fwd" title="Step forward">&#x23E9;</button>
   </div>
   <button id="memory-btn">&#x1D5C6; Memory</button>
+  <button id="theme-btn" title="Toggle light/dark mode">&#x2600;</button>
   <button id="settings-btn" title="Settings">&#x2699;</button>
 </div>
 
@@ -1129,6 +1165,8 @@ OUTPUT SCHEMA (return exactly this structure):
 IMPORTANT:
 - appears_at_pct values must range from 0 to 100, representing when each element appears in the timeline
 - Graph should have 12-20 nodes spanning all categories
+- Graph MUST be densely connected like an Obsidian knowledge graph. Every node needs 2-4 edges minimum. Aim for 25-40 edges across 12-20 nodes. Show how social, economic, platform, science, and cultural forces interconnect — this convergence IS the insight. Isolated nodes are a bug.
+- Edge labels should describe the causal relationship (e.g., "amplified by", "created conditions for", "legitimized", "accelerated", "enabled", "resisted")
 - Include at least 8 concept_tooltips for the most important academic terms used
 - Include at least 5 event_log entries at different time positions
 - Include at least 5 related_terms
@@ -1470,25 +1508,48 @@ function buildGraph(data) {
     counter: 'var(--counter-node)'
   };
 
-  // Force simulation — all nodes always present
-  graphSim = d3.forceSimulation(nodes)
-    .force('link', d3.forceLink(edges).id(d => d.id).distance(80))
-    .force('charge', d3.forceManyBody().strength(-200))
-    .force('center', d3.forceCenter(w / 2, h / 2))
-    .force('collision', d3.forceCollide(25));
+  // SVG defs — glow filter for active nodes
+  const defs = svg.append('defs');
+  const glowFilter = defs.append('filter').attr('id', 'node-glow').attr('x', '-50%').attr('y', '-50%').attr('width', '200%').attr('height', '200%');
+  glowFilter.append('feGaussianBlur').attr('stdDeviation', '3').attr('result', 'blur');
+  glowFilter.append('feMerge').selectAll('feMergeNode').data(['blur', 'SourceGraphic']).enter().append('feMergeNode').attr('in', d => d);
 
-  const edgeEls = svg.append('g').selectAll('line')
-    .data(edges).enter().append('line')
-    .attr('stroke', 'var(--border)')
-    .attr('stroke-width', d => Math.max(1, (d.weight || 0.5) * 3))
+  // Force simulation — dense Obsidian-style web
+  graphSim = d3.forceSimulation(nodes)
+    .force('link', d3.forceLink(edges).id(d => d.id).distance(50).strength(1.5))
+    .force('charge', d3.forceManyBody().strength(-60))
+    .force('center', d3.forceCenter(w / 2, h / 2))
+    .force('collision', d3.forceCollide(15))
+    .force('x', d3.forceX(w / 2).strength(0.05))
+    .force('y', d3.forceY(h / 2).strength(0.05));
+
+  // Curved edges (paths instead of lines)
+  const edgeEls = svg.append('g').selectAll('path')
+    .data(edges).enter().append('path')
+    .attr('fill', 'none')
+    .attr('stroke', 'var(--edge-color)')
+    .attr('stroke-width', d => Math.max(1, (d.weight || 0.5) * 2.5))
     .attr('opacity', 0)
     .attr('data-pct', d => d.appears_at_pct);
 
+  // Edge hover labels
+  const edgeLabelEls = svg.append('g').selectAll('text')
+    .data(edges).enter().append('text')
+    .text(d => d.label || '')
+    .attr('font-size', 8)
+    .attr('font-family', 'var(--font-mono)')
+    .attr('fill', 'var(--text-dim)')
+    .attr('text-anchor', 'middle')
+    .attr('opacity', 0)
+    .attr('data-pct', d => d.appears_at_pct)
+    .attr('pointer-events', 'none')
+    .classed('edge-label', true);
+
   const nodeEls = svg.append('g').selectAll('circle')
     .data(nodes).enter().append('circle')
-    .attr('r', d => 6 + (d.weight || 0.5) * 8)
+    .attr('r', d => 5 + (d.weight || 0.5) * 7)
     .attr('fill', d => colorMap[d.category] || 'var(--text-dim)')
-    .attr('stroke', 'var(--bg)')
+    .attr('stroke', 'var(--node-stroke)')
     .attr('stroke-width', 2)
     .attr('opacity', 0)
     .attr('data-pct', d => d.appears_at_pct)
@@ -1499,14 +1560,15 @@ function buildGraph(data) {
       .on('end', (e, d) => { if (!e.active) graphSim.alphaTarget(0); d.fx = null; d.fy = null; })
     );
 
-  const labelEls = svg.append('g').selectAll('text')
+  const labelEls = svg.append('g').selectAll('text.node-label')
     .data(nodes).enter().append('text')
+    .classed('node-label', true)
     .text(d => d.label)
     .attr('font-size', 10)
     .attr('font-family', 'var(--font-mono)')
     .attr('fill', 'var(--text-dim)')
     .attr('text-anchor', 'middle')
-    .attr('dy', d => -(10 + (d.weight || 0.5) * 8))
+    .attr('dy', d => -(8 + (d.weight || 0.5) * 7))
     .attr('opacity', 0)
     .attr('data-pct', d => d.appears_at_pct)
     .attr('pointer-events', 'none');
@@ -1518,16 +1580,27 @@ function buildGraph(data) {
     tooltip.querySelector('.gt-desc').textContent = d.description || '';
     tooltip.querySelector('.gt-ref').textContent = d.reference || '';
     tooltip.style.opacity = 1;
-    tooltip.style.left = (e.offsetX + 15) + 'px';
-    tooltip.style.top = (e.offsetY - 10) + 'px';
+    const rect = container.getBoundingClientRect();
+    tooltip.style.left = (e.clientX - rect.left + 15) + 'px';
+    tooltip.style.top = (e.clientY - rect.top - 10) + 'px';
+    // Highlight connected edges
+    edgeEls.attr('stroke', ed => (ed.source.id === d.id || ed.target.id === d.id) ? 'var(--edge-hover)' : 'var(--edge-color)');
   }).on('mouseout', () => {
     tooltip.style.opacity = 0;
+    edgeEls.attr('stroke', 'var(--edge-color)');
   });
 
   graphSim.on('tick', () => {
-    edgeEls
-      .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
-      .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+    // Curved edges — quadratic bezier with slight arc
+    edgeEls.attr('d', d => {
+      const dx = d.target.x - d.source.x;
+      const dy = d.target.y - d.source.y;
+      const dr = Math.sqrt(dx * dx + dy * dy) * 1.2;
+      return `M${d.source.x},${d.source.y}A${dr},${dr} 0 0,1 ${d.target.x},${d.target.y}`;
+    });
+    edgeLabelEls
+      .attr('x', d => (d.source.x + d.target.x) / 2)
+      .attr('y', d => (d.source.y + d.target.y) / 2);
     nodeEls.attr('cx', d => d.x).attr('cy', d => d.y);
     labelEls.attr('x', d => d.x).attr('y', d => d.y);
   });
@@ -1592,7 +1665,18 @@ function updateScrubber(val) {
   // Graph nodes, edges, labels
   d3.select('#graph-svg').selectAll('[data-pct]').each(function() {
     const pct = +this.getAttribute('data-pct');
-    d3.select(this).transition().duration(150).attr('opacity', pct <= val ? 1 : 0);
+    const visible = pct <= val;
+    const el = d3.select(this);
+    const isEdgeLabel = el.classed('edge-label');
+    // Edge labels only show at low opacity
+    const targetOpacity = visible ? (isEdgeLabel ? 0.5 : 1) : 0;
+    el.transition().duration(150).attr('opacity', targetOpacity);
+    // Glow on nodes that just appeared (within 10% window)
+    if (this.tagName === 'circle' && visible && pct > val - 15) {
+      el.attr('filter', 'url(#node-glow)');
+    } else if (this.tagName === 'circle') {
+      el.attr('filter', null);
+    }
   });
 
   // Term cloud
@@ -1753,8 +1837,25 @@ document.addEventListener('click', (e) => {
 document.getElementById('copy-btn').addEventListener('click', copyReport);
 
 // ══════════════════════════════════════════════
+// THEME TOGGLE
+// ══════════════════════════════════════════════
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('mcwhy_theme', theme);
+  document.getElementById('theme-btn').innerHTML = theme === 'dark' ? '&#x2600;' : '&#x263D;';
+}
+
+document.getElementById('theme-btn').addEventListener('click', () => {
+  const current = document.documentElement.getAttribute('data-theme');
+  setTheme(current === 'dark' ? 'light' : 'dark');
+});
+
+// ══════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════
+// Apply saved theme (default: light)
+setTheme(localStorage.getItem('mcwhy_theme') || 'light');
+
 refreshMemoryList();
 
 // If no API key, prompt settings
