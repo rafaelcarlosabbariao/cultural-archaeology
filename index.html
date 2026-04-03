@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>McWhy — Reverse Cultural Simulation Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0a0908;
+  --text: #ede8df;
+  --text-dim: #8a8578;
+  --signal: #c85318;
+  --counter: #1a6ea8;
+  --science: #7048c0;
+  --social: #c45c1a;
+  --economic: #EF9F27;
+  --platform: #1a6ea8;
+  --cultural: #1D9E75;
+  --counter-node: #888780;
+  --surface: #161412;
+  --surface-2: #1e1b18;
+  --border: #2a2520;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-mono: 'DM Mono', 'Courier New', monospace;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  overflow: hidden;
+}
+
+/* ── TOP BAR ── */
+#top-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border);
+  height: 56px;
+}
+
+#logo {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--signal);
+  letter-spacing: -0.5px;
+  flex-shrink: 0;
+}
+
+#input-wrap {
+  flex: 1;
+  max-width: 520px;
+  position: relative;
+}
+
+#signal-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 14px;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+#signal-input:focus { border-color: var(--signal); }
+#signal-input::placeholder { color: var(--text-dim); }
+
+#signal-type-badge {
+  display: none;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  background: var(--surface-2);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+}
+
+#status-pill {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  white-space: nowrap;
+  min-width: 140px;
+  text-align: center;
+}
+
+#status-pill.active { color: var(--signal); border-color: var(--signal); }
+
+#playback-controls {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.pb-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.15s;
+}
+
+.pb-btn:hover { color: var(--text); border-color: var(--text-dim); }
+.pb-btn.active { color: var(--signal); border-color: var(--signal); }
+
+#settings-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+#settings-btn:hover { color: var(--text); border-color: var(--text-dim); }
+
+#memory-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+
+#memory-btn:hover { color: var(--text); border-color: var(--text-dim); }
+
+/* ── MAIN AREA ── */
+#main {
+  display: flex;
+  height: calc(100vh - 56px - 48px);
+  overflow: hidden;
+}
+
+/* ── LEFT PANEL (Visualizations) ── */
+#panel-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 20px;
+  gap: 12px;
+  overflow-y: auto;
+  border-right: 1px solid var(--border);
+}
+
+#scurve-container {
+  width: 100%;
+  height: 160px;
+  background: var(--surface);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  position: relative;
+  flex-shrink: 0;
+}
+
+#scurve-container svg { width: 100%; height: 100%; }
+
+#scrubber-wrap {
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+
+#scrubber {
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+#scrubber::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  background: var(--signal);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+#term-cloud {
+  min-height: 48px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 0;
+  flex-shrink: 0;
+}
+
+.term-tag {
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  border: 1px solid;
+  cursor: pointer;
+  transition: opacity 0.3s, transform 0.2s;
+}
+
+.term-tag.primary { border-color: var(--signal); color: var(--signal); }
+.term-tag.related { border-color: var(--text-dim); color: var(--text-dim); }
+.term-tag.counter { border-color: var(--counter); color: var(--counter); }
+.term-tag.hidden { opacity: 0; transform: scale(0.8); pointer-events: none; }
+
+#graph-container {
+  flex: 1;
+  min-height: 280px;
+  background: var(--surface);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+#graph-container svg { width: 100%; height: 100%; }
+
+#volume-charts {
+  display: flex;
+  gap: 12px;
+  height: 64px;
+  flex-shrink: 0;
+}
+
+.vol-chart {
+  flex: 1;
+  background: var(--surface);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  position: relative;
+}
+
+.vol-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  position: absolute;
+  top: 6px;
+  left: 10px;
+}
+
+/* ── RIGHT PANEL (Narrative) ── */
+#panel-right {
+  width: 420px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 16px 20px;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+#panel-right::-webkit-scrollbar { width: 4px; }
+#panel-right::-webkit-scrollbar-track { background: transparent; }
+#panel-right::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.section-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+
+#one-line {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 18px;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+#ungrounded-label {
+  display: none;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--economic);
+  padding: 4px 10px;
+  border: 1px solid var(--economic);
+  border-radius: 3px;
+  width: fit-content;
+}
+
+.report-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.report-card h3 {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
+
+.report-card p, .report-card li {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text);
+}
+
+.report-card ul { list-style: none; padding: 0; }
+.report-card li { padding: 4px 0; }
+.report-card li::before {
+  content: '—';
+  color: var(--text-dim);
+  margin-right: 8px;
+}
+
+.diffusion-stage {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.diffusion-stage:last-child { border-bottom: none; }
+
+.diffusion-demo {
+  font-weight: 500;
+  color: var(--signal);
+  min-width: 120px;
+  font-size: 12px;
+}
+
+.diffusion-platform { color: var(--text-dim); font-size: 12px; }
+.diffusion-date { color: var(--text-dim); font-size: 11px; margin-left: auto; }
+
+.mechanism-badge {
+  display: inline-block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  margin-right: 8px;
+}
+
+.mechanism-badge.complex { background: var(--science); color: white; }
+.mechanism-badge.simple { background: var(--platform); color: white; }
+
+.framework-section {
+  border-bottom: 1px solid var(--border);
+  padding: 10px 0;
+}
+
+.framework-section:last-child { border-bottom: none; }
+
+.framework-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.framework-header h4 {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.framework-toggle {
+  font-size: 12px;
+  color: var(--text-dim);
+  transition: transform 0.2s;
+}
+
+.framework-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.framework-body.open { max-height: 500px; }
+
+.framework-body p {
+  padding: 8px 0 4px;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.counter-card {
+  border-color: var(--counter);
+}
+
+.counter-card h3 { color: var(--counter); }
+
+#counter-strength-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--surface-2);
+  border-radius: 3px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+#counter-strength-fill {
+  height: 100%;
+  background: var(--counter);
+  border-radius: 3px;
+  width: 0%;
+  transition: width 0.5s ease;
+}
+
+#event-log {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.event-item {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text-dim);
+  transition: all 0.3s;
+  border-left: 2px solid transparent;
+}
+
+.event-item.active {
+  color: var(--text);
+  border-left-color: var(--signal);
+  background: var(--surface-2);
+}
+
+/* ── BOTTOM BAR ── */
+#bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 24px;
+  border-top: 1px solid var(--border);
+  height: 48px;
+}
+
+#pull-quote {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--text-dim);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#copy-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  margin-left: 16px;
+}
+
+#copy-btn:hover { color: var(--text); border-color: var(--text-dim); }
+
+/* ── CONCEPT TOOLTIPS ── */
+.concept-term {
+  border-bottom: 1px dotted var(--text-dim);
+  cursor: help;
+  position: relative;
+}
+
+.concept-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text);
+  width: 280px;
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  font-style: normal;
+  font-family: var(--font-mono);
+}
+
+.concept-term:hover .concept-tooltip { opacity: 1; }
+
+/* ── SETTINGS MODAL ── */
+#settings-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+}
+
+#settings-overlay.open { display: flex; }
+
+#settings-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px 32px;
+  width: 400px;
+}
+
+#settings-modal h2 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  margin-bottom: 20px;
+}
+
+.setting-field {
+  margin-bottom: 16px;
+}
+
+.setting-field label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+
+.setting-field input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  outline: none;
+}
+
+.setting-field input:focus { border-color: var(--signal); }
+
+#settings-close {
+  background: var(--signal);
+  border: none;
+  color: white;
+  padding: 8px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+/* ── MEMORY DROPDOWN ── */
+#memory-dropdown {
+  display: none;
+  position: absolute;
+  top: 56px;
+  right: 80px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: 320px;
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 1500;
+  padding: 8px;
+}
+
+#memory-dropdown.open { display: block; }
+
+.memory-item {
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text-dim);
+  transition: all 0.15s;
+}
+
+.memory-item:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.memory-item-date {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+#memory-empty {
+  padding: 16px;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
+/* ── EMPTY / LOADING / ERROR STATES ── */
+#empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  gap: 12px;
+}
+
+#empty-state h2 {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 28px;
+  color: var(--text);
+}
+
+#empty-state p {
+  color: var(--text-dim);
+  font-size: 13px;
+  max-width: 400px;
+}
+
+#loading-state {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 16px;
+}
+
+#loading-state.active { display: flex; }
+
+.loader {
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--border);
+  border-top-color: var(--signal);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+#loading-label {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+#error-state {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 12px;
+  text-align: center;
+}
+
+#error-state.active { display: flex; }
+
+#error-msg {
+  color: #e85a4f;
+  font-size: 13px;
+  max-width: 400px;
+}
+
+#report-content { display: none; }
+#report-content.active { display: block; }
+
+/* ── GRAPH TOOLTIP ── */
+#graph-tooltip {
+  position: absolute;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text);
+  pointer-events: none;
+  opacity: 0;
+  z-index: 100;
+  max-width: 240px;
+}
+
+#graph-tooltip .gt-label { font-weight: 500; margin-bottom: 4px; }
+#graph-tooltip .gt-desc { color: var(--text-dim); }
+#graph-tooltip .gt-ref { color: var(--science); font-size: 10px; margin-top: 4px; }
+
+/* ── Scrollbar ── */
+#panel-left::-webkit-scrollbar { width: 4px; }
+#panel-left::-webkit-scrollbar-track { background: transparent; }
+#panel-left::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- ═══ TOP BAR ═══ -->
+<div id="top-bar">
+  <div id="logo">McWhy</div>
+  <div id="input-wrap">
+    <input id="signal-input" type="text" placeholder="Why is aura-farming everywhere?" autocomplete="off">
+    <span id="signal-type-badge"></span>
+  </div>
+  <div id="status-pill">ready</div>
+  <div id="playback-controls">
+    <button class="pb-btn" id="btn-reset" title="Reset">&#x23EE;</button>
+    <button class="pb-btn" id="btn-step-back" title="Step back">&#x23EA;</button>
+    <button class="pb-btn" id="btn-play" title="Play">&#x25B6;</button>
+    <button class="pb-btn" id="btn-step-fwd" title="Step forward">&#x23E9;</button>
+  </div>
+  <button id="memory-btn">&#x1D5C6; Memory</button>
+  <button id="settings-btn" title="Settings">&#x2699;</button>
+</div>
+
+<!-- ═══ MAIN ═══ -->
+<div id="main">
+
+  <!-- LEFT PANEL -->
+  <div id="panel-left">
+    <div id="scurve-container">
+      <svg id="scurve-svg"></svg>
+    </div>
+    <div id="scrubber-wrap">
+      <input type="range" id="scrubber" min="0" max="100" value="0" step="1">
+    </div>
+    <div id="term-cloud"></div>
+    <div id="graph-container">
+      <svg id="graph-svg"></svg>
+      <div id="graph-tooltip">
+        <div class="gt-label"></div>
+        <div class="gt-desc"></div>
+        <div class="gt-ref"></div>
+      </div>
+    </div>
+    <div id="volume-charts">
+      <div class="vol-chart">
+        <span class="vol-label">Signal vol.</span>
+        <svg class="vol-svg" id="vol-signal"></svg>
+      </div>
+      <div class="vol-chart">
+        <span class="vol-label">Counter vol.</span>
+        <svg class="vol-svg" id="vol-counter"></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div id="panel-right">
+    <div id="empty-state">
+      <h2>Cultural archaeology.</h2>
+      <p>Ask a question about any cultural trend, behavior, or shift — and McWhy will trace it backward to its origin.</p>
+    </div>
+
+    <div id="loading-state">
+      <div class="loader"></div>
+      <div id="loading-label">Excavating signal...</div>
+    </div>
+
+    <div id="error-state">
+      <div style="font-size: 24px; color: #e85a4f;">&#x26A0;</div>
+      <div id="error-msg"></div>
+    </div>
+
+    <div id="report-content">
+      <div id="ungrounded-label">Ungrounded analysis — no live search data</div>
+      <div id="one-line"></div>
+
+      <div class="report-card" id="card-timeline">
+        <h3>Adoption Timeline</h3>
+        <div id="timeline-content"></div>
+      </div>
+
+      <div class="report-card" id="card-diffusion">
+        <h3>Diffusion Path</h3>
+        <div id="diffusion-content"></div>
+      </div>
+
+      <div class="report-card" id="card-anchor">
+        <h3>Socioeconomic Anchor</h3>
+        <div id="anchor-content"></div>
+      </div>
+
+      <div class="report-card" id="card-virality">
+        <h3>Virality Mechanism</h3>
+        <div id="virality-content"></div>
+      </div>
+
+      <div class="report-card" id="card-framework">
+        <h3>Five Disciplinary Avenues</h3>
+        <div id="framework-content"></div>
+      </div>
+
+      <div class="report-card counter-card" id="card-counter">
+        <h3>Counter-Signal</h3>
+        <div id="counter-content"></div>
+        <div id="counter-strength-bar"><div id="counter-strength-fill"></div></div>
+      </div>
+
+      <div class="report-card" id="card-detectors">
+        <h3>Cultural Detectors</h3>
+        <div id="detectors-content"></div>
+      </div>
+
+      <div class="report-card" id="card-events">
+        <h3>Event Log</h3>
+        <div id="event-log"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ BOTTOM BAR ═══ -->
+<div id="bottom-bar">
+  <div id="pull-quote">Cultural archaeology. Trace any trend back to its origin.</div>
+  <button id="copy-btn">Copy report</button>
+</div>
+
+<!-- ═══ MEMORY DROPDOWN ═══ -->
+<div id="memory-dropdown">
+  <div id="memory-list"></div>
+  <div id="memory-empty">No saved analyses yet.</div>
+</div>
+
+<!-- ═══ SETTINGS MODAL ═══ -->
+<div id="settings-overlay">
+  <div id="settings-modal">
+    <h2>Settings</h2>
+    <div class="setting-field">
+      <label>Claude API Key</label>
+      <input type="password" id="key-claude" placeholder="sk-ant-...">
+    </div>
+    <div class="setting-field">
+      <label>Brave Search API Key (optional)</label>
+      <input type="password" id="key-brave" placeholder="BSA...">
+    </div>
+    <button id="settings-close">Save & Close</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+const state = {
+  data: null,
+  scrubber: 0,
+  playing: false,
+  playInterval: null,
+  ungrounded: false,
+  conceptTooltips: {}
+};
+
+// ══════════════════════════════════════════════
+// SETTINGS / STORAGE
+// ══════════════════════════════════════════════
+function getKey(name) { return localStorage.getItem('mcwhy_' + name) || ''; }
+function setKey(name, val) { localStorage.setItem('mcwhy_' + name, val); }
+
+function saveAnalysis(question, data) {
+  const analyses = JSON.parse(localStorage.getItem('mcwhy_analyses') || '{}');
+  analyses[question] = { data, timestamp: Date.now() };
+  localStorage.setItem('mcwhy_analyses', JSON.stringify(analyses));
+  refreshMemoryList();
+}
+
+function getAnalyses() {
+  return JSON.parse(localStorage.getItem('mcwhy_analyses') || '{}');
+}
+
+function refreshMemoryList() {
+  const list = document.getElementById('memory-list');
+  const empty = document.getElementById('memory-empty');
+  const analyses = getAnalyses();
+  const keys = Object.keys(analyses).sort((a, b) => analyses[b].timestamp - analyses[a].timestamp);
+  if (keys.length === 0) {
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  list.innerHTML = keys.map(q => {
+    const d = new Date(analyses[q].timestamp);
+    return `<div class="memory-item" data-q="${q.replace(/"/g, '&quot;')}">
+      <div>${q}</div>
+      <div class="memory-item-date">${d.toLocaleDateString()} ${d.toLocaleTimeString()}</div>
+    </div>`;
+  }).join('');
+  list.querySelectorAll('.memory-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const q = el.dataset.q;
+      const a = getAnalyses()[q];
+      if (a) {
+        document.getElementById('signal-input').value = q;
+        state.ungrounded = false;
+        renderReport(a.data);
+        document.getElementById('memory-dropdown').classList.remove('open');
+      }
+    });
+  });
+}
+
+// ══════════════════════════════════════════════
+// PLACEHOLDER CYCLING
+// ══════════════════════════════════════════════
+const placeholders = [
+  'Why is aura-farming everywhere?',
+  'What caused quiet quitting to spread so fast?',
+  'Where did looksmaxxing come from?',
+  'Why is everyone watching short videos?',
+  'Why is OnlyFans so popular?',
+  'Why does everyone suddenly say "delulu"?'
+];
+let phIdx = 0;
+setInterval(() => {
+  phIdx = (phIdx + 1) % placeholders.length;
+  document.getElementById('signal-input').placeholder = placeholders[phIdx];
+}, 3500);
+
+// ══════════════════════════════════════════════
+// SIGNAL TYPE CLASSIFICATION
+// ══════════════════════════════════════════════
+function classifySignal(question) {
+  const q = question.toLowerCase();
+  const consumptionWords = ['watching', 'listening', 'reading', 'consuming', 'buying', 'replacing', 'streaming', 'switching', 'subscribing', 'booktok', 'podcast', 'short-form', 'long-form', 'media', 'video', 'content'];
+  const behavioralWords = ['doing', 'going', 'quitting', 'working', 'acting', 'behaving', 'living', 'mode', 'syndrome', 'de-influencing', 'quiet', 'monk', 'hustle'];
+  if (consumptionWords.some(w => q.includes(w))) return 'consumption';
+  if (behavioralWords.some(w => q.includes(w))) return 'behavioral';
+  return 'lexical';
+}
+
+// ══════════════════════════════════════════════
+// BRAVE SEARCH (graceful degradation)
+// ══════════════════════════════════════════════
+async function braveSearch(signal) {
+  const key = getKey('brave');
+  if (!key) { state.ungrounded = true; return ''; }
+
+  const queries = [
+    `"${signal}" origin first use site:reddit.com OR twitter.com`,
+    `"${signal}" meaning trend 2023 2024 2025`,
+    `"${signal}" sociology psychology cultural analysis`,
+    `backlash against "${signal}" OR alternative to "${signal}"`
+  ];
+
+  const results = [];
+  for (const q of queries) {
+    try {
+      const res = await fetch(`https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(q)}&count=5`, {
+        headers: { 'Accept': 'application/json', 'X-Subscription-Token': key }
+      });
+      if (!res.ok) throw new Error(`Brave: ${res.status}`);
+      const json = await res.json();
+      const snippets = (json.web?.results || []).map(r => `${r.title}: ${r.description}`).join('\n');
+      results.push(snippets);
+    } catch (e) {
+      console.warn('Brave search failed:', e.message);
+      results.push('');
+    }
+  }
+
+  const context = results.filter(Boolean).join('\n\n');
+  if (!context) state.ungrounded = true;
+  return context;
+}
+
+// ══════════════════════════════════════════════
+// CLAUDE API — SYSTEM PROMPT
+// ══════════════════════════════════════════════
+const SYSTEM_PROMPT = `You are McWhy — a reverse cultural simulation engine. You perform cultural archaeology: given a natural language question about a cultural trend, behavior, or shift, you trace it backward through time to explain when it appeared, how it spread, why it moved the way it did, and what socioeconomic conditions made the ground fertile.
+
+You analyze through Five Disciplinary Avenues, tracing from macroscopic societal impact down to microscopic origins:
+
+1. NETWORK SCIENCE AND MACRO-TOPOLOGIES
+Examine scale-free networks, preferential attachment ("rich get richer"), and small-world network properties. Explain how structural architectures facilitate viral spread and how hubs amplify trends into winner-take-all phenomena.
+Key citations: Barabási & Albert (1999); Watts & Strogatz (1998); Watts & Dodds (2007).
+
+2. SOCIAL CONTAGION DYNAMICS
+Distinguish simple contagions (basic information, single exposure via long ties) from complex contagions (cultural trends requiring multiple reinforcing exposures before adoption). Cultural trends almost always spread as complex contagions requiring the width of social bridges.
+Key citations: Centola & Macy (2007); Granovetter (1973); Centola (2010).
+
+3. STATISTICAL PHYSICS OF SOCIAL DYNAMICS
+Treat interacting humans like atoms in physical models. Map opinion dynamics through three mechanisms: assimilation (conforming to peers), directional updating (moving toward perceived optimal), and homophily (similar individuals connecting — breeding subcultures that diverge from mainstream and generate counter-signals).
+Key citations: Castellano, Fortunato & Loreto (2009); Axelrod (1997); Deffuant et al. (2000).
+
+4. BEHAVIORAL SOCIAL SCIENCE AND MICRO-MOTIVES
+Apply Schelling dynamics proving that extreme macro-level behaviors are entirely decoupled from individual intent — driven by mild local micro-preferences. Search for exact local rules, cognitive expectation violations, and threshold triggers. Use Kahneman's System 1/2 framework to explain why trends bypass deliberative judgment.
+Key citations: Schelling (1971, 1978); Granovetter (1978); Kahneman (2011); Cialdini (1984).
+
+5. GENERATIVE SOCIAL SCIENCE AND AGENT-BASED MODELING
+The overarching framework. Situate autonomous, heterogeneous agents with defined local rules. The test: can the reconstructed micro-rules mathematically "grow" the macroscopic trend observed? If yes, the reconstruction is likely correct.
+Key citations: Epstein & Axtell (1996); Epstein (1999); Axelrod (1997).
+
+RULES:
+- Extract the cultural signal from the user's natural language question
+- Apply all Five Disciplinary Avenues retroactively to the signal
+- Ground every virality mechanism claim in a specific scientific citation
+- Find cultural artifacts (film, music, literature, art) that detected the mechanism BEFORE the data arrived — cultural detectors that sensed the shift before it had a name
+- Include concept_tooltips: for every academic term, framework name, or named theory you mention in any field, provide a 2-3 sentence plain-language explanation that a non-academic could understand
+- Return ONLY valid JSON. No markdown fences. No preamble. No explanation outside the JSON.
+
+OUTPUT SCHEMA (return exactly this structure):
+{
+  "one_line": "The whole signal in one sentence.",
+  "signal_extracted": "The cultural signal extracted from the question.",
+  "signal_type": "lexical | behavioral | consumption",
+  "adoption_timeline": {
+    "first_emergence": { "date": "~YYYY", "description": "..." },
+    "inflection_point": { "date": "~YYYY", "description": "..." },
+    "mainstream_crossing": { "date": "~YYYY", "description": "..." },
+    "current_status": "..."
+  },
+  "diffusion_path": [
+    { "stage": 1, "demographic": "...", "platform": "...", "date": "~YYYY", "description": "..." }
+  ],
+  "socioeconomic_anchor": {
+    "primary": "...",
+    "supporting": ["..."],
+    "evidence": "..."
+  },
+  "virality_mechanism": {
+    "type": "complex contagion | simple contagion",
+    "speed": "rapid | gradual | staged",
+    "scientific_basis": "...",
+    "citation": "..."
+  },
+  "framework_analysis": {
+    "network_science": "...",
+    "social_contagion": "...",
+    "statistical_physics": "...",
+    "behavioral_micromotives": "...",
+    "generative_social_science": "..."
+  },
+  "counter_signal": {
+    "name": "...",
+    "description": "...",
+    "strength_pct": 0,
+    "status": "not yet forming | forming in subcultures | visible counter-movement | dominant counter-signal"
+  },
+  "cultural_detectors": [
+    { "type": "film | music | literature | art | other", "title": "...", "year": "YYYY", "description": "..." }
+  ],
+  "pull_quote": "Single line for social card or content use.",
+  "related_terms": [
+    { "term": "...", "category": "primary | related | counter", "appears_at_pct": 0 }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "...", "label": "...", "category": "social | economic | science | platform | cultural | counter", "weight": 0.0, "appears_at_pct": 0, "description": "...", "reference": "..." }
+    ],
+    "edges": [
+      { "source": "...", "target": "...", "weight": 0.0, "label": "...", "appears_at_pct": 0 }
+    ]
+  },
+  "event_log": [
+    { "time_pct": 0, "label": "...", "description": "..." }
+  ],
+  "concept_tooltips": {
+    "term_name": "2-3 sentence plain-language explanation."
+  }
+}
+
+IMPORTANT:
+- appears_at_pct values must range from 0 to 100, representing when each element appears in the timeline
+- Graph should have 12-20 nodes spanning all categories
+- Include at least 8 concept_tooltips for the most important academic terms used
+- Include at least 5 event_log entries at different time positions
+- Include at least 5 related_terms
+- counter_signal.strength_pct should be 0-100`;
+
+// ══════════════════════════════════════════════
+// CLAUDE API CALL
+// ══════════════════════════════════════════════
+async function callClaude(question, searchContext) {
+  const key = getKey('claude');
+  if (!key) throw new Error('Claude API key not set. Click the gear icon to add your key.');
+
+  let userMsg = `Question: ${question}`;
+  if (searchContext) {
+    userMsg += `\n\nWeb search context (use this to ground your analysis with real data):\n${searchContext}`;
+  } else {
+    userMsg += '\n\nNo web search context available. Use your training data. Note: this analysis will be labeled as ungrounded.';
+  }
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 8000,
+      system: SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: userMsg }]
+    })
+  });
+
+  if (!res.ok) {
+    const errBody = await res.text();
+    throw new Error(`Claude API error (${res.status}): ${errBody.slice(0, 200)}`);
+  }
+
+  const body = await res.json();
+  const text = body.content?.[0]?.text || '';
+
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    // Retry: try to extract JSON from response
+    const match = text.match(/\{[\s\S]*\}/);
+    if (match) {
+      try { return JSON.parse(match[0]); } catch (e2) { /* fall through */ }
+    }
+    throw new Error('Claude returned malformed JSON. Raw response:\n' + text.slice(0, 500));
+  }
+}
+
+// ══════════════════════════════════════════════
+// MAIN ANALYSIS FLOW
+// ══════════════════════════════════════════════
+async function analyze(question) {
+  showState('loading');
+  document.getElementById('loading-label').textContent = 'Searching for context...';
+  state.ungrounded = false;
+  state.data = null;
+  state.scrubber = 0;
+  document.getElementById('scrubber').value = 0;
+  stopPlayback();
+
+  try {
+    // Extract signal for search
+    const signal = question.replace(/^(why|what|where|how|when)\s+(is|are|did|does|was|were|do|caused?)\s+/i, '')
+      .replace(/\s*(so popular|everywhere|a thing|spread|trending|so fast)\s*\??$/i, '')
+      .replace(/^everyone\s+(suddenly\s+)?/i, '')
+      .replace(/\?$/, '').trim();
+
+    const searchContext = await braveSearch(signal);
+
+    document.getElementById('loading-label').textContent = 'Excavating signal...';
+    const data = await callClaude(question, searchContext);
+
+    state.data = data;
+    state.conceptTooltips = data.concept_tooltips || {};
+
+    // Show type badge
+    const badge = document.getElementById('signal-type-badge');
+    const sType = data.signal_type || classifySignal(question);
+    badge.textContent = sType;
+    badge.style.display = 'inline-block';
+
+    renderReport(data);
+    saveAnalysis(question, data);
+  } catch (e) {
+    showState('error');
+    document.getElementById('error-msg').textContent = e.message;
+  }
+}
+
+// ══════════════════════════════════════════════
+// UI STATES
+// ══════════════════════════════════════════════
+function showState(s) {
+  document.getElementById('empty-state').style.display = s === 'empty' ? 'flex' : 'none';
+  document.getElementById('loading-state').className = s === 'loading' ? 'active' : '';
+  document.getElementById('error-state').className = s === 'error' ? 'active' : '';
+  document.getElementById('report-content').className = s === 'report' ? 'active' : '';
+}
+
+// ══════════════════════════════════════════════
+// RENDER REPORT
+// ══════════════════════════════════════════════
+function renderReport(data) {
+  showState('report');
+  state.data = data;
+  state.conceptTooltips = data.concept_tooltips || {};
+
+  // Ungrounded label
+  document.getElementById('ungrounded-label').style.display = state.ungrounded ? 'block' : 'none';
+
+  // One-line
+  document.getElementById('one-line').innerHTML = wrapConcepts(data.one_line || '');
+
+  // Timeline
+  const tl = data.adoption_timeline || {};
+  document.getElementById('timeline-content').innerHTML = `
+    <ul>
+      ${tl.first_emergence ? `<li><strong style="color:var(--signal)">First emergence</strong> ${tl.first_emergence.date} — ${wrapConcepts(tl.first_emergence.description)}</li>` : ''}
+      ${tl.inflection_point ? `<li><strong style="color:var(--signal)">Inflection</strong> ${tl.inflection_point.date} — ${wrapConcepts(tl.inflection_point.description)}</li>` : ''}
+      ${tl.mainstream_crossing ? `<li><strong style="color:var(--signal)">Mainstream</strong> ${tl.mainstream_crossing.date} — ${wrapConcepts(tl.mainstream_crossing.description)}</li>` : ''}
+      ${tl.current_status ? `<li><strong style="color:var(--text-dim)">Current</strong> ${wrapConcepts(tl.current_status)}</li>` : ''}
+    </ul>`;
+
+  // Diffusion
+  const dp = data.diffusion_path || [];
+  document.getElementById('diffusion-content').innerHTML = dp.map(s =>
+    `<div class="diffusion-stage">
+      <span class="diffusion-demo">${esc(s.demographic)}</span>
+      <span class="diffusion-platform">${esc(s.platform)}</span>
+      <span class="diffusion-date">${esc(s.date)}</span>
+    </div>`
+  ).join('');
+
+  // Anchor
+  const anc = data.socioeconomic_anchor || {};
+  document.getElementById('anchor-content').innerHTML = `
+    <p><strong style="color:var(--economic)">Primary:</strong> ${wrapConcepts(anc.primary || '')}</p>
+    ${(anc.supporting || []).length ? `<ul>${anc.supporting.map(s => `<li>${wrapConcepts(s)}</li>`).join('')}</ul>` : ''}
+    ${anc.evidence ? `<p style="color:var(--text-dim);font-size:12px;margin-top:8px">${wrapConcepts(anc.evidence)}</p>` : ''}`;
+
+  // Virality
+  const vm = data.virality_mechanism || {};
+  const badgeClass = (vm.type || '').includes('complex') ? 'complex' : 'simple';
+  document.getElementById('virality-content').innerHTML = `
+    <p><span class="mechanism-badge ${badgeClass}">${esc(vm.type || 'unknown')}</span>
+    <span style="color:var(--text-dim)">${esc(vm.speed || '')}</span></p>
+    <p style="margin-top:8px">${wrapConcepts(vm.scientific_basis || '')}</p>
+    ${vm.citation ? `<p style="color:var(--science);font-size:11px;margin-top:6px">${esc(vm.citation)}</p>` : ''}`;
+
+  // Framework
+  const fw = data.framework_analysis || {};
+  const avenues = [
+    ['Network Science', fw.network_science],
+    ['Social Contagion', fw.social_contagion],
+    ['Statistical Physics', fw.statistical_physics],
+    ['Behavioral Micro-motives', fw.behavioral_micromotives],
+    ['Generative Social Science', fw.generative_social_science]
+  ];
+  document.getElementById('framework-content').innerHTML = avenues.map(([name, text], i) =>
+    `<div class="framework-section">
+      <div class="framework-header" onclick="toggleFramework(this)">
+        <h4>${name}</h4>
+        <span class="framework-toggle">+</span>
+      </div>
+      <div class="framework-body${i === 0 ? ' open' : ''}">
+        <p>${wrapConcepts(text || '')}</p>
+      </div>
+    </div>`
+  ).join('');
+
+  // Counter-signal
+  const cs = data.counter_signal || {};
+  document.getElementById('counter-content').innerHTML = `
+    <p><strong>${esc(cs.name || 'Unknown')}</strong></p>
+    <p style="margin-top:6px">${wrapConcepts(cs.description || '')}</p>
+    <p style="color:var(--counter);font-size:11px;margin-top:6px">${esc(cs.status || '')}</p>`;
+  document.getElementById('counter-strength-fill').style.width = (cs.strength_pct || 0) + '%';
+
+  // Cultural detectors
+  const cd = data.cultural_detectors || [];
+  document.getElementById('detectors-content').innerHTML = cd.length
+    ? `<ul>${cd.map(d => `<li><strong>${esc(d.title)}</strong> (${esc(d.year)}, ${esc(d.type)}) — ${wrapConcepts(d.description)}</li>`).join('')}</ul>`
+    : '<p style="color:var(--text-dim)">No cultural detectors identified.</p>';
+
+  // Event log
+  const events = (data.event_log || []).sort((a, b) => a.time_pct - b.time_pct);
+  document.getElementById('event-log').innerHTML = events.map(e =>
+    `<div class="event-item" data-pct="${e.time_pct}">
+      <strong>${esc(e.label)}</strong> — ${esc(e.description)}
+    </div>`
+  ).join('');
+
+  // Pull quote
+  document.getElementById('pull-quote').textContent = data.pull_quote || '';
+
+  // Status pill
+  const pill = document.getElementById('status-pill');
+  pill.textContent = 'origin detected';
+  pill.classList.add('active');
+
+  // Build visualizations
+  buildSCurve(data);
+  buildGraph(data);
+  buildTermCloud(data);
+  buildVolumeCharts(data);
+  updateScrubber(0);
+}
+
+// ══════════════════════════════════════════════
+// CONCEPT TOOLTIPS — wrap academic terms
+// ══════════════════════════════════════════════
+function wrapConcepts(text) {
+  if (!text || !state.conceptTooltips) return esc(text);
+  let html = esc(text);
+  const terms = Object.keys(state.conceptTooltips).sort((a, b) => b.length - a.length);
+  for (const term of terms) {
+    const regex = new RegExp(`\\b(${escRegex(term)})\\b`, 'gi');
+    html = html.replace(regex, (match) => {
+      const tip = esc(state.conceptTooltips[term]);
+      return `<span class="concept-term">${match}<span class="concept-tooltip">${tip}</span></span>`;
+    });
+  }
+  return html;
+}
+
+function escRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// ══════════════════════════════════════════════
+// FRAMEWORK TOGGLE
+// ══════════════════════════════════════════════
+window.toggleFramework = function(header) {
+  const body = header.nextElementSibling;
+  const toggle = header.querySelector('.framework-toggle');
+  body.classList.toggle('open');
+  toggle.textContent = body.classList.contains('open') ? '−' : '+';
+};
+
+// ══════════════════════════════════════════════
+// S-CURVE (SVG)
+// ══════════════════════════════════════════════
+function buildSCurve(data) {
+  const svg = d3.select('#scurve-svg');
+  svg.selectAll('*').remove();
+
+  const container = document.getElementById('scurve-container');
+  const w = container.clientWidth;
+  const h = container.clientHeight;
+  const pad = { top: 20, right: 20, bottom: 20, left: 20 };
+
+  svg.attr('viewBox', `0 0 ${w} ${h}`);
+
+  const x = d3.scaleLinear().domain([0, 100]).range([pad.left, w - pad.right]);
+  const sigmoid = (t) => 1 / (1 + Math.exp(-0.08 * (t - 50)));
+  const yScale = d3.scaleLinear().domain([0, 1]).range([h - pad.bottom, pad.top]);
+
+  // Signal curve path
+  const points = d3.range(0, 101, 1).map(t => [x(t), yScale(sigmoid(t))]);
+  const line = d3.line().curve(d3.curveBasis);
+
+  // Clip path for reveal
+  const defs = svg.append('defs');
+  defs.append('clipPath').attr('id', 'scurve-clip')
+    .append('rect').attr('x', 0).attr('y', 0).attr('width', 0).attr('height', h);
+
+  // Signal curve
+  svg.append('path')
+    .attr('d', line(points))
+    .attr('fill', 'none')
+    .attr('stroke', 'var(--signal)')
+    .attr('stroke-width', 2.5)
+    .attr('clip-path', 'url(#scurve-clip)');
+
+  // Counter-signal curve (inverted, dashed, appears later)
+  const counterPoints = d3.range(40, 101, 1).map(t => [x(t), yScale(1 - sigmoid(t - 20) * 0.6)]);
+  svg.append('path')
+    .attr('d', line(counterPoints))
+    .attr('fill', 'none')
+    .attr('stroke', 'var(--counter)')
+    .attr('stroke-width', 1.5)
+    .attr('stroke-dasharray', '6,4')
+    .attr('clip-path', 'url(#scurve-clip)')
+    .attr('opacity', 0.7);
+
+  // Event dots
+  const events = (data.event_log || []).sort((a, b) => a.time_pct - b.time_pct);
+  svg.selectAll('.event-dot')
+    .data(events)
+    .enter().append('circle')
+    .attr('class', 'event-dot')
+    .attr('cx', d => x(d.time_pct))
+    .attr('cy', d => yScale(sigmoid(d.time_pct)))
+    .attr('r', 4)
+    .attr('fill', 'var(--signal)')
+    .attr('stroke', 'var(--bg)')
+    .attr('stroke-width', 2)
+    .attr('opacity', 0)
+    .attr('data-pct', d => d.time_pct);
+
+  // Axis line
+  svg.append('line')
+    .attr('x1', pad.left).attr('y1', h - pad.bottom)
+    .attr('x2', w - pad.right).attr('y2', h - pad.bottom)
+    .attr('stroke', 'var(--border)').attr('stroke-width', 1);
+}
+
+// ══════════════════════════════════════════════
+// D3 GRAPH
+// ══════════════════════════════════════════════
+let graphSim = null;
+
+function buildGraph(data) {
+  const svg = d3.select('#graph-svg');
+  svg.selectAll('*').remove();
+
+  const container = document.getElementById('graph-container');
+  const w = container.clientWidth;
+  const h = container.clientHeight;
+
+  svg.attr('viewBox', `0 0 ${w} ${h}`);
+
+  const graphData = data.graph || { nodes: [], edges: [] };
+  const nodes = graphData.nodes.map(n => ({ ...n }));
+  const edges = graphData.edges.map(e => ({ ...e, source: e.source, target: e.target }));
+
+  const colorMap = {
+    social: 'var(--social)',
+    economic: 'var(--economic)',
+    science: 'var(--science)',
+    platform: 'var(--platform)',
+    cultural: 'var(--cultural)',
+    counter: 'var(--counter-node)'
+  };
+
+  // Force simulation — all nodes always present
+  graphSim = d3.forceSimulation(nodes)
+    .force('link', d3.forceLink(edges).id(d => d.id).distance(80))
+    .force('charge', d3.forceManyBody().strength(-200))
+    .force('center', d3.forceCenter(w / 2, h / 2))
+    .force('collision', d3.forceCollide(25));
+
+  const edgeEls = svg.append('g').selectAll('line')
+    .data(edges).enter().append('line')
+    .attr('stroke', 'var(--border)')
+    .attr('stroke-width', d => Math.max(1, (d.weight || 0.5) * 3))
+    .attr('opacity', 0)
+    .attr('data-pct', d => d.appears_at_pct);
+
+  const nodeEls = svg.append('g').selectAll('circle')
+    .data(nodes).enter().append('circle')
+    .attr('r', d => 6 + (d.weight || 0.5) * 8)
+    .attr('fill', d => colorMap[d.category] || 'var(--text-dim)')
+    .attr('stroke', 'var(--bg)')
+    .attr('stroke-width', 2)
+    .attr('opacity', 0)
+    .attr('data-pct', d => d.appears_at_pct)
+    .attr('cursor', 'pointer')
+    .call(d3.drag()
+      .on('start', (e, d) => { if (!e.active) graphSim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+      .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; })
+      .on('end', (e, d) => { if (!e.active) graphSim.alphaTarget(0); d.fx = null; d.fy = null; })
+    );
+
+  const labelEls = svg.append('g').selectAll('text')
+    .data(nodes).enter().append('text')
+    .text(d => d.label)
+    .attr('font-size', 10)
+    .attr('font-family', 'var(--font-mono)')
+    .attr('fill', 'var(--text-dim)')
+    .attr('text-anchor', 'middle')
+    .attr('dy', d => -(10 + (d.weight || 0.5) * 8))
+    .attr('opacity', 0)
+    .attr('data-pct', d => d.appears_at_pct)
+    .attr('pointer-events', 'none');
+
+  // Tooltip
+  const tooltip = document.getElementById('graph-tooltip');
+  nodeEls.on('mouseover', (e, d) => {
+    tooltip.querySelector('.gt-label').textContent = d.label;
+    tooltip.querySelector('.gt-desc').textContent = d.description || '';
+    tooltip.querySelector('.gt-ref').textContent = d.reference || '';
+    tooltip.style.opacity = 1;
+    tooltip.style.left = (e.offsetX + 15) + 'px';
+    tooltip.style.top = (e.offsetY - 10) + 'px';
+  }).on('mouseout', () => {
+    tooltip.style.opacity = 0;
+  });
+
+  graphSim.on('tick', () => {
+    edgeEls
+      .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+      .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+    nodeEls.attr('cx', d => d.x).attr('cy', d => d.y);
+    labelEls.attr('x', d => d.x).attr('y', d => d.y);
+  });
+}
+
+// ══════════════════════════════════════════════
+// TERM CLOUD
+// ══════════════════════════════════════════════
+function buildTermCloud(data) {
+  const container = document.getElementById('term-cloud');
+  container.innerHTML = '';
+  const terms = data.related_terms || [];
+  terms.forEach(t => {
+    const el = document.createElement('span');
+    el.className = `term-tag ${t.category} hidden`;
+    el.textContent = t.term;
+    el.dataset.pct = t.appears_at_pct;
+    container.appendChild(el);
+  });
+}
+
+// ══════════════════════════════════════════════
+// VOLUME CHARTS (mini sparklines)
+// ══════════════════════════════════════════════
+function buildVolumeCharts(data) {
+  const sigmoid = (t) => 1 / (1 + Math.exp(-0.08 * (t - 50)));
+  buildSparkline('#vol-signal', d3.range(0, 101, 2).map(t => sigmoid(t)), 'var(--signal)');
+  buildSparkline('#vol-counter', d3.range(0, 101, 2).map(t => t > 40 ? (1 - sigmoid(t - 20)) * 0.6 : 0), 'var(--counter)');
+}
+
+function buildSparkline(selector, values, color) {
+  const svg = d3.select(selector);
+  svg.selectAll('*').remove();
+  const el = svg.node().parentElement;
+  const w = el.clientWidth - 20;
+  const h = el.clientHeight - 20;
+  svg.attr('viewBox', `0 0 ${w} ${h}`).attr('style', `margin-top: 18px`);
+  const x = d3.scaleLinear().domain([0, values.length - 1]).range([0, w]);
+  const y = d3.scaleLinear().domain([0, d3.max(values)]).range([h, 0]);
+  const line = d3.line().x((d, i) => x(i)).y(d => y(d)).curve(d3.curveBasis);
+  svg.append('path').attr('d', line(values)).attr('fill', 'none').attr('stroke', color).attr('stroke-width', 1.5).attr('opacity', 0.7);
+}
+
+// ══════════════════════════════════════════════
+// SCRUBBER UPDATE — controls all time-dependent elements
+// ══════════════════════════════════════════════
+function updateScrubber(val) {
+  state.scrubber = val;
+
+  // S-curve clip
+  const container = document.getElementById('scurve-container');
+  const clipRect = d3.select('#scurve-clip rect');
+  if (clipRect.node()) {
+    clipRect.attr('width', (val / 100) * container.clientWidth);
+  }
+
+  // Event dots on S-curve
+  d3.selectAll('.event-dot').attr('opacity', function() {
+    return +this.getAttribute('data-pct') <= val ? 1 : 0;
+  });
+
+  // Graph nodes, edges, labels
+  d3.select('#graph-svg').selectAll('[data-pct]').each(function() {
+    const pct = +this.getAttribute('data-pct');
+    d3.select(this).transition().duration(150).attr('opacity', pct <= val ? 1 : 0);
+  });
+
+  // Term cloud
+  document.querySelectorAll('.term-tag').forEach(el => {
+    const pct = +el.dataset.pct;
+    el.classList.toggle('hidden', pct > val);
+  });
+
+  // Event log
+  document.querySelectorAll('.event-item').forEach(el => {
+    const pct = +el.dataset.pct;
+    el.classList.toggle('active', pct <= val && pct > val - 20);
+  });
+
+  // Status pill
+  const pill = document.getElementById('status-pill');
+  if (val < 15) { pill.textContent = 'origin detected'; }
+  else if (val < 35) { pill.textContent = 'early emergence'; }
+  else if (val < 55) { pill.textContent = 'inflection point'; }
+  else if (val < 75) { pill.textContent = 'peak · counter forming'; }
+  else { pill.textContent = 'declining · counter rising'; }
+
+  // Pull quote updates at certain thresholds
+  if (state.data) {
+    const events = (state.data.event_log || []).filter(e => e.time_pct <= val).sort((a, b) => b.time_pct - a.time_pct);
+    if (events.length > 0) {
+      document.getElementById('pull-quote').textContent = events[0].description;
+    }
+  }
+}
+
+// ══════════════════════════════════════════════
+// PLAYBACK CONTROLS
+// ══════════════════════════════════════════════
+function startPlayback() {
+  if (state.playing) return;
+  state.playing = true;
+  document.getElementById('btn-play').classList.add('active');
+  document.getElementById('btn-play').innerHTML = '&#x23F8;';
+  state.playInterval = setInterval(() => {
+    let val = state.scrubber + 1;
+    if (val > 100) { stopPlayback(); return; }
+    document.getElementById('scrubber').value = val;
+    updateScrubber(val);
+  }, 80);
+}
+
+function stopPlayback() {
+  state.playing = false;
+  clearInterval(state.playInterval);
+  document.getElementById('btn-play').classList.remove('active');
+  document.getElementById('btn-play').innerHTML = '&#x25B6;';
+}
+
+// ══════════════════════════════════════════════
+// COPY REPORT
+// ══════════════════════════════════════════════
+function copyReport() {
+  if (!state.data) return;
+  const d = state.data;
+  const lines = [
+    d.one_line,
+    '',
+    '— ADOPTION TIMELINE —',
+    d.adoption_timeline?.first_emergence ? `First emergence: ${d.adoption_timeline.first_emergence.date} — ${d.adoption_timeline.first_emergence.description}` : '',
+    d.adoption_timeline?.inflection_point ? `Inflection: ${d.adoption_timeline.inflection_point.date} — ${d.adoption_timeline.inflection_point.description}` : '',
+    d.adoption_timeline?.mainstream_crossing ? `Mainstream: ${d.adoption_timeline.mainstream_crossing.date} — ${d.adoption_timeline.mainstream_crossing.description}` : '',
+    d.adoption_timeline?.current_status ? `Current: ${d.adoption_timeline.current_status}` : '',
+    '',
+    '— SOCIOECONOMIC ANCHOR —',
+    d.socioeconomic_anchor?.primary || '',
+    ...(d.socioeconomic_anchor?.supporting || []),
+    '',
+    '— VIRALITY MECHANISM —',
+    `${d.virality_mechanism?.type || ''} (${d.virality_mechanism?.speed || ''})`,
+    d.virality_mechanism?.scientific_basis || '',
+    d.virality_mechanism?.citation || '',
+    '',
+    '— COUNTER-SIGNAL —',
+    `${d.counter_signal?.name || ''}: ${d.counter_signal?.description || ''}`,
+    '',
+    '— PULL QUOTE —',
+    d.pull_quote || ''
+  ].filter(Boolean).join('\n');
+
+  navigator.clipboard.writeText(lines).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy report', 2000);
+  });
+}
+
+// ══════════════════════════════════════════════
+// EVENT LISTENERS
+// ══════════════════════════════════════════════
+document.getElementById('signal-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const q = e.target.value.trim();
+    if (q) analyze(q);
+  }
+});
+
+document.getElementById('scrubber').addEventListener('input', (e) => {
+  stopPlayback();
+  updateScrubber(+e.target.value);
+});
+
+document.getElementById('btn-play').addEventListener('click', () => {
+  state.playing ? stopPlayback() : startPlayback();
+});
+
+document.getElementById('btn-step-back').addEventListener('click', () => {
+  stopPlayback();
+  const val = Math.max(0, state.scrubber - 10);
+  document.getElementById('scrubber').value = val;
+  updateScrubber(val);
+});
+
+document.getElementById('btn-step-fwd').addEventListener('click', () => {
+  stopPlayback();
+  const val = Math.min(100, state.scrubber + 10);
+  document.getElementById('scrubber').value = val;
+  updateScrubber(val);
+});
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  stopPlayback();
+  document.getElementById('scrubber').value = 0;
+  updateScrubber(0);
+});
+
+document.getElementById('settings-btn').addEventListener('click', () => {
+  document.getElementById('key-claude').value = getKey('claude');
+  document.getElementById('key-brave').value = getKey('brave');
+  document.getElementById('settings-overlay').classList.add('open');
+});
+
+document.getElementById('settings-close').addEventListener('click', () => {
+  setKey('claude', document.getElementById('key-claude').value.trim());
+  setKey('brave', document.getElementById('key-brave').value.trim());
+  document.getElementById('settings-overlay').classList.remove('open');
+});
+
+document.getElementById('settings-overlay').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) document.getElementById('settings-overlay').classList.remove('open');
+});
+
+document.getElementById('memory-btn').addEventListener('click', () => {
+  document.getElementById('memory-dropdown').classList.toggle('open');
+});
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#memory-dropdown') && !e.target.closest('#memory-btn')) {
+    document.getElementById('memory-dropdown').classList.remove('open');
+  }
+});
+
+document.getElementById('copy-btn').addEventListener('click', copyReport);
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+refreshMemoryList();
+
+// If no API key, prompt settings
+if (!getKey('claude')) {
+  setTimeout(() => document.getElementById('settings-overlay').classList.add('open'), 500);
+}
+</script>
+</body>
+</html>
