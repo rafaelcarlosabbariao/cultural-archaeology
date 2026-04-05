@@ -58,6 +58,104 @@ html, body {
   overflow: hidden;
 }
 
+/* ── LANDING SCREEN ── */
+#landing {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+#landing.hidden {
+  opacity: 0;
+  transform: translateY(-20px);
+  pointer-events: none;
+}
+
+#landing-logo {
+  font-family: var(--font-display);
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--signal);
+  margin-bottom: 12px;
+  letter-spacing: -1px;
+}
+
+#landing-tagline {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 18px;
+  color: var(--text-dim);
+  margin-bottom: 40px;
+}
+
+#landing-input-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+}
+
+#landing-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 20px;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#landing-input:focus {
+  border-color: var(--signal);
+  box-shadow: 0 0 0 3px rgba(200, 83, 24, 0.1);
+}
+
+#landing-input::placeholder { color: var(--text-dim); }
+
+#landing-hint {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 12px;
+  text-align: center;
+}
+
+#landing-controls {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  gap: 8px;
+}
+
+#landing-controls button {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+#landing-controls button:hover { color: var(--text); border-color: var(--text-dim); }
+
+/* ── APP (hidden until query) ── */
+#app { display: none; }
+#app.active { display: flex; flex-direction: column; height: 100vh; }
+
 /* ── TOP BAR ── */
 #top-bar {
   display: flex;
@@ -213,14 +311,15 @@ html, body {
   overflow: hidden;
 }
 
-/* ── LEFT PANEL (Visualizations) ── */
+/* ── LEFT PANEL (Narrative — formerly right) ── */
 #panel-left {
-  flex: 1;
+  width: 420px;
   display: flex;
   flex-direction: column;
-  padding: 16px 20px;
-  gap: 12px;
   overflow-y: auto;
+  padding: 16px 20px;
+  gap: 16px;
+  flex-shrink: 0;
   border-right: 1px solid var(--border);
 }
 
@@ -296,6 +395,35 @@ html, body {
 
 #graph-container svg { width: 100%; height: 100%; }
 
+#graph-legend {
+  position: absolute;
+  bottom: 10px;
+  left: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 #volume-charts {
   display: flex;
   gap: 12px;
@@ -322,20 +450,15 @@ html, body {
   left: 10px;
 }
 
-/* ── RIGHT PANEL (Narrative) ── */
+/* ── RIGHT PANEL (Visualizations — formerly left) ── */
 #panel-right {
-  width: 420px;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
   padding: 16px 20px;
-  gap: 16px;
-  flex-shrink: 0;
+  gap: 12px;
+  overflow-y: auto;
 }
-
-#panel-right::-webkit-scrollbar { width: 4px; }
-#panel-right::-webkit-scrollbar-track { background: transparent; }
-#panel-right::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
 .section-label {
   font-size: 10px;
@@ -694,30 +817,7 @@ html, body {
   font-size: 12px;
 }
 
-/* ── EMPTY / LOADING / ERROR STATES ── */
-#empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  text-align: center;
-  gap: 12px;
-}
-
-#empty-state h2 {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 28px;
-  color: var(--text);
-}
-
-#empty-state p {
-  color: var(--text-dim);
-  font-size: 13px;
-  max-width: 400px;
-}
-
+/* ── LOADING / ERROR STATES ── */
 #loading-state {
   display: none;
   flex-direction: column;
@@ -789,12 +889,29 @@ html, body {
 #graph-tooltip .gt-ref { color: var(--science); font-size: 10px; margin-top: 4px; }
 
 /* ── Scrollbar ── */
-#panel-left::-webkit-scrollbar { width: 4px; }
-#panel-left::-webkit-scrollbar-track { background: transparent; }
-#panel-left::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+#panel-left::-webkit-scrollbar, #panel-right::-webkit-scrollbar { width: 4px; }
+#panel-left::-webkit-scrollbar-track, #panel-right::-webkit-scrollbar-track { background: transparent; }
+#panel-left::-webkit-scrollbar-thumb, #panel-right::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 </style>
 </head>
 <body>
+
+<!-- ═══ LANDING SCREEN ═══ -->
+<div id="landing">
+  <div id="landing-logo">McWhy</div>
+  <div id="landing-tagline">Cultural archaeology. Trace any trend back to its origin.</div>
+  <div id="landing-input-wrap">
+    <input id="landing-input" type="text" placeholder="Why is aura-farming everywhere?" autocomplete="off">
+  </div>
+  <div id="landing-hint">Press Enter to begin excavation</div>
+  <div id="landing-controls">
+    <button id="landing-theme-btn" title="Toggle light/dark mode">&#x263D;</button>
+    <button id="landing-settings-btn" title="Settings">&#x2699;</button>
+  </div>
+</div>
+
+<!-- ═══ APP (revealed after first query) ═══ -->
+<div id="app">
 
 <!-- ═══ TOP BAR ═══ -->
 <div id="top-bar">
@@ -818,42 +935,8 @@ html, body {
 <!-- ═══ MAIN ═══ -->
 <div id="main">
 
-  <!-- LEFT PANEL -->
+  <!-- LEFT PANEL (Narrative) -->
   <div id="panel-left">
-    <div id="scurve-container">
-      <svg id="scurve-svg"></svg>
-    </div>
-    <div id="scrubber-wrap">
-      <input type="range" id="scrubber" min="0" max="100" value="0" step="1">
-    </div>
-    <div id="term-cloud"></div>
-    <div id="graph-container">
-      <svg id="graph-svg"></svg>
-      <div id="graph-tooltip">
-        <div class="gt-label"></div>
-        <div class="gt-desc"></div>
-        <div class="gt-ref"></div>
-      </div>
-    </div>
-    <div id="volume-charts">
-      <div class="vol-chart">
-        <span class="vol-label">Signal vol.</span>
-        <svg class="vol-svg" id="vol-signal"></svg>
-      </div>
-      <div class="vol-chart">
-        <span class="vol-label">Counter vol.</span>
-        <svg class="vol-svg" id="vol-counter"></svg>
-      </div>
-    </div>
-  </div>
-
-  <!-- RIGHT PANEL -->
-  <div id="panel-right">
-    <div id="empty-state">
-      <h2>Cultural archaeology.</h2>
-      <p>Ask a question about any cultural trend, behavior, or shift — and McWhy will trace it backward to its origin.</p>
-    </div>
-
     <div id="loading-state">
       <div class="loader"></div>
       <div id="loading-label">Excavating signal...</div>
@@ -910,6 +993,43 @@ html, body {
       </div>
     </div>
   </div>
+
+  <!-- RIGHT PANEL (Visualizations) -->
+  <div id="panel-right">
+    <div id="scurve-container">
+      <svg id="scurve-svg"></svg>
+    </div>
+    <div id="scrubber-wrap">
+      <input type="range" id="scrubber" min="0" max="100" value="0" step="1">
+    </div>
+    <div id="term-cloud"></div>
+    <div id="graph-container">
+      <svg id="graph-svg"></svg>
+      <div id="graph-tooltip">
+        <div class="gt-label"></div>
+        <div class="gt-desc"></div>
+        <div class="gt-ref"></div>
+      </div>
+      <div id="graph-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--social)"></div>Social</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--economic)"></div>Economic</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--science)"></div>Science</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--platform)"></div>Platform</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--cultural)"></div>Cultural</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--counter-node)"></div>Counter</div>
+      </div>
+    </div>
+    <div id="volume-charts">
+      <div class="vol-chart">
+        <span class="vol-label">Signal vol.</span>
+        <svg class="vol-svg" id="vol-signal"></svg>
+      </div>
+      <div class="vol-chart">
+        <span class="vol-label">Counter vol.</span>
+        <svg class="vol-svg" id="vol-counter"></svg>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ═══ BOTTOM BAR ═══ -->
@@ -917,6 +1037,8 @@ html, body {
   <div id="pull-quote">Cultural archaeology. Trace any trend back to its origin.</div>
   <button id="copy-btn">Copy report</button>
 </div>
+
+</div><!-- /app -->
 
 <!-- ═══ MEMORY DROPDOWN ═══ -->
 <div id="memory-dropdown">
@@ -1017,6 +1139,7 @@ let phIdx = 0;
 setInterval(() => {
   phIdx = (phIdx + 1) % placeholders.length;
   document.getElementById('signal-input').placeholder = placeholders[phIdx];
+  document.getElementById('landing-input').placeholder = placeholders[phIdx];
 }, 3500);
 
 // ══════════════════════════════════════════════
@@ -1267,10 +1390,17 @@ async function analyze(question) {
 // UI STATES
 // ══════════════════════════════════════════════
 function showState(s) {
-  document.getElementById('empty-state').style.display = s === 'empty' ? 'flex' : 'none';
   document.getElementById('loading-state').className = s === 'loading' ? 'active' : '';
   document.getElementById('error-state').className = s === 'error' ? 'active' : '';
   document.getElementById('report-content').className = s === 'report' ? 'active' : '';
+}
+
+function revealApp(question) {
+  document.getElementById('landing').classList.add('hidden');
+  document.getElementById('app').classList.add('active');
+  document.getElementById('signal-input').value = question;
+  // Small delay for transition to finish before triggering analysis
+  setTimeout(() => analyze(question), 300);
 }
 
 // ══════════════════════════════════════════════
@@ -1514,14 +1644,14 @@ function buildGraph(data) {
   glowFilter.append('feGaussianBlur').attr('stdDeviation', '3').attr('result', 'blur');
   glowFilter.append('feMerge').selectAll('feMergeNode').data(['blur', 'SourceGraphic']).enter().append('feMergeNode').attr('in', d => d);
 
-  // Force simulation — dense Obsidian-style web
+  // Force simulation — dense Obsidian-style web with room for labels
   graphSim = d3.forceSimulation(nodes)
-    .force('link', d3.forceLink(edges).id(d => d.id).distance(50).strength(1.5))
-    .force('charge', d3.forceManyBody().strength(-60))
+    .force('link', d3.forceLink(edges).id(d => d.id).distance(70).strength(1.2))
+    .force('charge', d3.forceManyBody().strength(-120))
     .force('center', d3.forceCenter(w / 2, h / 2))
-    .force('collision', d3.forceCollide(15))
-    .force('x', d3.forceX(w / 2).strength(0.05))
-    .force('y', d3.forceY(h / 2).strength(0.05));
+    .force('collision', d3.forceCollide(35))
+    .force('x', d3.forceX(w / 2).strength(0.04))
+    .force('y', d3.forceY(h / 2).strength(0.04));
 
   // Curved edges (paths instead of lines)
   const edgeEls = svg.append('g').selectAll('path')
@@ -1545,9 +1675,11 @@ function buildGraph(data) {
     .attr('pointer-events', 'none')
     .classed('edge-label', true);
 
+  const nodeRadius = d => 7 + (d.weight || 0.5) * 9;
+
   const nodeEls = svg.append('g').selectAll('circle')
     .data(nodes).enter().append('circle')
-    .attr('r', d => 5 + (d.weight || 0.5) * 7)
+    .attr('r', nodeRadius)
     .attr('fill', d => colorMap[d.category] || 'var(--text-dim)')
     .attr('stroke', 'var(--node-stroke)')
     .attr('stroke-width', 2)
@@ -1560,15 +1692,25 @@ function buildGraph(data) {
       .on('end', (e, d) => { if (!e.active) graphSim.alphaTarget(0); d.fx = null; d.fy = null; })
     );
 
+  // Label backgrounds for readability
+  const labelBgEls = svg.append('g').selectAll('rect.label-bg')
+    .data(nodes).enter().append('rect')
+    .classed('label-bg', true)
+    .attr('fill', 'var(--bg)')
+    .attr('opacity', 0)
+    .attr('rx', 3)
+    .attr('data-pct', d => d.appears_at_pct);
+
   const labelEls = svg.append('g').selectAll('text.node-label')
     .data(nodes).enter().append('text')
     .classed('node-label', true)
     .text(d => d.label)
-    .attr('font-size', 10)
+    .attr('font-size', 11)
+    .attr('font-weight', 400)
     .attr('font-family', 'var(--font-mono)')
-    .attr('fill', 'var(--text-dim)')
+    .attr('fill', 'var(--text)')
     .attr('text-anchor', 'middle')
-    .attr('dy', d => -(8 + (d.weight || 0.5) * 7))
+    .attr('dy', d => -(nodeRadius(d) + 6))
     .attr('opacity', 0)
     .attr('data-pct', d => d.appears_at_pct)
     .attr('pointer-events', 'none');
@@ -1603,6 +1745,12 @@ function buildGraph(data) {
       .attr('y', d => (d.source.y + d.target.y) / 2);
     nodeEls.attr('cx', d => d.x).attr('cy', d => d.y);
     labelEls.attr('x', d => d.x).attr('y', d => d.y);
+    // Position label backgrounds
+    labelEls.each(function(d, i) {
+      const bbox = this.getBBox();
+      const bg = labelBgEls.filter((_, j) => j === i);
+      bg.attr('x', bbox.x - 3).attr('y', bbox.y - 1).attr('width', bbox.width + 6).attr('height', bbox.height + 2);
+    });
   });
 }
 
@@ -1668,8 +1816,9 @@ function updateScrubber(val) {
     const visible = pct <= val;
     const el = d3.select(this);
     const isEdgeLabel = el.classed('edge-label');
-    // Edge labels only show at low opacity
-    const targetOpacity = visible ? (isEdgeLabel ? 0.5 : 1) : 0;
+    const isLabelBg = el.classed('label-bg');
+    // Edge labels at low opacity, label backgrounds semi-transparent
+    const targetOpacity = visible ? (isEdgeLabel ? 0.5 : isLabelBg ? 0.75 : 1) : 0;
     el.transition().duration(150).attr('opacity', targetOpacity);
     // Glow on nodes that just appeared (within 10% window)
     if (this.tagName === 'circle' && visible && pct > val - 15) {
@@ -1837,12 +1986,36 @@ document.addEventListener('click', (e) => {
 document.getElementById('copy-btn').addEventListener('click', copyReport);
 
 // ══════════════════════════════════════════════
+// LANDING SCREEN
+// ══════════════════════════════════════════════
+document.getElementById('landing-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const q = e.target.value.trim();
+    if (q) revealApp(q);
+  }
+});
+
+document.getElementById('landing-settings-btn').addEventListener('click', () => {
+  document.getElementById('key-claude').value = getKey('claude');
+  document.getElementById('key-brave').value = getKey('brave');
+  document.getElementById('settings-overlay').classList.add('open');
+});
+
+document.getElementById('landing-theme-btn').addEventListener('click', () => {
+  const current = document.documentElement.getAttribute('data-theme');
+  setTheme(current === 'dark' ? 'light' : 'dark');
+});
+
+// ══════════════════════════════════════════════
 // THEME TOGGLE
 // ══════════════════════════════════════════════
 function setTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem('mcwhy_theme', theme);
-  document.getElementById('theme-btn').innerHTML = theme === 'dark' ? '&#x2600;' : '&#x263D;';
+  const icon = theme === 'dark' ? '&#x2600;' : '&#x263D;';
+  document.getElementById('theme-btn').innerHTML = icon;
+  const landingBtn = document.getElementById('landing-theme-btn');
+  if (landingBtn) landingBtn.innerHTML = icon;
 }
 
 document.getElementById('theme-btn').addEventListener('click', () => {
@@ -1858,9 +2031,12 @@ setTheme(localStorage.getItem('mcwhy_theme') || 'light');
 
 refreshMemoryList();
 
-// If no API key, prompt settings
+// Focus the landing input
+document.getElementById('landing-input').focus();
+
+// If no API key, prompt settings after a moment
 if (!getKey('claude')) {
-  setTimeout(() => document.getElementById('settings-overlay').classList.add('open'), 500);
+  setTimeout(() => document.getElementById('settings-overlay').classList.add('open'), 800);
 }
 </script>
 </body>
