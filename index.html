@@ -385,7 +385,7 @@ html, body {
 
 #graph-container {
   flex: 1;
-  min-height: 280px;
+  min-height: 400px;
   background: var(--surface);
   border-radius: 8px;
   border: 1px solid var(--border);
@@ -394,6 +394,73 @@ html, body {
 }
 
 #graph-container svg { width: 100%; height: 100%; }
+
+/* ── Graph zoom controls ── */
+#graph-zoom-controls {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 10;
+}
+
+.graph-ctrl-btn {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-family: var(--font-mono);
+  transition: all 0.15s;
+}
+
+.graph-ctrl-btn:hover { border-color: var(--text-dim); background: var(--border); }
+
+/* ── Spacing slider ── */
+#graph-spacing-wrap {
+  position: absolute;
+  bottom: 36px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 10;
+}
+
+#graph-spacing-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+}
+
+#graph-spacing {
+  width: 80px;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+#graph-spacing::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  background: var(--text-dim);
+  border-radius: 50%;
+  cursor: pointer;
+}
 
 #graph-legend {
   position: absolute;
@@ -1005,6 +1072,15 @@ html, body {
     <div id="term-cloud"></div>
     <div id="graph-container">
       <svg id="graph-svg"></svg>
+      <div id="graph-zoom-controls">
+        <button class="graph-ctrl-btn" id="graph-zoom-in" title="Zoom in">+</button>
+        <button class="graph-ctrl-btn" id="graph-zoom-out" title="Zoom out">−</button>
+        <button class="graph-ctrl-btn" id="graph-zoom-reset" title="Reset view" style="font-size:11px">&#x21BA;</button>
+      </div>
+      <div id="graph-spacing-wrap">
+        <span id="graph-spacing-label">Spacing</span>
+        <input type="range" id="graph-spacing" min="0.5" max="3" value="1" step="0.1">
+      </div>
       <div id="graph-tooltip">
         <div class="gt-label"></div>
         <div class="gt-desc"></div>
@@ -1644,17 +1720,62 @@ function buildGraph(data) {
   glowFilter.append('feGaussianBlur').attr('stdDeviation', '3').attr('result', 'blur');
   glowFilter.append('feMerge').selectAll('feMergeNode').data(['blur', 'SourceGraphic']).enter().append('feMergeNode').attr('in', d => d);
 
-  // Force simulation — dense Obsidian-style web with room for labels
+  // ── Zoom + Pan ──
+  const graphGroup = svg.append('g').attr('class', 'graph-group');
+  let currentZoomScale = 1;
+
+  const zoom = d3.zoom()
+    .scaleExtent([0.3, 5])
+    .on('zoom', (event) => {
+      graphGroup.attr('transform', event.transform);
+      currentZoomScale = event.transform.k;
+      // Edge labels become more visible when zoomed in
+      edgeLabelEls.attr('opacity', function() {
+        const pct = +this.getAttribute('data-pct');
+        if (pct > state.scrubber) return 0;
+        return currentZoomScale > 1.3 ? 0.85 : 0.4;
+      });
+      edgeLabelBgEls.attr('opacity', function() {
+        const pct = +this.getAttribute('data-pct');
+        if (pct > state.scrubber) return 0;
+        return currentZoomScale > 1.3 ? 0.7 : 0;
+      });
+    });
+
+  svg.call(zoom);
+
+  // Zoom button handlers
+  document.getElementById('graph-zoom-in').onclick = () => svg.transition().duration(300).call(zoom.scaleBy, 1.4);
+  document.getElementById('graph-zoom-out').onclick = () => svg.transition().duration(300).call(zoom.scaleBy, 0.7);
+  document.getElementById('graph-zoom-reset').onclick = () => svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity);
+
+  // ── Base force params ──
+  const baseLinkDist = 70;
+  const baseCharge = -120;
+  const baseCollision = 35;
+
+  // Force simulation
   graphSim = d3.forceSimulation(nodes)
-    .force('link', d3.forceLink(edges).id(d => d.id).distance(70).strength(1.2))
-    .force('charge', d3.forceManyBody().strength(-120))
+    .force('link', d3.forceLink(edges).id(d => d.id).distance(baseLinkDist).strength(1.2))
+    .force('charge', d3.forceManyBody().strength(baseCharge))
     .force('center', d3.forceCenter(w / 2, h / 2))
-    .force('collision', d3.forceCollide(35))
+    .force('collision', d3.forceCollide(baseCollision))
     .force('x', d3.forceX(w / 2).strength(0.04))
     .force('y', d3.forceY(h / 2).strength(0.04));
 
-  // Curved edges (paths instead of lines)
-  const edgeEls = svg.append('g').selectAll('path')
+  // ── Spacing slider ──
+  const spacingSlider = document.getElementById('graph-spacing');
+  spacingSlider.value = 1;
+  spacingSlider.oninput = () => {
+    const factor = parseFloat(spacingSlider.value);
+    graphSim.force('link').distance(baseLinkDist * factor);
+    graphSim.force('charge').strength(baseCharge * factor);
+    graphSim.force('collision').radius(baseCollision * factor);
+    graphSim.alpha(0.5).restart();
+  };
+
+  // ── Edges (curved paths) ──
+  const edgeEls = graphGroup.append('g').selectAll('path')
     .data(edges).enter().append('path')
     .attr('fill', 'none')
     .attr('stroke', 'var(--edge-color)')
@@ -1662,11 +1783,20 @@ function buildGraph(data) {
     .attr('opacity', 0)
     .attr('data-pct', d => d.appears_at_pct);
 
-  // Edge hover labels
-  const edgeLabelEls = svg.append('g').selectAll('text')
+  // ── Edge label backgrounds ──
+  const edgeLabelBgEls = graphGroup.append('g').selectAll('rect.edge-label-bg')
+    .data(edges).enter().append('rect')
+    .classed('edge-label-bg', true)
+    .attr('fill', 'var(--bg)')
+    .attr('opacity', 0)
+    .attr('rx', 2)
+    .attr('data-pct', d => d.appears_at_pct);
+
+  // ── Edge labels ──
+  const edgeLabelEls = graphGroup.append('g').selectAll('text')
     .data(edges).enter().append('text')
     .text(d => d.label || '')
-    .attr('font-size', 8)
+    .attr('font-size', 10)
     .attr('font-family', 'var(--font-mono)')
     .attr('fill', 'var(--text-dim)')
     .attr('text-anchor', 'middle')
@@ -1675,9 +1805,10 @@ function buildGraph(data) {
     .attr('pointer-events', 'none')
     .classed('edge-label', true);
 
+  // ── Nodes ──
   const nodeRadius = d => 7 + (d.weight || 0.5) * 9;
 
-  const nodeEls = svg.append('g').selectAll('circle')
+  const nodeEls = graphGroup.append('g').selectAll('circle')
     .data(nodes).enter().append('circle')
     .attr('r', nodeRadius)
     .attr('fill', d => colorMap[d.category] || 'var(--text-dim)')
@@ -1692,8 +1823,8 @@ function buildGraph(data) {
       .on('end', (e, d) => { if (!e.active) graphSim.alphaTarget(0); d.fx = null; d.fy = null; })
     );
 
-  // Label backgrounds for readability
-  const labelBgEls = svg.append('g').selectAll('rect.label-bg')
+  // ── Node label backgrounds ──
+  const labelBgEls = graphGroup.append('g').selectAll('rect.label-bg')
     .data(nodes).enter().append('rect')
     .classed('label-bg', true)
     .attr('fill', 'var(--bg)')
@@ -1701,7 +1832,8 @@ function buildGraph(data) {
     .attr('rx', 3)
     .attr('data-pct', d => d.appears_at_pct);
 
-  const labelEls = svg.append('g').selectAll('text.node-label')
+  // ── Node labels ──
+  const labelEls = graphGroup.append('g').selectAll('text.node-label')
     .data(nodes).enter().append('text')
     .classed('node-label', true)
     .text(d => d.label)
@@ -1715,7 +1847,7 @@ function buildGraph(data) {
     .attr('data-pct', d => d.appears_at_pct)
     .attr('pointer-events', 'none');
 
-  // Tooltip
+  // ── Tooltip ──
   const tooltip = document.getElementById('graph-tooltip');
   nodeEls.on('mouseover', (e, d) => {
     tooltip.querySelector('.gt-label').textContent = d.label;
@@ -1732,6 +1864,7 @@ function buildGraph(data) {
     edgeEls.attr('stroke', 'var(--edge-color)');
   });
 
+  // ── Tick ──
   graphSim.on('tick', () => {
     // Curved edges — quadratic bezier with slight arc
     edgeEls.attr('d', d => {
@@ -1740,12 +1873,19 @@ function buildGraph(data) {
       const dr = Math.sqrt(dx * dx + dy * dy) * 1.2;
       return `M${d.source.x},${d.source.y}A${dr},${dr} 0 0,1 ${d.target.x},${d.target.y}`;
     });
+    // Edge label positions (midpoint of arc)
     edgeLabelEls
       .attr('x', d => (d.source.x + d.target.x) / 2)
       .attr('y', d => (d.source.y + d.target.y) / 2);
+    // Edge label backgrounds
+    edgeLabelEls.each(function(d, i) {
+      const bbox = this.getBBox();
+      const bg = edgeLabelBgEls.filter((_, j) => j === i);
+      bg.attr('x', bbox.x - 2).attr('y', bbox.y - 1).attr('width', bbox.width + 4).attr('height', bbox.height + 2);
+    });
     nodeEls.attr('cx', d => d.x).attr('cy', d => d.y);
     labelEls.attr('x', d => d.x).attr('y', d => d.y);
-    // Position label backgrounds
+    // Node label backgrounds
     labelEls.each(function(d, i) {
       const bbox = this.getBBox();
       const bg = labelBgEls.filter((_, j) => j === i);
@@ -1811,16 +1951,29 @@ function updateScrubber(val) {
   });
 
   // Graph nodes, edges, labels
-  d3.select('#graph-svg').selectAll('[data-pct]').each(function() {
+  d3.select('#graph-svg .graph-group').selectAll('[data-pct]').each(function() {
     const pct = +this.getAttribute('data-pct');
     const visible = pct <= val;
     const el = d3.select(this);
     const isEdgeLabel = el.classed('edge-label');
+    const isEdgeLabelBg = el.classed('edge-label-bg');
     const isLabelBg = el.classed('label-bg');
-    // Edge labels at low opacity, label backgrounds semi-transparent
-    const targetOpacity = visible ? (isEdgeLabel ? 0.5 : isLabelBg ? 0.75 : 1) : 0;
+    // Edge labels: dim by default, brighter when zoomed in (handled by zoom callback)
+    // Edge label bgs: hidden by default, visible when zoomed
+    let targetOpacity;
+    if (!visible) {
+      targetOpacity = 0;
+    } else if (isEdgeLabel) {
+      targetOpacity = 0.4;
+    } else if (isEdgeLabelBg) {
+      targetOpacity = 0;
+    } else if (isLabelBg) {
+      targetOpacity = 0.75;
+    } else {
+      targetOpacity = 1;
+    }
     el.transition().duration(150).attr('opacity', targetOpacity);
-    // Glow on nodes that just appeared (within 10% window)
+    // Glow on nodes that just appeared (within 15% window)
     if (this.tagName === 'circle' && visible && pct > val - 15) {
       el.attr('filter', 'url(#node-glow)');
     } else if (this.tagName === 'circle') {
