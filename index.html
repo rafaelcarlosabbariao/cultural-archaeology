@@ -31,8 +31,8 @@
   --surface: #F0EDE8;
   --surface-2: #E8E4DE;
   --border: #D9D3CB;
-  --edge-color: rgba(0,0,0,0.12);
-  --edge-hover: rgba(0,0,0,0.35);
+  --edge-color: rgba(0,0,0,0.2);
+  --edge-hover: rgba(0,0,0,0.45);
   --node-stroke: #FAFAF8;
 }
 
@@ -43,8 +43,8 @@
   --surface: #161412;
   --surface-2: #1e1b18;
   --border: #2a2520;
-  --edge-color: rgba(255,255,255,0.1);
-  --edge-hover: rgba(255,255,255,0.3);
+  --edge-color: rgba(255,255,255,0.18);
+  --edge-hover: rgba(255,255,255,0.4);
   --node-stroke: #0a0908;
 }
 
@@ -303,6 +303,22 @@ html, body {
 }
 
 #memory-btn:hover { color: var(--text); border-color: var(--text-dim); }
+
+#new-search-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+#new-search-btn:hover { color: var(--signal); border-color: var(--signal); }
 
 /* ── MAIN AREA ── */
 #main {
@@ -721,14 +737,10 @@ html, body {
 .concept-term {
   border-bottom: 1px dotted var(--text-dim);
   cursor: help;
-  position: relative;
 }
 
-.concept-tooltip {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
+#concept-tooltip-floater {
+  position: fixed;
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -737,15 +749,18 @@ html, body {
   line-height: 1.6;
   color: var(--text);
   width: 280px;
-  z-index: 1000;
+  z-index: 9999;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s;
+  transition: opacity 0.15s;
   font-style: normal;
   font-family: var(--font-mono);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  left: 0;
+  top: 0;
 }
 
-.concept-term:hover .concept-tooltip { opacity: 1; }
+#concept-tooltip-floater.visible { opacity: 1; }
 
 /* ── SETTINGS MODAL ── */
 #settings-overlay {
@@ -957,6 +972,7 @@ html, body {
 <!-- ═══ TOP BAR ═══ -->
 <div id="top-bar">
   <div id="logo">McWhy</div>
+  <button id="new-search-btn" title="Start new search">+ New search</button>
   <div id="input-wrap">
     <input id="signal-input" type="text" placeholder="Why is aura-farming everywhere?" autocomplete="off">
     <span id="signal-type-badge"></span>
@@ -1050,6 +1066,7 @@ html, body {
         <button class="graph-ctrl-btn" id="graph-zoom-in" title="Zoom in">+</button>
         <button class="graph-ctrl-btn" id="graph-zoom-out" title="Zoom out">−</button>
         <button class="graph-ctrl-btn" id="graph-zoom-reset" title="Reset view" style="font-size:11px">&#x21BA;</button>
+        <button class="graph-ctrl-btn" id="graph-export" title="Save as PNG" style="font-size:13px">&#x2913;</button>
       </div>
       <div id="graph-spacing-wrap">
         <span id="graph-spacing-label">Spacing</span>
@@ -1079,6 +1096,9 @@ html, body {
 </div>
 
 </div><!-- /app -->
+
+<!-- ═══ CONCEPT TOOLTIP FLOATER (singleton) ═══ -->
+<div id="concept-tooltip-floater"></div>
 
 <!-- ═══ MEMORY DROPDOWN ═══ -->
 <div id="memory-dropdown">
@@ -1561,8 +1581,8 @@ function wrapConcepts(text) {
   for (const term of terms) {
     const regex = new RegExp(`\\b(${escRegex(term)})\\b`, 'gi');
     html = html.replace(regex, (match) => {
-      const tip = esc(state.conceptTooltips[term]);
-      return `<span class="concept-term">${match}<span class="concept-tooltip">${tip}</span></span>`;
+      const tip = esc(state.conceptTooltips[term]).replace(/"/g, '&quot;');
+      return `<span class="concept-term" data-tooltip="${tip}">${match}</span>`;
     });
   }
   return html;
@@ -1800,7 +1820,7 @@ function buildGraph(data) {
     .data(edges).enter().append('path')
     .attr('fill', 'none')
     .attr('stroke', 'var(--edge-color)')
-    .attr('stroke-width', d => Math.max(1, (d.weight || 0.5) * 2.5))
+    .attr('stroke-width', d => Math.max(1.5, (d.weight || 0.5) * 4))
     .attr('opacity', 0)
     .attr('data-pct', d => d.appears_at_pct);
 
@@ -2139,6 +2159,103 @@ document.addEventListener('click', (e) => {
 document.getElementById('copy-btn').addEventListener('click', copyReport);
 
 // ══════════════════════════════════════════════
+// GRAPH EXPORT (PNG snapshot of current state)
+// ══════════════════════════════════════════════
+function inlineComputedStyles(svgEl, styles) {
+  const varNames = ['--bg', '--text', '--text-dim', '--border', '--surface', '--surface-2',
+    '--signal', '--counter', '--science', '--social', '--economic', '--platform', '--cultural',
+    '--counter-node', '--edge-color', '--edge-hover', '--node-stroke'];
+  const varMap = {};
+  varNames.forEach(v => { varMap[`var(${v})`] = styles.getPropertyValue(v).trim(); });
+  svgEl.querySelectorAll('*').forEach(el => {
+    ['fill', 'stroke'].forEach(attr => {
+      const val = el.getAttribute(attr);
+      if (val && varMap[val]) el.setAttribute(attr, varMap[val]);
+    });
+  });
+}
+
+document.getElementById('graph-export').addEventListener('click', () => {
+  const svgEl = document.getElementById('graph-svg');
+  const container = document.getElementById('graph-container');
+  const w = container.clientWidth;
+  const h = container.clientHeight;
+
+  const clone = svgEl.cloneNode(true);
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  clone.setAttribute('width', w);
+  clone.setAttribute('height', h);
+
+  const styles = getComputedStyle(document.documentElement);
+  const bgColor = styles.getPropertyValue('--bg').trim();
+
+  // Background rect first child
+  const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  bgRect.setAttribute('width', w);
+  bgRect.setAttribute('height', h);
+  bgRect.setAttribute('fill', bgColor);
+  clone.insertBefore(bgRect, clone.firstChild);
+
+  inlineComputedStyles(clone, styles);
+
+  const svgString = new XMLSerializer().serializeToString(clone);
+  const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+
+  const img = new Image();
+  img.onload = () => {
+    const scale = 2;
+    const canvas = document.createElement('canvas');
+    canvas.width = w * scale;
+    canvas.height = h * scale;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(scale, scale);
+    ctx.drawImage(img, 0, 0);
+    URL.revokeObjectURL(url);
+    canvas.toBlob((pngBlob) => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(pngBlob);
+      a.download = `mcwhy-graph-${Date.now()}.png`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }, 'image/png');
+  };
+  img.onerror = (e) => { console.error('Export failed:', e); URL.revokeObjectURL(url); };
+  img.src = url;
+});
+
+// ══════════════════════════════════════════════
+// CONCEPT TOOLTIP FLOATER (delegated)
+// ══════════════════════════════════════════════
+const conceptFloater = document.getElementById('concept-tooltip-floater');
+
+document.addEventListener('mouseover', (e) => {
+  const term = e.target.closest('.concept-term');
+  if (!term) return;
+  conceptFloater.textContent = term.dataset.tooltip || '';
+  conceptFloater.classList.add('visible');
+  // Measure off-screen first
+  conceptFloater.style.left = '0px';
+  conceptFloater.style.top = '0px';
+  const fRect = conceptFloater.getBoundingClientRect();
+  const rect = term.getBoundingClientRect();
+  let left = rect.left + rect.width / 2 - fRect.width / 2;
+  let top = rect.top - fRect.height - 8;
+  // Clamp horizontal to viewport
+  if (left < 8) left = 8;
+  if (left + fRect.width > window.innerWidth - 8) left = window.innerWidth - fRect.width - 8;
+  // Flip below if off-screen top
+  if (top < 8) top = rect.bottom + 8;
+  conceptFloater.style.left = left + 'px';
+  conceptFloater.style.top = top + 'px';
+});
+
+document.addEventListener('mouseout', (e) => {
+  const term = e.target.closest('.concept-term');
+  if (term) conceptFloater.classList.remove('visible');
+});
+
+// ══════════════════════════════════════════════
 // LANDING SCREEN
 // ══════════════════════════════════════════════
 document.getElementById('landing-input').addEventListener('keydown', (e) => {
@@ -2146,6 +2263,19 @@ document.getElementById('landing-input').addEventListener('keydown', (e) => {
     const q = e.target.value.trim();
     if (q) revealApp(q);
   }
+});
+
+document.getElementById('new-search-btn').addEventListener('click', () => {
+  stopPlayback();
+  document.getElementById('app').classList.remove('active');
+  document.getElementById('landing').classList.remove('hidden');
+  document.getElementById('landing-input').value = '';
+  document.getElementById('landing-input').focus();
+  document.getElementById('signal-input').value = '';
+  document.getElementById('signal-type-badge').style.display = 'none';
+  state.data = null;
+  state.scrubber = 0;
+  state.ungrounded = false;
 });
 
 document.getElementById('landing-settings-btn').addEventListener('click', () => {
