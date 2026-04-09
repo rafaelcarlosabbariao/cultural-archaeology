@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -1141,11 +1142,54 @@ const state = {
 function getKey(name) { return localStorage.getItem('mcwhy_' + name) || ''; }
 function setKey(name, val) { localStorage.setItem('mcwhy_' + name, val); }
 
+// ── Supabase (Phase 2 CulturalEvent store) ──────────────
+const SUPABASE_URL = 'https://qqakimheqsqomeftdekm.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFxYWtpbWhlcXNxb21lZnRkZWttIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNjk5MDgsImV4cCI6MjA5MDc0NTkwOH0.nZ5OH5LXDixoyo9X4tjOfxsjLZMd7-c0dt_tpaRQ88c';
+const sb = (window.supabase && window.supabase.createClient)
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+
+function yearOf(node) {
+  const m = String(node?.date || '').match(/\d{4}/);
+  return m ? parseInt(m[0], 10) : null;
+}
+
+async function persistCulturalEvent(question, data, trendsSeries) {
+  if (!sb) return { skipped: true };
+  const row = {
+    question,
+    signal: data.signal_extracted || question,
+    signal_type: data.signal_type || null,
+    first_emergence_year: yearOf(data?.adoption_timeline?.first_emergence),
+    inflection_year: yearOf(data?.adoption_timeline?.inflection_point),
+    mainstream_year: yearOf(data?.adoption_timeline?.mainstream_crossing),
+    counter_signal_pct: data?.counter_signal?.strength_pct ?? null,
+    full_analysis: data,
+    trends_series: trendsSeries || null,
+  };
+  try {
+    const { data: inserted, error } = await sb
+      .from('cultural_events')
+      .insert(row)
+      .select('id')
+      .single();
+    if (error) throw error;
+    return { id: inserted.id };
+  } catch (err) {
+    console.warn('[mcwhy] supabase insert failed:', err.message || err);
+    return { error: String(err.message || err) };
+  }
+}
+
 function saveAnalysis(question, data) {
   const analyses = JSON.parse(localStorage.getItem('mcwhy_analyses') || '{}');
   analyses[question] = { data, timestamp: Date.now() };
   localStorage.setItem('mcwhy_analyses', JSON.stringify(analyses));
   refreshMemoryList();
+  // Fire-and-forget Supabase persistence; localStorage is the offline fallback.
+  persistCulturalEvent(question, data).then((res) => {
+    if (res?.id) console.log('[mcwhy] saved to Supabase as event #' + res.id);
+  });
 }
 
 function getAnalyses() {
