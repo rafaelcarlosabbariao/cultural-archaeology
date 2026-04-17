@@ -21,6 +21,7 @@
   --platform: #1a6ea8;
   --cultural: #1D9E75;
   --counter-node: #888780;
+  --gap: #b23a48;
   --font-display: 'Playfair Display', Georgia, serif;
   --font-mono: 'DM Mono', 'Courier New', monospace;
 }
@@ -658,16 +659,49 @@ html, body {
 
 .counter-card h3 { color: var(--counter); }
 
-#counter-strength-bar {
+.gap-card { border-color: var(--gap); }
+.gap-card h3 { color: var(--gap); }
+.gap-section { margin-top: 10px; }
+.gap-section .gap-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  display: block;
+  margin-bottom: 3px;
+}
+.gap-reframe {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-left: 3px solid var(--gap);
+  background: var(--surface);
+  font-family: var(--font-display);
+  font-size: 15px;
+  line-height: 1.45;
+  font-style: italic;
+  color: var(--text);
+}
+.counter-tier { margin-top: 10px; }
+.counter-tier + .counter-tier { padding-top: 12px; border-top: 1px dashed var(--border); }
+.counter-tier-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--counter);
+  display: block;
+  margin-bottom: 4px;
+}
+.counter-strength-bar {
   width: 100%;
   height: 6px;
   background: var(--surface-2);
   border-radius: 3px;
-  margin-top: 8px;
+  margin-top: 6px;
   overflow: hidden;
 }
-
-#counter-strength-fill {
+.counter-strength-fill {
   height: 100%;
   background: var(--counter);
   border-radius: 3px;
@@ -1024,6 +1058,11 @@ html, body {
         <div id="anchor-content"></div>
       </div>
 
+      <div class="report-card gap-card" id="card-gap">
+        <h3>The Gap</h3>
+        <div id="gap-content"></div>
+      </div>
+
       <div class="report-card" id="card-virality">
         <h3>Virality Mechanism</h3>
         <div id="virality-content"></div>
@@ -1037,7 +1076,6 @@ html, body {
       <div class="report-card counter-card" id="card-counter">
         <h3>Counter-Signal</h3>
         <div id="counter-content"></div>
-        <div id="counter-strength-bar"><div id="counter-strength-fill"></div></div>
       </div>
 
       <div class="report-card" id="card-detectors">
@@ -1163,7 +1201,16 @@ async function persistCulturalEvent(question, data, trendsSeries) {
     first_emergence_year: yearOf(data?.adoption_timeline?.first_emergence),
     inflection_year: yearOf(data?.adoption_timeline?.inflection_point),
     mainstream_year: yearOf(data?.adoption_timeline?.mainstream_crossing),
-    counter_signal_pct: data?.counter_signal?.strength_pct ?? null,
+    counter_signal_pct: (() => {
+      const cs = data?.counter_signal;
+      if (!cs) return null;
+      if (cs.within_frame || cs.exit) {
+        const wf = Number(cs.within_frame?.strength_pct) || 0;
+        const ex = Number(cs.exit?.strength_pct) || 0;
+        return Math.max(wf, ex) || null;
+      }
+      return cs.strength_pct ?? null;
+    })(),
     full_analysis: data,
     trends_series: trendsSeries || null,
   };
@@ -1298,6 +1345,28 @@ async function braveSearch(signal) {
 // ══════════════════════════════════════════════
 const SYSTEM_PROMPT = `You are McWhy — a reverse cultural simulation engine. You perform cultural archaeology: given a natural language question about a cultural trend, behavior, or shift, you trace it backward through time to explain when it appeared, how it spread, why it moved the way it did, and what socioeconomic conditions made the ground fertile.
 
+THE SEMIOTIC METHOD — NON-NEGOTIABLE THREE MOVES
+
+Every analysis must complete all three moves. The Five Disciplinary Avenues below supply the evidence that powers these moves, but the moves themselves are the frame. A report that stops at move two is cultural journalism. A report that completes move three is cultural archaeology.
+
+MOVE 1 — DECODE THE SIGN
+What is the cultural object signaling? What myth does it promise to the participants and audience?
+
+MOVE 2 — NAME THE CODE
+What rule set produces this sign? Who benefits from the code remaining invisible?
+
+MOVE 3 — EXPOSE THE GAP
+The distance between sign promise and system delivery. This is the counterposition. This is the hook. Move three produces THREE explicit statements:
+  a. SIGN PROMISE — what the phenomenon claims to deliver, stated in the phenomenon's own language.
+  b. SYSTEM DELIVERY — what the system functionally delivers, measured in outcomes (earnings, status, security, mobility, attention), cited against distributional data where available.
+  c. GAP REFRAME — the specific distance between (a) and (b), stated in the form: "X is not replacing Y. X is replacing [what Y used to route to]." Audiences were not buying the sign; they were buying proximity to what the sign obscured.
+
+SELF-CHECK before emitting JSON:
+  • Does the report produce a counterposition, or only a description?
+  • Does the pull_quote express the gap, or does it sympathize with the phenomenon?
+  • Would a critic of the phenomenon recognize the analysis as adversarial to the sign, or as a more sophisticated version of the sign's own rhetoric?
+If any answer is unclear, the gap is not exposed. Redo move three before emitting.
+
 You analyze through Five Disciplinary Avenues, tracing from macroscopic societal impact down to microscopic origins:
 
 1. NETWORK SCIENCE AND MACRO-TOPOLOGIES
@@ -1323,7 +1392,12 @@ Key citations: Epstein & Axtell (1996); Epstein (1999); Axelrod (1997).
 RULES:
 - Extract the cultural signal from the user's natural language question
 - Apply all Five Disciplinary Avenues retroactively to the signal
+- Complete all three semiotic moves. Move 3 (expose the gap) is non-negotiable and must produce sign_promise, system_delivery, and a gap_reframe in the "X is not replacing Y. X is replacing [what Y used to route to]" form
 - Ground every virality mechanism claim in a specific scientific citation
+- MANDATORY PAIRED CITATIONS — when the phenomenon involves networked cultural markets (creators, influencers, content economies, attention markets, fame dynamics), cite BOTH Centola (2010) for adoption mechanism AND Salganik / Dodds / Watts (2006) for outcome distribution. Centola alone explains adoption without distribution; Salganik alone explains distribution without adoption. Both are required for a complete mechanism
+- IDENTITY LAYER CHECK — distinguish informational adoption (following for signal value: what I learn) from identity-performative adoption (following for identity value: who following them signals me to be). Most modern phenomena operate on both layers. Cite Van Bavel / Packer when identity-performative adoption is present
+- TWO-TIER COUNTER-SIGNAL — every analysis must produce both a within-frame counter-signal (backlash inside the phenomenon's logic, e.g., authenticity wars inside influencer culture) AND an exit counter-signal (structural moves that abandon the frame, usually by reconstructing the institutional form the phenomenon was supposed to disrupt — e.g., paid newsletters, private Discords, cohort courses reconstructing credentialing). Exit is usually more interesting and frequently missed; force the analysis to find it. Both tiers are required; no null or N/A values
+- CAPITAL INFRASTRUCTURE BEAT — for phenomena that scale through platforms, the adoption timeline must name when institutional capital (VC, platform funding, creator funds, subscription infrastructure) got built that enabled the mainstream phase. Pure algorithmic/cultural timelines are incomplete for financed phenomena
 - Find cultural artifacts (film, music, literature, art) that detected the mechanism BEFORE the data arrived — cultural detectors that sensed the shift before it had a name
 - Include concept_tooltips: for every academic term, framework name, or named theory you mention in any field, provide a 2-3 sentence plain-language explanation that a non-academic could understand
 - Return ONLY valid JSON. No markdown fences. No preamble. No explanation outside the JSON.
@@ -1333,9 +1407,19 @@ OUTPUT SCHEMA (return exactly this structure):
   "one_line": "The whole signal in one sentence.",
   "signal_extracted": "The cultural signal extracted from the question.",
   "signal_type": "lexical | behavioral | consumption",
+  "semiotic_analysis": {
+    "sign_decoded": "Move 1 — what the phenomenon is signaling; the myth it promises.",
+    "code_named": "Move 2 — the rule set producing the sign; who benefits from the code staying invisible.",
+    "gap_exposed": {
+      "sign_promise": "What the phenomenon claims to deliver, in its own language.",
+      "system_delivery": "What the system functionally delivers, measured in outcomes with distributional data.",
+      "gap_reframe": "X is not replacing Y. X is replacing [what Y used to route to]."
+    }
+  },
   "adoption_timeline": {
     "first_emergence": { "date": "~YYYY", "description": "..." },
     "inflection_point": { "date": "~YYYY", "description": "..." },
+    "capital_infrastructure": { "date": "~YYYY", "description": "VC / platform funding / creator-fund beat that enabled mainstream scale; null only for non-financed phenomena" },
     "mainstream_crossing": { "date": "~YYYY", "description": "..." },
     "current_status": "..."
   },
@@ -1351,7 +1435,13 @@ OUTPUT SCHEMA (return exactly this structure):
     "type": "complex contagion | simple contagion",
     "speed": "rapid | gradual | staged",
     "scientific_basis": "...",
-    "citation": "..."
+    "adoption_citation": "Citation for adoption mechanism (Centola 2010 for cultural markets)",
+    "distribution_citation": "Salganik / Dodds / Watts (2006) for cultural-market outcome distribution; null only if phenomenon is not a networked cultural market",
+    "identity_layer": {
+      "informational": "Signal value — what followers learn or gain informationally.",
+      "identity_performative": "Identity value — who following them signals the follower to be.",
+      "citation": "Van Bavel / Packer (or equivalent) when identity-performative adoption is present; null if not"
+    }
   },
   "framework_analysis": {
     "network_science": "...",
@@ -1361,10 +1451,18 @@ OUTPUT SCHEMA (return exactly this structure):
     "generative_social_science": "..."
   },
   "counter_signal": {
-    "name": "...",
-    "description": "...",
-    "strength_pct": 0,
-    "status": "not yet forming | forming in subcultures | visible counter-movement | dominant counter-signal"
+    "within_frame": {
+      "name": "Backlash operating inside the phenomenon's logic (e.g., authenticity wars inside influencer culture).",
+      "description": "...",
+      "strength_pct": 0,
+      "status": "not yet forming | forming in subcultures | visible counter-movement | dominant counter-signal"
+    },
+    "exit": {
+      "name": "Structural exit — abandoning the frame, usually by reconstructing the institutional form the phenomenon disrupted (e.g., paid/gated communities reconstructing credentialing).",
+      "description": "...",
+      "strength_pct": 0,
+      "status": "not yet forming | forming in subcultures | visible counter-movement | dominant counter-signal"
+    }
   },
   "cultural_detectors": [
     { "type": "film | music | literature | art | other", "title": "...", "year": "YYYY", "description": "..." }
@@ -1397,7 +1495,8 @@ IMPORTANT:
 - Include at least 8 concept_tooltips for the most important academic terms used
 - Include at least 5 event_log entries at different time positions
 - Include at least 5 related_terms
-- counter_signal.strength_pct should be 0-100`;
+- Both counter_signal.within_frame.strength_pct and counter_signal.exit.strength_pct should be 0-100
+- pull_quote must express the gap_reframe, not sympathize with the phenomenon. Adversarial posture to the sign is the McWhy voice. A sympathetic pull quote means move three was not completed`;
 
 // ══════════════════════════════════════════════
 // CLAUDE API CALL
@@ -1523,10 +1622,13 @@ function renderReport(data) {
 
   // Timeline
   const tl = data.adoption_timeline || {};
+  const ci = tl.capital_infrastructure;
+  const hasCI = ci && (ci.date || ci.description);
   document.getElementById('timeline-content').innerHTML = `
     <ul>
       ${tl.first_emergence ? `<li><strong style="color:var(--signal)">First emergence</strong> ${tl.first_emergence.date} — ${wrapConcepts(tl.first_emergence.description)}</li>` : ''}
       ${tl.inflection_point ? `<li><strong style="color:var(--signal)">Inflection</strong> ${tl.inflection_point.date} — ${wrapConcepts(tl.inflection_point.description)}</li>` : ''}
+      ${hasCI ? `<li><strong style="color:var(--economic)">Capital infrastructure</strong> ${ci.date || ''} — ${wrapConcepts(ci.description || '')}</li>` : ''}
       ${tl.mainstream_crossing ? `<li><strong style="color:var(--signal)">Mainstream</strong> ${tl.mainstream_crossing.date} — ${wrapConcepts(tl.mainstream_crossing.description)}</li>` : ''}
       ${tl.current_status ? `<li><strong style="color:var(--text-dim)">Current</strong> ${wrapConcepts(tl.current_status)}</li>` : ''}
     </ul>`;
@@ -1548,14 +1650,37 @@ function renderReport(data) {
     ${(anc.supporting || []).length ? `<ul>${anc.supporting.map(s => `<li>${wrapConcepts(s)}</li>`).join('')}</ul>` : ''}
     ${anc.evidence ? `<p style="color:var(--text-dim);font-size:12px;margin-top:8px">${wrapConcepts(anc.evidence)}</p>` : ''}`;
 
+  // Gap (semiotic method — move 3)
+  const sem = data.semiotic_analysis || {};
+  const ge = sem.gap_exposed || {};
+  const hasGap = sem.sign_decoded || sem.code_named || ge.sign_promise || ge.system_delivery || ge.gap_reframe;
+  document.getElementById('gap-content').innerHTML = hasGap ? `
+    ${sem.sign_decoded ? `<div class="gap-section"><span class="gap-label">Sign decoded</span><p>${wrapConcepts(sem.sign_decoded)}</p></div>` : ''}
+    ${sem.code_named ? `<div class="gap-section"><span class="gap-label">Code named</span><p>${wrapConcepts(sem.code_named)}</p></div>` : ''}
+    ${ge.sign_promise ? `<div class="gap-section"><span class="gap-label">Sign promise</span><p>${wrapConcepts(ge.sign_promise)}</p></div>` : ''}
+    ${ge.system_delivery ? `<div class="gap-section"><span class="gap-label">System delivery</span><p>${wrapConcepts(ge.system_delivery)}</p></div>` : ''}
+    ${ge.gap_reframe ? `<div class="gap-reframe">${wrapConcepts(ge.gap_reframe)}</div>` : ''}
+  ` : '<p style="color:var(--text-dim);font-size:12px">Gap exposure not computed — pre-fix analysis.</p>';
+
   // Virality
   const vm = data.virality_mechanism || {};
   const badgeClass = (vm.type || '').includes('complex') ? 'complex' : 'simple';
+  const idl = vm.identity_layer || {};
+  const hasIdentity = idl.informational || idl.identity_performative;
+  const adoptionCite = vm.adoption_citation || vm.citation;
   document.getElementById('virality-content').innerHTML = `
     <p><span class="mechanism-badge ${badgeClass}">${esc(vm.type || 'unknown')}</span>
     <span style="color:var(--text-dim)">${esc(vm.speed || '')}</span></p>
     <p style="margin-top:8px">${wrapConcepts(vm.scientific_basis || '')}</p>
-    ${vm.citation ? `<p style="color:var(--science);font-size:11px;margin-top:6px">${esc(vm.citation)}</p>` : ''}`;
+    ${adoptionCite ? `<p style="color:var(--science);font-size:11px;margin-top:6px"><strong>Adoption:</strong> ${esc(adoptionCite)}</p>` : ''}
+    ${vm.distribution_citation ? `<p style="color:var(--science);font-size:11px;margin-top:2px"><strong>Distribution:</strong> ${esc(vm.distribution_citation)}</p>` : ''}
+    ${hasIdentity ? `
+      <div style="margin-top:10px;padding-top:8px;border-top:1px dashed var(--border)">
+        <span class="gap-label" style="color:var(--text-dim)">Identity layer</span>
+        ${idl.informational ? `<p style="margin-top:4px;font-size:12px"><strong>Informational:</strong> ${wrapConcepts(idl.informational)}</p>` : ''}
+        ${idl.identity_performative ? `<p style="margin-top:4px;font-size:12px"><strong>Identity-performative:</strong> ${wrapConcepts(idl.identity_performative)}</p>` : ''}
+        ${idl.citation ? `<p style="color:var(--science);font-size:11px;margin-top:4px">${esc(idl.citation)}</p>` : ''}
+      </div>` : ''}`;
 
   // Framework
   const fw = data.framework_analysis || {};
@@ -1578,13 +1703,25 @@ function renderReport(data) {
     </div>`
   ).join('');
 
-  // Counter-signal
-  const cs = data.counter_signal || {};
-  document.getElementById('counter-content').innerHTML = `
-    <p><strong>${esc(cs.name || 'Unknown')}</strong></p>
-    <p style="margin-top:6px">${wrapConcepts(cs.description || '')}</p>
-    <p style="color:var(--counter);font-size:11px;margin-top:6px">${esc(cs.status || '')}</p>`;
-  document.getElementById('counter-strength-fill').style.width = (cs.strength_pct || 0) + '%';
+  // Counter-signal (two-tier: within-frame + exit)
+  const csRaw = data.counter_signal || {};
+  // Backward-compat: old flat shape { name, description, strength_pct, status } → coerce to within_frame
+  const cs = (csRaw.within_frame || csRaw.exit)
+    ? csRaw
+    : { within_frame: csRaw, exit: null };
+  const renderTier = (tier, label) => {
+    if (!tier || !(tier.name || tier.description)) return '';
+    return `
+      <div class="counter-tier">
+        <span class="counter-tier-label">${label}</span>
+        <p><strong>${esc(tier.name || 'Unknown')}</strong></p>
+        ${tier.description ? `<p style="margin-top:6px">${wrapConcepts(tier.description)}</p>` : ''}
+        ${tier.status ? `<p style="color:var(--counter);font-size:11px;margin-top:6px">${esc(tier.status)}</p>` : ''}
+        <div class="counter-strength-bar"><div class="counter-strength-fill" style="width:${Number(tier.strength_pct) || 0}%"></div></div>
+      </div>`;
+  };
+  const counterHtml = renderTier(cs.within_frame, 'Within-frame') + renderTier(cs.exit, 'Exit');
+  document.getElementById('counter-content').innerHTML = counterHtml || '<p style="color:var(--text-dim);font-size:12px">No counter-signal identified.</p>';
 
   // Cultural detectors
   const cd = data.cultural_detectors || [];
@@ -2103,12 +2240,20 @@ function stopPlayback() {
 function copyReport() {
   if (!state.data) return;
   const d = state.data;
+  const sem = d.semiotic_analysis || {};
+  const ge = sem.gap_exposed || {};
+  const csRaw = d.counter_signal || {};
+  const cs = (csRaw.within_frame || csRaw.exit) ? csRaw : { within_frame: csRaw, exit: null };
+  const tierLine = (tier, label) => tier && (tier.name || tier.description)
+    ? `[${label}] ${tier.name || ''}${tier.description ? `: ${tier.description}` : ''}`
+    : '';
   const lines = [
     d.one_line,
     '',
     '— ADOPTION TIMELINE —',
     d.adoption_timeline?.first_emergence ? `First emergence: ${d.adoption_timeline.first_emergence.date} — ${d.adoption_timeline.first_emergence.description}` : '',
     d.adoption_timeline?.inflection_point ? `Inflection: ${d.adoption_timeline.inflection_point.date} — ${d.adoption_timeline.inflection_point.description}` : '',
+    d.adoption_timeline?.capital_infrastructure && (d.adoption_timeline.capital_infrastructure.date || d.adoption_timeline.capital_infrastructure.description) ? `Capital infrastructure: ${d.adoption_timeline.capital_infrastructure.date || ''} — ${d.adoption_timeline.capital_infrastructure.description || ''}` : '',
     d.adoption_timeline?.mainstream_crossing ? `Mainstream: ${d.adoption_timeline.mainstream_crossing.date} — ${d.adoption_timeline.mainstream_crossing.description}` : '',
     d.adoption_timeline?.current_status ? `Current: ${d.adoption_timeline.current_status}` : '',
     '',
@@ -2116,13 +2261,22 @@ function copyReport() {
     d.socioeconomic_anchor?.primary || '',
     ...(d.socioeconomic_anchor?.supporting || []),
     '',
+    '— THE GAP —',
+    sem.sign_decoded ? `Sign decoded: ${sem.sign_decoded}` : '',
+    sem.code_named ? `Code named: ${sem.code_named}` : '',
+    ge.sign_promise ? `Sign promise: ${ge.sign_promise}` : '',
+    ge.system_delivery ? `System delivery: ${ge.system_delivery}` : '',
+    ge.gap_reframe ? `Gap reframe: ${ge.gap_reframe}` : '',
+    '',
     '— VIRALITY MECHANISM —',
     `${d.virality_mechanism?.type || ''} (${d.virality_mechanism?.speed || ''})`,
     d.virality_mechanism?.scientific_basis || '',
-    d.virality_mechanism?.citation || '',
+    d.virality_mechanism?.adoption_citation || d.virality_mechanism?.citation || '',
+    d.virality_mechanism?.distribution_citation ? `Distribution: ${d.virality_mechanism.distribution_citation}` : '',
     '',
     '— COUNTER-SIGNAL —',
-    `${d.counter_signal?.name || ''}: ${d.counter_signal?.description || ''}`,
+    tierLine(cs.within_frame, 'Within-frame'),
+    tierLine(cs.exit, 'Exit'),
     '',
     '— PULL QUOTE —',
     d.pull_quote || ''
