@@ -1,12 +1,12 @@
-// GET /.netlify/functions/tiktok?country=US&period=7
-// Pulls trending hashtags + sounds from TikTok.
+// GET /.netlify/functions/tiktok?country=US&limit=40
+// Pulls TikTok trending hashtags + sounds, tallied from the regional "feed" stream.
 //
-// Two possible sources, in priority order:
-//   1. Apify (reliable, paid) — activates if APIFY_TOKEN env var is set.
-//      Uses the `clockworks/tiktok-scraper` actor via run-sync.
-//   2. TikTok Creative Center radar endpoints — free but currently locked
-//      down server-side (returns 40101 "no permission" from datacenter IPs).
-//      Kept as a best-effort fallback in case they re-open it.
+// Sources, in priority order:
+//   1. tikwm.com — community-run reverse-engineered proxy. Free, no auth, ~1 req/s.
+//      This is the OSS-spirited path: wraps the same techniques as
+//      davidteather/TikTok-Api, but hosted so we don't need Playwright on Netlify.
+//   2. Apify `clockworks/tiktok-scraper` — activates if APIFY_TOKEN env var is set.
+//      Paid (~$0.30/1k results), most reliable.
 //
 // Graceful failure: empty lists + informative error with 200.
 
@@ -16,15 +16,109 @@ const cors = {
   "Content-Type": "application/json",
 };
 
+// Extract #hashtags from text. Unicode-aware so non-ASCII tags survive.
+function extractHashtags(text) {
+  if (!text) return [];
+  return (text.match(/#[\p{L}\p{N}_]+/gu) || []).map((h) => h.toLowerCase());
+}
+
+function tallyFromPosts(posts) {
+  const tagCounts = new Map();
+  const tagViewCounts = new Map();
+  const soundCounts = new Map();
+  for (const p of posts) {
+    const tags = new Set(extractHashtags(p.title));
+    const views = p.play_count || 0;
+    for (const t of tags) {
+      tagCounts.set(t, (tagCounts.get(t) || 0) + 1);
+      tagViewCounts.set(t, (tagViewCounts.get(t) || 0) + views);
+    }
+    const m = p.music_info;
+    if (m?.title) {
+      const key = `${m.title}||${m.author || ""}`;
+      const prev = soundCounts.get(key) || {
+        title: m.title,
+        author: m.author || "",
+        count: 0,
+        total_views: 0,
+        url: m.play || "",
+        cover: m.cover || "",
+      };
+      prev.count += 1;
+      prev.total_views += views;
+      soundCounts.set(key, prev);
+    }
+  }
+  const hashtags = [...tagCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 40)
+    .map(([tag, count], i) => ({
+      tag,
+      rank: i + 1,
+      publish_count: count,
+      video_views: tagViewCounts.get(tag) || 0,
+      url: `https://www.tiktok.com/tag/${encodeURIComponent(tag.slice(1))}`,
+    }));
+  const songs = [...soundCounts.values()]
+    .sort((a, b) => b.count - a.count || b.total_views - a.total_views)
+    .slice(0, 40)
+    .map((s, i) => ({
+      title: s.title,
+      author: s.author,
+      rank: i + 1,
+      url: s.url,
+      cover: s.cover,
+      uses: s.count,
+      total_views: s.total_views,
+    }));
+  return { hashtags, songs };
+}
+
 // ────────────────────────────────────────────────
-// Path 1: Apify (reliable, paid) — if token set
+// Path 1: tikwm.com (free, OSS-spirited)
 // ────────────────────────────────────────────────
-async function tryApify(country, limit) {
+async function tryTikwm(region) {
+  try {
+    // feed/list returns the regional "For You" stream. count maxes at ~30 per call.
+    const posts = [];
+    for (const cursor of [0, 30]) {
+      const url = `https://www.tikwm.com/api/feed/list?region=${region}&count=30&cursor=${cursor}`;
+      const res = await fetch(url, {
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "User-Agent":
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
+        },
+      });
+      if (!res.ok) throw new Error(`tikwm ${res.status}`);
+      const json = await res.json();
+      if (json?.code !== 0) throw new Error(`tikwm code=${json?.code} ${json?.msg || ""}`);
+      const batch = json?.data || [];
+      posts.push(...batch);
+      if (batch.length < 30) break;
+    }
+    if (!posts.length) throw new Error("tikwm: empty feed");
+
+    const { hashtags, songs } = tallyFromPosts(posts);
+    return {
+      source: "tiktok-tikwm",
+      region,
+      hashtags,
+      songs,
+      sample_size: posts.length,
+    };
+  } catch (err) {
+    return { error: "tikwm: " + String(err.message || err) };
+  }
+}
+
+// ────────────────────────────────────────────────
+// Path 2: Apify (paid, reliable) — if token set
+// ────────────────────────────────────────────────
+async function tryApify(limit) {
   const token = process.env.APIFY_TOKEN;
   if (!token) return null;
 
-  // `clockworks/tiktok-scraper` is Apify's maintained TikTok actor.
-  // run-sync-get-dataset-items returns results inline, ~30-60s per call.
   const url = `https://api.apify.com/v2/acts/clockworks~tiktok-scraper/run-sync-get-dataset-items?token=${token}`;
   const input = {
     hashtags: ["fyp"],
@@ -44,99 +138,23 @@ async function tryApify(country, limit) {
     if (!res.ok) throw new Error(`apify ${res.status}`);
     const items = await res.json();
 
-    // Tally hashtags across posts
-    const tagCounts = new Map();
-    const soundCounts = new Map();
-    for (const item of items) {
-      for (const h of item.hashtags || []) {
-        const tag = "#" + (h.name || h.title || "").toLowerCase();
-        if (tag === "#") continue;
-        tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
-      }
-      const m = item.musicMeta;
-      if (m?.musicName) {
-        const key = `${m.musicName}||${m.musicAuthor || ""}`;
-        const prev = soundCounts.get(key) || { title: m.musicName, author: m.musicAuthor || "", count: 0, url: m.playUrl || "" };
-        prev.count += 1;
-        soundCounts.set(key, prev);
-      }
-    }
-
-    const hashtags = [...tagCounts.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 40)
-      .map(([tag, count], i) => ({
-        tag,
-        rank: i + 1,
-        publish_count: count,
-        video_views: 0,
-        url: `https://www.tiktok.com/tag/${encodeURIComponent(tag.slice(1))}`,
-      }));
-
-    const songs = [...soundCounts.values()]
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 40)
-      .map((s, i) => ({
-        title: s.title,
-        author: s.author,
-        rank: i + 1,
-        url: s.url || "",
-      }));
-
-    return { source: "tiktok-apify", country, hashtags, songs };
+    // Normalize Apify item shape → tikwm-like shape, then re-use tallyFromPosts.
+    const normalized = items.map((it) => ({
+      title: (it.text || "") + " " + (it.hashtags || []).map((h) => "#" + (h.name || h.title || "")).join(" "),
+      play_count: it.playCount || it.playsCount || 0,
+      music_info: it.musicMeta
+        ? {
+            title: it.musicMeta.musicName || "",
+            author: it.musicMeta.musicAuthor || "",
+            play: it.musicMeta.playUrl || "",
+          }
+        : null,
+    }));
+    const { hashtags, songs } = tallyFromPosts(normalized);
+    return { source: "tiktok-apify", hashtags, songs, sample_size: items.length };
   } catch (err) {
     return { error: "apify: " + String(err.message || err) };
   }
-}
-
-// ────────────────────────────────────────────────
-// Path 2: Creative Center (free, currently blocked)
-// ────────────────────────────────────────────────
-const BROWSER_HEADERS = {
-  "Accept": "application/json, text/plain, */*",
-  "Accept-Language": "en-US,en;q=0.9",
-  "User-Agent":
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36",
-  "Referer": "https://ads.tiktok.com/business/creativecenter/inspiration/popular/hashtag/pc/en",
-  "Origin": "https://ads.tiktok.com",
-};
-
-async function fetchCC(url) {
-  const res = await fetch(url, { headers: BROWSER_HEADERS });
-  if (!res.ok) throw new Error(`${res.status}`);
-  const json = await res.json();
-  if (json?.code && json.code !== 0) throw new Error(`cc code=${json.code} ${json.msg || ""}`);
-  return json;
-}
-
-async function tryCreativeCenter(country, period, limit) {
-  const results = await Promise.allSettled([
-    fetchCC(`https://ads.tiktok.com/creative_radar_api/v1/popular_trend/hashtag/list?period=${period}&country_code=${country}&page=1&limit=${limit}`),
-    fetchCC(`https://ads.tiktok.com/creative_radar_api/v1/popular_trend/song/list?period=${period}&country_code=${country}&page=1&limit=${limit}`),
-  ]);
-  const [hRes, sRes] = results;
-  const hashtags = hRes.status === "fulfilled"
-    ? (hRes.value?.data?.list || []).map((h) => ({
-        tag: h.hashtag_name ? "#" + h.hashtag_name : "",
-        rank: h.rank || null,
-        publish_count: h.publish_cnt || 0,
-        video_views: h.video_views || 0,
-        industries: (h.industry_info || []).map((i) => i.value || i.name).filter(Boolean),
-        url: h.hashtag_name ? `https://www.tiktok.com/tag/${encodeURIComponent(h.hashtag_name)}` : "",
-      }))
-    : [];
-  const songs = sRes.status === "fulfilled"
-    ? (sRes.value?.data?.list || []).map((s) => ({
-        title: s.title || "",
-        author: s.author || "",
-        rank: s.rank || null,
-        url: s.link || (s.clip_id ? `https://www.tiktok.com/music/${s.clip_id}` : ""),
-      }))
-    : [];
-  const errors = [];
-  if (hRes.status === "rejected") errors.push("hashtags: " + String(hRes.reason?.message || hRes.reason));
-  if (sRes.status === "rejected") errors.push("songs: " + String(sRes.reason?.message || sRes.reason));
-  return { source: "tiktok-creative-center", country, period, hashtags, songs, ...(errors.length ? { error: errors.join(" | ") } : {}) };
 }
 
 // ────────────────────────────────────────────────
@@ -146,35 +164,34 @@ exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers: cors, body: "" };
 
   const country = (event.queryStringParameters?.country || "US").toUpperCase();
-  const periodRaw = parseInt(event.queryStringParameters?.period || "7", 10);
-  const period = [7, 30, 120].includes(periodRaw) ? periodRaw : 7;
   const limit = Math.min(parseInt(event.queryStringParameters?.limit || "40", 10) || 40, 50);
 
-  // 1. Apify if configured
-  const apify = await tryApify(country, limit);
+  // 1. Free OSS-proxy path
+  const tikwm = await tryTikwm(country);
+  if (tikwm && !tikwm.error && (tikwm.hashtags.length || tikwm.songs.length)) {
+    return { statusCode: 200, headers: cors, body: JSON.stringify(tikwm) };
+  }
+
+  // 2. Apify fallback if token set
+  const apify = await tryApify(limit);
   if (apify && !apify.error && (apify.hashtags.length || apify.songs.length)) {
     return { statusCode: 200, headers: cors, body: JSON.stringify(apify) };
   }
 
-  // 2. Best-effort Creative Center
-  const cc = await tryCreativeCenter(country, period, limit);
-  if (cc.hashtags.length || cc.songs.length) {
-    return { statusCode: 200, headers: cors, body: JSON.stringify(cc) };
-  }
-
-  // 3. Both paths empty — return combined diagnostic
-  const diagnostic = {
-    source: "tiktok",
-    country,
-    period,
-    hashtags: [],
-    songs: [],
-    apify_configured: !!process.env.APIFY_TOKEN,
-    cc_error: cc.error || "empty response",
-    apify_error: apify?.error || null,
-    error: process.env.APIFY_TOKEN
-      ? "Both Apify and Creative Center returned no data."
-      : "TikTok Creative Center blocks datacenter IPs (code 40101). Set APIFY_TOKEN env var in Netlify to enable reliable TikTok data via Apify (~$0.30 per 1k results).",
+  // 3. Both failed
+  const parts = [];
+  if (tikwm?.error) parts.push(tikwm.error);
+  if (apify?.error) parts.push(apify.error);
+  if (!process.env.APIFY_TOKEN) parts.push("APIFY_TOKEN not set (paid fallback)");
+  return {
+    statusCode: 200,
+    headers: cors,
+    body: JSON.stringify({
+      source: "tiktok",
+      country,
+      hashtags: [],
+      songs: [],
+      error: parts.join(" | ") || "no data",
+    }),
   };
-  return { statusCode: 200, headers: cors, body: JSON.stringify(diagnostic) };
 };
