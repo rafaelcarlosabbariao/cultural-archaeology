@@ -288,7 +288,7 @@ html, body {
 
 #theme-btn:hover { color: var(--text); border-color: var(--text-dim); }
 
-#memory-btn {
+#memory-btn, #live-btn, #library-btn {
   background: none;
   border: 1px solid var(--border);
   color: var(--text-dim);
@@ -304,7 +304,7 @@ html, body {
   transition: all 0.15s;
 }
 
-#memory-btn:hover { color: var(--text); border-color: var(--text-dim); }
+#memory-btn:hover, #live-btn:hover, #library-btn:hover { color: var(--text); border-color: var(--text-dim); }
 
 #new-search-btn {
   background: none;
@@ -908,6 +908,237 @@ html, body {
   font-size: 12px;
 }
 
+/* ── LIVE TRENDS & LIBRARY MODALS ── */
+#live-overlay, #library-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+#live-overlay.open, #library-overlay.open { display: flex; }
+
+#live-modal, #library-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 960px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.live-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.live-header h2 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  margin: 0;
+  flex: 1;
+}
+.live-close {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+.live-close:hover { color: var(--text); }
+
+.trend-refresh-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.trend-refresh-btn:hover { color: var(--text); border-color: var(--text-dim); }
+
+.live-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+.live-tab {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  padding: 10px 14px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+}
+.live-tab:hover { color: var(--text); }
+.live-tab.active { color: var(--signal); border-bottom-color: var(--signal); }
+
+#live-body, #library-body {
+  overflow-y: auto;
+  padding: 16px 20px;
+  flex: 1;
+}
+.live-pane { display: none; }
+.live-pane.active { display: block; }
+
+.live-section-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+  margin: 4px 0 10px;
+}
+.live-section-label + .live-section-label { margin-top: 20px; }
+
+.trend-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 8px;
+}
+
+.trend-item {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  background: var(--bg);
+}
+.trend-item:hover { border-color: var(--signal); background: var(--surface-2); }
+.trend-item-title { font-size: 13px; color: var(--text); margin-bottom: 5px; line-height: 1.35; }
+.trend-item-meta {
+  font-size: 10px;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.trend-item-meta a { color: var(--text-dim); text-decoration: none; }
+.trend-item-meta a:hover { color: var(--signal); text-decoration: underline; }
+.trend-item-tags {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: 5px;
+  font-family: var(--font-mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hashtag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.hashtag-chip {
+  padding: 6px 12px;
+  border-radius: 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.hashtag-chip:hover { border-color: var(--signal); }
+.hashtag-chip-count {
+  display: inline-block;
+  margin-left: 6px;
+  color: var(--text-dim);
+  font-size: 10px;
+}
+
+.format-group {
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+}
+.format-group-title {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--signal);
+  margin-bottom: 8px;
+}
+.format-group-examples { font-size: 12px; color: var(--text); padding-left: 0; list-style: none; margin: 0; }
+.format-group-examples li {
+  padding: 4px 0;
+  cursor: pointer;
+  border-bottom: 1px dashed transparent;
+  line-height: 1.4;
+}
+.format-group-examples li:hover { border-bottom-color: var(--border); }
+.format-group-examples .fmt-src {
+  color: var(--text-dim);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: var(--font-mono);
+  margin-left: 6px;
+}
+
+.live-pane-loading, .live-pane-empty {
+  padding: 32px 0;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 11px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+}
+
+.library-item {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  background: var(--bg);
+  transition: border-color 0.15s, background 0.15s;
+}
+.library-item:hover { border-color: var(--signal); background: var(--surface-2); }
+.library-item-q { font-size: 13px; color: var(--text); margin-bottom: 4px; }
+.library-item-meta {
+  font-size: 10px;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 /* ── LOADING / ERROR STATES ── */
 #loading-state {
   display: none;
@@ -1019,6 +1250,8 @@ html, body {
     <button class="pb-btn" id="btn-play" title="Play">&#x25B6;</button>
     <button class="pb-btn" id="btn-step-fwd" title="Step forward">&#x23E9;</button>
   </div>
+  <button id="live-btn" title="Live trends from Google / Reddit / YouTube / Bluesky / Last.fm">&#x25CE; Live</button>
+  <button id="library-btn" title="Library of past analyses">&#x29C9; Library</button>
   <button id="memory-btn">&#x1D5C6; Memory</button>
   <button id="theme-btn" title="Toggle light/dark mode">&#x2600;</button>
   <button id="settings-btn" title="Settings">&#x2699;</button>
@@ -1158,6 +1391,45 @@ html, body {
       <input type="password" id="key-brave" placeholder="BSA...">
     </div>
     <button id="settings-close">Save & Close</button>
+  </div>
+</div>
+
+<!-- ═══ LIVE TRENDS MODAL ═══ -->
+<div id="live-overlay">
+  <div id="live-modal">
+    <div class="live-header">
+      <h2>Live Trends</h2>
+      <button class="trend-refresh-btn" id="live-refresh" title="Refresh active tab">refresh</button>
+      <button class="live-close" id="live-close" title="Close">&#x2715;</button>
+    </div>
+    <div class="live-tabs">
+      <button class="live-tab active" data-tab="searches">Searches</button>
+      <button class="live-tab" data-tab="topics">Topics</button>
+      <button class="live-tab" data-tab="videos">Videos</button>
+      <button class="live-tab" data-tab="formats">Formats</button>
+      <button class="live-tab" data-tab="hashtags">Hashtags</button>
+      <button class="live-tab" data-tab="audio">Audio</button>
+    </div>
+    <div id="live-body">
+      <div class="live-pane active" data-pane="searches"><div class="live-pane-loading">loading…</div></div>
+      <div class="live-pane" data-pane="topics"></div>
+      <div class="live-pane" data-pane="videos"></div>
+      <div class="live-pane" data-pane="formats"></div>
+      <div class="live-pane" data-pane="hashtags"></div>
+      <div class="live-pane" data-pane="audio"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LIBRARY MODAL ═══ -->
+<div id="library-overlay">
+  <div id="library-modal">
+    <div class="live-header">
+      <h2>Library</h2>
+      <button class="trend-refresh-btn" id="library-refresh" title="Refresh">refresh</button>
+      <button class="live-close" id="library-close" title="Close">&#x2715;</button>
+    </div>
+    <div id="library-body"><div class="live-pane-loading">loading…</div></div>
   </div>
 </div>
 
@@ -2502,6 +2774,396 @@ function setTheme(theme) {
 document.getElementById('theme-btn').addEventListener('click', () => {
   const current = document.documentElement.getAttribute('data-theme');
   setTheme(current === 'dark' ? 'light' : 'dark');
+});
+
+// ══════════════════════════════════════════════
+// LIVE TRENDS MODAL
+// ══════════════════════════════════════════════
+const liveCache = {};
+const liveLoaded = {};
+
+function escHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+}
+
+async function openLiveTrends() {
+  document.getElementById('live-overlay').classList.add('open');
+  if (!liveLoaded.searches) await loadLiveTab('searches');
+}
+function closeLiveTrends() {
+  document.getElementById('live-overlay').classList.remove('open');
+}
+function switchLiveTab(tab) {
+  document.querySelectorAll('.live-tab').forEach((el) => {
+    el.classList.toggle('active', el.dataset.tab === tab);
+  });
+  document.querySelectorAll('.live-pane').forEach((el) => {
+    el.classList.toggle('active', el.dataset.pane === tab);
+  });
+  if (!liveLoaded[tab]) loadLiveTab(tab);
+}
+
+async function fetchJson(url) {
+  try {
+    const r = await fetch(url);
+    return await r.json();
+  } catch (err) {
+    return { error: String(err.message || err) };
+  }
+}
+
+async function loadLiveTab(tab, force) {
+  const pane = document.querySelector(`.live-pane[data-pane="${tab}"]`);
+  if (!pane) return;
+  if (liveLoaded[tab] && !force) return;
+  pane.innerHTML = '<div class="live-pane-loading">loading…</div>';
+  try {
+    if (tab === 'searches') {
+      const [gt, rd] = await Promise.all([
+        fetchJson('/.netlify/functions/trends?mode=daily&geo=US'),
+        fetchJson('/.netlify/functions/reddit?mode=top&t=day'),
+      ]);
+      liveCache.searches = { gt, rd };
+      pane.innerHTML = renderSearches(gt, rd);
+    } else if (tab === 'topics') {
+      const rd = await fetchJson('/.netlify/functions/reddit?mode=top&t=week');
+      liveCache.topics = rd;
+      pane.innerHTML = renderTopics(rd);
+    } else if (tab === 'videos') {
+      const yt = await fetchJson('/.netlify/functions/youtube?limit=40');
+      liveCache.videos = yt;
+      pane.innerHTML = renderVideos(yt);
+    } else if (tab === 'formats') {
+      if (!liveCache.videos) liveCache.videos = await fetchJson('/.netlify/functions/youtube?limit=40');
+      if (!liveCache.topics) liveCache.topics = await fetchJson('/.netlify/functions/reddit?mode=top&t=week');
+      pane.innerHTML = renderFormats(liveCache.videos, liveCache.topics);
+    } else if (tab === 'hashtags') {
+      const bs = await fetchJson('/.netlify/functions/bluesky');
+      liveCache.hashtags = bs;
+      pane.innerHTML = renderHashtags(bs);
+    } else if (tab === 'audio') {
+      const m = await fetchJson('/.netlify/functions/music?limit=40');
+      liveCache.audio = m;
+      pane.innerHTML = renderAudio(m);
+    }
+    liveLoaded[tab] = true;
+    attachTrendClickHandlers(pane);
+  } catch (err) {
+    pane.innerHTML = `<div class="live-pane-empty">failed: ${escHtml(err.message || err)}</div>`;
+  }
+}
+
+function renderSearches(gt, rd) {
+  const out = [];
+  const items = (gt && gt.items) || [];
+  const rposts = ((rd && rd.posts) || []).slice(0, 15);
+  if (!items.length && !rposts.length) {
+    return `<div class="live-pane-empty">no results${gt?.error ? ' — ' + escHtml(gt.error) : ''}</div>`;
+  }
+  if (items.length) {
+    out.push(`<div class="live-section-label">Google Trends · today</div>`);
+    out.push(`<div class="trend-grid">`);
+    for (const it of items.slice(0, 20)) {
+      const firstArticle = (it.articles || [])[0];
+      const articleLink = firstArticle
+        ? `<a href="${escHtml(firstArticle.url)}" target="_blank" rel="noopener">${escHtml(firstArticle.source || 'article')}</a>`
+        : '';
+      out.push(`
+        <div class="trend-item" data-q="${escHtml('Why is ' + it.title + ' trending today?')}">
+          <div class="trend-item-title">${escHtml(it.title)}</div>
+          <div class="trend-item-meta">
+            ${it.traffic ? `<span>${escHtml(it.traffic)}</span>` : ''}
+            ${articleLink}
+          </div>
+        </div>`);
+    }
+    out.push(`</div>`);
+  }
+  if (rposts.length) {
+    out.push(`<div class="live-section-label">Reddit · r/all top today</div>`);
+    out.push(`<div class="trend-grid">`);
+    for (const p of rposts) {
+      out.push(`
+        <div class="trend-item" data-q="${escHtml('Why is this trending on Reddit: ' + p.title)}">
+          <div class="trend-item-title">${escHtml(p.title)}</div>
+          <div class="trend-item-meta">
+            <span>${escHtml(p.subreddit)}</span>
+            <span>${(p.score || 0).toLocaleString()} upvotes</span>
+            ${p.flair ? `<span>${escHtml(p.flair)}</span>` : ''}
+            <a href="${escHtml(p.url)}" target="_blank" rel="noopener">view</a>
+          </div>
+        </div>`);
+    }
+    out.push(`</div>`);
+  }
+  return out.join('');
+}
+
+function renderTopics(rd) {
+  if (rd && rd.error) return `<div class="live-pane-empty">${escHtml(rd.error)}</div>`;
+  const posts = (rd && rd.posts) || [];
+  if (!posts.length) return `<div class="live-pane-empty">no results</div>`;
+  return `<div class="trend-grid">` + posts.map((p) => `
+    <div class="trend-item" data-q="${escHtml('Why is this a topic on Reddit: ' + p.title)}">
+      <div class="trend-item-title">${escHtml(p.title)}</div>
+      <div class="trend-item-meta">
+        <span>${escHtml(p.subreddit)}</span>
+        <span>${(p.score || 0).toLocaleString()} upvotes</span>
+        <span>${(p.comments || 0).toLocaleString()} comments</span>
+        ${p.flair ? `<span>${escHtml(p.flair)}</span>` : ''}
+        <a href="${escHtml(p.url)}" target="_blank" rel="noopener">view</a>
+      </div>
+    </div>`).join('') + `</div>`;
+}
+
+function renderVideos(yt) {
+  if (yt && yt.error) return `<div class="live-pane-empty">${escHtml(yt.error)}<br>Set YOUTUBE_API_KEY in Netlify env vars.</div>`;
+  const videos = (yt && yt.videos) || [];
+  if (!videos.length) return `<div class="live-pane-empty">no videos</div>`;
+  return `<div class="trend-grid">` + videos.map((v) => {
+    const tagLine = (v.tags || []).slice(0, 6).map((t) => '#' + t.replace(/\s+/g, '')).join(' ');
+    return `
+      <div class="trend-item" data-q="${escHtml('Why is this video trending: ' + v.title)}">
+        <div class="trend-item-title">${escHtml(v.title)}</div>
+        <div class="trend-item-meta">
+          <span>${escHtml(v.channel)}</span>
+          <span>${(v.views || 0).toLocaleString()} views</span>
+          <a href="${escHtml(v.url)}" target="_blank" rel="noopener">watch</a>
+        </div>
+        ${tagLine ? `<div class="trend-item-tags">${escHtml(tagLine)}</div>` : ''}
+      </div>`;
+  }).join('') + `</div>`;
+}
+
+const FORMAT_PATTERNS = [
+  { name: 'POV:', re: /^\s*pov[:\s]/i },
+  { name: 'I tried X for N days', re: /\bi tried\b[\s\S]+?\bfor\s+\d+\s*(days?|weeks?|months?|years?)/i },
+  { name: 'Day N of …', re: /\bday\s+\d+\s+(of|\/)/i },
+  { name: 'N things / ways / reasons / tips / signs', re: /^\s*\d+\s+(things|ways|reasons|tips|signs|rules|facts|habits|tricks|mistakes|lessons|types)\b/i },
+  { name: 'Tier list / ranking', re: /\b(tier list|ranking (every|all|the)|ranked)\b/i },
+  { name: 'Rating …', re: /\brating\s+(your|every|my|the)\b/i },
+  { name: 'Tell me you are X without saying X', re: /tell me (you'?re|you are)[\s\S]*?without/i },
+  { name: "I was today years old", re: /today years old/i },
+  { name: "ELI5 / explain like I'm 5", re: /\beli5\b|explain like i'?m\s*(5|five)/i },
+  { name: 'AITA (Am I the …)', re: /\baita\b|\bam i the (asshole|jerk)\b/i },
+  { name: 'TIL (Today I Learned)', re: /^\s*til[:\s]/i },
+  { name: 'Unpopular opinion', re: /\bunpopular opinion\b/i },
+  { name: 'Change my mind', re: /\bchange my mind\b/i },
+  { name: 'Hot take', re: /\bhot take\b/i },
+  { name: "You won't believe …", re: /you (won'?t|will not) believe/i },
+  { name: 'Story time', re: /\bstory time\b/i },
+  { name: 'GRWM (Get Ready With Me)', re: /\bgrwm\b|get ready with me/i },
+  { name: 'What I eat in a day', re: /what i eat in a day/i },
+  { name: 'Things that just make sense', re: /things that (just )?make sense/i },
+];
+
+function detectFormats(items) {
+  const groups = new Map();
+  for (const it of items) {
+    const title = it.title || '';
+    for (const p of FORMAT_PATTERNS) {
+      if (p.re.test(title)) {
+        if (!groups.has(p.name)) groups.set(p.name, []);
+        groups.get(p.name).push(it);
+        break;
+      }
+    }
+  }
+  return [...groups.entries()]
+    .sort((a, b) => b[1].length - a[1].length)
+    .map(([name, examples]) => ({ name, examples }));
+}
+
+function renderFormats(yt, rd) {
+  const items = [];
+  for (const v of (yt && yt.videos) || []) items.push({ title: v.title, url: v.url, source: 'YouTube' });
+  for (const p of (rd && rd.posts) || []) items.push({ title: p.title, url: p.url, source: p.subreddit });
+  if (!items.length) return `<div class="live-pane-empty">no video/post data to analyze — check Videos or Topics tabs first</div>`;
+  const groups = detectFormats(items);
+  if (!groups.length) {
+    return `<div class="live-pane-empty">no recurring formats detected in the current batch (${items.length} titles scanned)</div>`;
+  }
+  return `<div class="live-section-label">Detected format patterns · ${items.length} titles scanned</div>` +
+    groups.map((g) => `
+      <div class="format-group">
+        <div class="format-group-title">${escHtml(g.name)} · ${g.examples.length}×</div>
+        <ul class="format-group-examples">
+          ${g.examples.slice(0, 6).map((e) => `
+            <li data-q="${escHtml('Why is the "' + g.name + '" format spreading — e.g. "' + e.title + '"?')}">
+              ${escHtml(e.title)}<span class="fmt-src">${escHtml(e.source)}</span>
+            </li>`).join('')}
+        </ul>
+      </div>`).join('');
+}
+
+function renderHashtags(bs) {
+  if (bs && bs.error) return `<div class="live-pane-empty">${escHtml(bs.error)}</div>`;
+  const tags = (bs && bs.hashtags) || [];
+  const posts = (bs && bs.posts) || [];
+  if (!tags.length && !posts.length) return `<div class="live-pane-empty">no hashtag activity</div>`;
+  const out = [];
+  if (tags.length) {
+    out.push(`<div class="live-section-label">Bluesky · trending hashtags</div>`);
+    out.push(`<div class="hashtag-cloud">`);
+    for (const { tag, count } of tags) {
+      out.push(`<div class="hashtag-chip" data-q="${escHtml('Why is ' + tag + ' trending on Bluesky?')}">${escHtml(tag)}<span class="hashtag-chip-count">${count}</span></div>`);
+    }
+    out.push(`</div>`);
+  }
+  if (posts.length) {
+    out.push(`<div class="live-section-label">Top Bluesky posts</div>`);
+    out.push(`<div class="trend-grid">`);
+    for (const p of posts.slice(0, 18)) {
+      out.push(`
+        <div class="trend-item" data-q="${escHtml('Why is this Bluesky post resonating: ' + p.text.slice(0, 120))}">
+          <div class="trend-item-title">${escHtml(p.text)}</div>
+          <div class="trend-item-meta">
+            <span>@${escHtml(p.author)}</span>
+            <span>${(p.likes || 0).toLocaleString()} likes</span>
+            <span>${(p.reposts || 0).toLocaleString()} reposts</span>
+            ${p.url ? `<a href="${escHtml(p.url)}" target="_blank" rel="noopener">view</a>` : ''}
+          </div>
+        </div>`);
+    }
+    out.push(`</div>`);
+  }
+  return out.join('');
+}
+
+function renderAudio(m) {
+  if (m && m.error) return `<div class="live-pane-empty">${escHtml(m.error)}<br>Set LASTFM_API_KEY in Netlify env vars (free key).</div>`;
+  const tracks = (m && m.tracks) || [];
+  if (!tracks.length) return `<div class="live-pane-empty">no tracks</div>`;
+  return `<div class="live-section-label">Last.fm · global top tracks</div><div class="trend-grid">` + tracks.map((t) => `
+    <div class="trend-item" data-q="${escHtml('Why is &quot;' + t.name + '&quot; by ' + t.artist + ' trending?')}">
+      <div class="trend-item-title">${escHtml(t.name)}</div>
+      <div class="trend-item-meta">
+        <span>${escHtml(t.artist)}</span>
+        <span>${(t.listeners || 0).toLocaleString()} listeners</span>
+        <a href="${escHtml(t.url)}" target="_blank" rel="noopener">listen</a>
+      </div>
+    </div>`).join('') + `</div>`;
+}
+
+function attachTrendClickHandlers(container) {
+  container.querySelectorAll('[data-q]').forEach((el) => {
+    el.addEventListener('click', (e) => {
+      if (e.target.tagName === 'A') return;
+      const q = el.dataset.q;
+      if (!q) return;
+      closeLiveTrends();
+      document.getElementById('signal-input').value = q;
+      if (!document.getElementById('app').classList.contains('active')) {
+        revealApp(q);
+      } else {
+        analyze(q);
+      }
+    });
+  });
+}
+
+document.getElementById('live-btn').addEventListener('click', openLiveTrends);
+document.getElementById('live-close').addEventListener('click', closeLiveTrends);
+document.getElementById('live-overlay').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeLiveTrends();
+});
+document.getElementById('live-refresh').addEventListener('click', () => {
+  const activeTab = document.querySelector('.live-tab.active')?.dataset.tab;
+  if (activeTab) {
+    liveLoaded[activeTab] = false;
+    if (activeTab === 'formats') { liveCache.videos = null; liveCache.topics = null; }
+    loadLiveTab(activeTab, true);
+  }
+});
+document.querySelectorAll('.live-tab').forEach((el) => {
+  el.addEventListener('click', () => switchLiveTab(el.dataset.tab));
+});
+
+// ══════════════════════════════════════════════
+// LIBRARY MODAL (Supabase-backed past analyses)
+// ══════════════════════════════════════════════
+async function openLibrary() {
+  document.getElementById('library-overlay').classList.add('open');
+  await loadLibrary();
+}
+function closeLibrary() {
+  document.getElementById('library-overlay').classList.remove('open');
+}
+
+async function loadLibrary() {
+  const body = document.getElementById('library-body');
+  body.innerHTML = '<div class="live-pane-loading">loading…</div>';
+  if (!sb) {
+    body.innerHTML = '<div class="live-pane-empty">Supabase not configured</div>';
+    return;
+  }
+  try {
+    const { data, error } = await sb
+      .from('cultural_events')
+      .select('id, question, signal, signal_type, created_at, counter_signal_pct')
+      .order('created_at', { ascending: false })
+      .limit(100);
+    if (error) throw error;
+    if (!data || !data.length) {
+      body.innerHTML = '<div class="live-pane-empty">no saved analyses yet — run one and come back</div>';
+      return;
+    }
+    body.innerHTML = data.map((r) => {
+      const d = new Date(r.created_at);
+      return `
+        <div class="library-item" data-id="${r.id}" data-q="${escHtml(r.question)}">
+          <div class="library-item-q">${escHtml(r.question)}</div>
+          <div class="library-item-meta">
+            ${r.signal_type ? `<span>${escHtml(r.signal_type)}</span>` : ''}
+            <span>${d.toLocaleDateString()} ${d.toLocaleTimeString()}</span>
+            ${r.counter_signal_pct != null ? `<span>counter ${r.counter_signal_pct}%</span>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+    body.querySelectorAll('.library-item').forEach((el) => {
+      el.addEventListener('click', () => rehydrateFromLibrary(el.dataset.id, el.dataset.q));
+    });
+  } catch (err) {
+    body.innerHTML = `<div class="live-pane-empty">failed: ${escHtml(err.message || err)}</div>`;
+  }
+}
+
+async function rehydrateFromLibrary(id, question) {
+  if (!sb) return;
+  try {
+    const { data, error } = await sb
+      .from('cultural_events')
+      .select('full_analysis')
+      .eq('id', id)
+      .single();
+    if (error) throw error;
+    if (!data?.full_analysis) throw new Error('no analysis stored for this row');
+    closeLibrary();
+    document.getElementById('signal-input').value = question;
+    if (!document.getElementById('app').classList.contains('active')) {
+      document.getElementById('landing').classList.add('hidden');
+      document.getElementById('app').classList.add('active');
+    }
+    state.data = data.full_analysis;
+    state.conceptTooltips = data.full_analysis.concept_tooltips || {};
+    state.ungrounded = false;
+    const badge = document.getElementById('signal-type-badge');
+    const sType = data.full_analysis.signal_type || classifySignal(question);
+    badge.textContent = sType;
+    badge.style.display = 'inline-block';
+    renderReport(data.full_analysis);
+  } catch (err) {
+    alert('Failed to rehydrate: ' + (err.message || err));
+  }
+}
+
+document.getElementById('library-btn').addEventListener('click', openLibrary);
+document.getElementById('library-close').addEventListener('click', closeLibrary);
+document.getElementById('library-refresh').addEventListener('click', loadLibrary);
+document.getElementById('library-overlay').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeLibrary();
 });
 
 // ══════════════════════════════════════════════
