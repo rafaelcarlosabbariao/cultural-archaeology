@@ -1408,6 +1408,7 @@ html, body {
       <button class="live-tab" data-tab="videos">Videos</button>
       <button class="live-tab" data-tab="formats">Formats</button>
       <button class="live-tab" data-tab="hashtags">Hashtags</button>
+      <button class="live-tab" data-tab="tiktok">TikTok</button>
       <button class="live-tab" data-tab="audio">Audio</button>
     </div>
     <div id="live-body">
@@ -1416,6 +1417,7 @@ html, body {
       <div class="live-pane" data-pane="videos"></div>
       <div class="live-pane" data-pane="formats"></div>
       <div class="live-pane" data-pane="hashtags"></div>
+      <div class="live-pane" data-pane="tiktok"></div>
       <div class="live-pane" data-pane="audio"></div>
     </div>
   </div>
@@ -2843,6 +2845,10 @@ async function loadLiveTab(tab, force) {
       const bs = await fetchJson('/.netlify/functions/bluesky');
       liveCache.hashtags = bs;
       pane.innerHTML = renderHashtags(bs);
+    } else if (tab === 'tiktok') {
+      const tt = await fetchJson('/.netlify/functions/tiktok?country=US&period=7&limit=40');
+      liveCache.tiktok = tt;
+      pane.innerHTML = renderTikTok(tt);
     } else if (tab === 'audio') {
       const m = await fetchJson('/.netlify/functions/music?limit=40');
       liveCache.audio = m;
@@ -3024,6 +3030,42 @@ function renderHashtags(bs) {
             <span>${(p.likes || 0).toLocaleString()} likes</span>
             <span>${(p.reposts || 0).toLocaleString()} reposts</span>
             ${p.url ? `<a href="${escHtml(p.url)}" target="_blank" rel="noopener">view</a>` : ''}
+          </div>
+        </div>`);
+    }
+    out.push(`</div>`);
+  }
+  return out.join('');
+}
+
+function renderTikTok(tt) {
+  const hashtags = (tt && tt.hashtags) || [];
+  const songs = (tt && tt.songs) || [];
+  if (!hashtags.length && !songs.length) {
+    const err = tt?.error ? `<br><span style="font-size:10px; opacity:0.7;">${escHtml(tt.error)}</span>` : '';
+    return `<div class="live-pane-empty">TikTok Creative Center returned no data${err}<br><br>This endpoint is unofficial and sometimes blocks server-side calls. If this persists, we'll swap to a paid source (Apify).</div>`;
+  }
+  const out = [];
+  if (hashtags.length) {
+    out.push(`<div class="live-section-label">TikTok · trending hashtags (last 7 days, US)</div>`);
+    out.push(`<div class="hashtag-cloud">`);
+    for (const h of hashtags) {
+      const views = h.video_views ? ` ${(h.video_views).toLocaleString()} views` : '';
+      out.push(`<div class="hashtag-chip" data-q="${escHtml('Why is ' + h.tag + ' trending on TikTok?')}" title="${escHtml(h.industries.join(', ') || '')}">${escHtml(h.tag)}<span class="hashtag-chip-count">${h.rank ? '#' + h.rank : ''}${views}</span></div>`);
+    }
+    out.push(`</div>`);
+  }
+  if (songs.length) {
+    out.push(`<div class="live-section-label">TikTok · trending sounds</div>`);
+    out.push(`<div class="trend-grid">`);
+    for (const s of songs) {
+      out.push(`
+        <div class="trend-item" data-q="${escHtml('Why is the sound &quot;' + s.title + '&quot; by ' + s.author + ' trending on TikTok?')}">
+          <div class="trend-item-title">${escHtml(s.title)}</div>
+          <div class="trend-item-meta">
+            <span>${escHtml(s.author)}</span>
+            ${s.rank ? `<span>#${s.rank}</span>` : ''}
+            ${s.url ? `<a href="${escHtml(s.url)}" target="_blank" rel="noopener">listen</a>` : ''}
           </div>
         </div>`);
     }
