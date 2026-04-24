@@ -1,6 +1,6 @@
 // Variation A: Petri / ink-in-water
 // Warm paper background, ink blots softly blooming across a social field.
-// The primary McWhy aesthetic — literary, warm, signal-orange ink, counter-blue ink.
+// The primary sincewhen aesthetic — literary, warm, signal-orange ink, counter-blue ink.
 
 function VariationA({ snapshot, cells, rules, playing, stage }) {
   const W = 520, H = 340;

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>McWhy — Reverse Cultural Simulation Engine</title>
+<title>sincewhen — Reverse Cultural Simulation Engine</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
@@ -1631,7 +1631,7 @@ html, body {
 <!-- ═══ LANDING SCREEN ═══ -->
 <div id="landing">
   <div id="landing-mosaic" aria-hidden="true"></div>
-  <div id="landing-logo">McWhy</div>
+  <div id="landing-logo">sincewhen</div>
   <div id="landing-tagline">Cultural archaeology. Trace any trend back to its origin.</div>
   <div id="landing-input-wrap">
     <input id="landing-input" type="text" placeholder="Why is aura-farming everywhere?" autocomplete="off">
@@ -1660,7 +1660,7 @@ html, body {
 
 <!-- ═══ TOP BAR ═══ -->
 <div id="top-bar">
-  <div id="logo">McWhy</div>
+  <div id="logo">sincewhen</div>
   <button id="new-search-btn" title="Start new search">+ New search</button>
   <div id="input-wrap">
     <input id="signal-input" type="text" placeholder="Why is aura-farming everywhere?" autocomplete="off">
@@ -2090,7 +2090,7 @@ async function braveSearch(signal) {
 // ══════════════════════════════════════════════
 // CLAUDE API — SYSTEM PROMPT
 // ══════════════════════════════════════════════
-const SYSTEM_PROMPT = `You are McWhy — a reverse cultural simulation engine. You perform cultural archaeology: given a natural language question about a cultural trend, behavior, or shift, you trace it backward through time to explain when it appeared, how it spread, why it moved the way it did, and what socioeconomic conditions made the ground fertile.
+const SYSTEM_PROMPT = `You are sincewhen — a reverse cultural simulation engine. You perform cultural archaeology: given a natural language question about a cultural trend, behavior, or shift, you trace it backward through time to explain when it appeared, how it spread, why it moved the way it did, and what socioeconomic conditions made the ground fertile.
 
 THE SEMIOTIC METHOD — NON-NEGOTIABLE THREE MOVES
 
@@ -2261,7 +2261,7 @@ IMPORTANT:
 - Include at least 5 event_log entries at different time positions
 - Include at least 5 related_terms
 - Both counter_signal.within_frame.strength_pct and counter_signal.exit.strength_pct should be 0-100
-- pull_quote must express the gap_reframe, not sympathize with the phenomenon. Adversarial posture to the sign is the McWhy voice. A sympathetic pull quote means move three was not completed
+- pull_quote must express the gap_reframe, not sympathize with the phenomenon. Adversarial posture to the sign is the sincewhen voice. A sympathetic pull quote means move three was not completed
 - semiotic_stages MUST have exactly 6 entries in order: seed, subculture, crossover, mainstream, parody, revival. Each entry needs signifier (the observable form), signified (what it denotes at that stage), and myth (the connotation that hardens — use "—" only for the seed stage where no myth has accreted yet). The signs MUST MUTATE across stages; copying the same signifier across rows is a bug.
 - opposition_axes MUST have 3–4 entries. Each "values" array is exactly 6 numbers in [-1, 1], one per stage, representing Saussurean drift. Pick axes specific to the phenomenon (not generic filler). The values should tell a story: something meaningful happens between seed and revival.
 - geo_origin.zone_id MUST be exactly one of these canonical zones (pick the single closest match to where the signal seeded): staten_island, nyc, la, miami, austin, chicago, rural_us, toronto, london, paris, berlin, milan, copenhagen, warsaw, seoul, tokyo, shanghai, mumbai, jakarta, manila, saopaulo, mexico, bogota, lagos, nairobi, capetown, dubai, istanbul, sydney. Do not invent new ids. If the true origin is diffuse or ambiguous, pick the zone that would be most recognizable as the seeding context (e.g., "nyc" for US-internet-native signals with no sharper locus).`;
@@ -3337,7 +3337,7 @@ document.getElementById('graph-export').addEventListener('click', () => {
     canvas.toBlob((pngBlob) => {
       const a = document.createElement('a');
       a.href = URL.createObjectURL(pngBlob);
-      a.download = `mcwhy-graph-${Date.now()}.png`;
+      a.download = `sincewhen-graph-${Date.now()}.png`;
       a.click();
       URL.revokeObjectURL(a.href);
     }, 'image/png');

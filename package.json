@@ -1,8 +1,8 @@
 {
-  "name": "mcwhy",
+  "name": "sincewhen",
   "version": "0.2.0",
   "private": true,
-  "description": "McWhy Phase 2 — Netlify Functions deps only. The site itself is buildless vanilla HTML/JS.",
+  "description": "sincewhen Phase 2 — Netlify Functions deps only. The site itself is buildless vanilla HTML/JS.",
   "dependencies": {
     "google-trends-api": "^4.9.2"
   }
