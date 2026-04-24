@@ -2231,6 +2231,24 @@ OUTPUT SCHEMA (return exactly this structure):
   ],
   "concept_tooltips": {
     "term_name": "2-3 sentence plain-language explanation."
+  },
+  "semiotic_stages": [
+    { "stage": "seed",       "signifier": "...", "signified": "...", "myth": "—" },
+    { "stage": "subculture", "signifier": "...", "signified": "...", "myth": "..." },
+    { "stage": "crossover",  "signifier": "...", "signified": "...", "myth": "..." },
+    { "stage": "mainstream", "signifier": "...", "signified": "...", "myth": "..." },
+    { "stage": "parody",     "signifier": "...", "signified": "...", "myth": "..." },
+    { "stage": "revival",    "signifier": "...", "signified": "...", "myth": "..." }
+  ],
+  "opposition_axes": [
+    { "label": "authentic ←→ performed",   "values": [-0.8, -0.4, 0.1, 0.5, 0.9, 0.6] },
+    { "label": "niche ←→ mass",            "values": [-0.9, -0.7, -0.1, 0.7, 0.8, 0.2] },
+    { "label": "sincere ←→ ironic",        "values": [-0.6, -0.3, 0.0, 0.3, 0.9, 0.4] },
+    { "label": "abundance ←→ scarcity",    "values": [ 0.7,  0.5, 0.2, -0.3, -0.5, -0.2] }
+  ],
+  "geo_origin": {
+    "zone_id": "staten_island",
+    "rationale": "One-sentence justification for the origin choice."
   }
 }
 
@@ -2243,7 +2261,10 @@ IMPORTANT:
 - Include at least 5 event_log entries at different time positions
 - Include at least 5 related_terms
 - Both counter_signal.within_frame.strength_pct and counter_signal.exit.strength_pct should be 0-100
-- pull_quote must express the gap_reframe, not sympathize with the phenomenon. Adversarial posture to the sign is the McWhy voice. A sympathetic pull quote means move three was not completed`;
+- pull_quote must express the gap_reframe, not sympathize with the phenomenon. Adversarial posture to the sign is the McWhy voice. A sympathetic pull quote means move three was not completed
+- semiotic_stages MUST have exactly 6 entries in order: seed, subculture, crossover, mainstream, parody, revival. Each entry needs signifier (the observable form), signified (what it denotes at that stage), and myth (the connotation that hardens — use "—" only for the seed stage where no myth has accreted yet). The signs MUST MUTATE across stages; copying the same signifier across rows is a bug.
+- opposition_axes MUST have 3–4 entries. Each "values" array is exactly 6 numbers in [-1, 1], one per stage, representing Saussurean drift. Pick axes specific to the phenomenon (not generic filler). The values should tell a story: something meaningful happens between seed and revival.
+- geo_origin.zone_id MUST be exactly one of these canonical zones (pick the single closest match to where the signal seeded): staten_island, nyc, la, miami, austin, chicago, rural_us, toronto, london, paris, berlin, milan, copenhagen, warsaw, seoul, tokyo, shanghai, mumbai, jakarta, manila, saopaulo, mexico, bogota, lagos, nairobi, capetown, dubai, istanbul, sydney. Do not invent new ids. If the true origin is diffuse or ambiguous, pick the zone that would be most recognizable as the seeding context (e.g., "nyc" for US-internet-native signals with no sharper locus).`;
 
 // ══════════════════════════════════════════════
 // CLAUDE API CALL
@@ -2329,6 +2350,7 @@ async function analyze(question) {
     badge.style.display = 'inline-block';
 
     renderReport(data);
+    pushSimulatorTrend(data, question);
     saveAnalysis(question, data);
   } catch (e) {
     showState('error');
@@ -2349,8 +2371,9 @@ function revealApp(question) {
   document.getElementById('landing').classList.add('hidden');
   document.getElementById('app').classList.add('active');
   document.getElementById('signal-input').value = question;
-  // Default to simulation view on submit; analysis loads in the background.
-  setMode('simulation');
+  // Land on analysis — that's what the user asked for. The simulator
+  // populates in parallel via submitQuery so it's ready when they toggle.
+  setMode('analysis');
   // Small delay for the landing→app CSS transition to finish before we kick
   // off the streaming Claude render that will repaint the analysis pane.
   setTimeout(() => submitQuery(question), 300);
@@ -2365,18 +2388,114 @@ function setMode(mode) {
   if (simBtn) simBtn.setAttribute('data-active', mode === 'simulation');
   if (anBtn)  anBtn.setAttribute('data-active',  mode === 'analysis');
 }
-function runSimulatorQuery(q) {
-  // The React simulator exposes this once it has mounted. Retry briefly if
-  // the user submits before Babel has finished compiling.
+// Retry helper: the React simulator mounts after Babel compiles its JSX, so
+// bridge calls made before mount have to wait. We poll for up to ~4s.
+function callSimulator(fnName, ...args) {
   let tries = 0;
   const tick = () => {
-    if (typeof window.simulatorSetQuery === 'function') {
-      window.simulatorSetQuery(q);
+    if (typeof window[fnName] === 'function') {
+      window[fnName](...args);
     } else if (tries++ < 40) {
       setTimeout(tick, 100);
     }
   };
   tick();
+}
+
+// Build a TRENDS-shaped object from Claude's analysis output so the simulator
+// renders the actual queried signal instead of a canonical stand-in.
+// Returns { trend, geo } or null if required fields are missing.
+function buildTrendFromAnalysis(data, query) {
+  if (!data) return null;
+  const signs = Array.isArray(data.semiotic_stages) ? data.semiotic_stages : null;
+  const axes  = Array.isArray(data.opposition_axes) ? data.opposition_axes : null;
+  const geoOrigin = data.geo_origin && data.geo_origin.zone_id;
+
+  // Minimum viable: need the sign sheet + axes + origin zone.
+  if (!signs || signs.length !== 6) return null;
+  if (!axes || axes.length < 2) return null;
+  if (!geoOrigin || !window.ZONES || !window.ZONES[geoOrigin]) return null;
+
+  // Validate axes shape.
+  const axesOk = axes.every(a => Array.isArray(a.values) && a.values.length === 6);
+  if (!axesOk) return null;
+
+  // Pick the dominant counter-signal tier (exit > within_frame by strength).
+  const cs = data.counter_signal || {};
+  const wf = cs.within_frame || {};
+  const ex = cs.exit || {};
+  const exitStronger = (ex.strength_pct || 0) > (wf.strength_pct || 0);
+  const chosen = exitStronger ? ex : wf;
+  const counter = {
+    name: chosen.name || 'Counter-signal',
+    mode: exitStronger ? 'species' : 'mutation',
+    description: chosen.description || '',
+  };
+
+  // Rules tuned loosely by virality mechanism. Keep within the ranges the
+  // canonical trends use so the CA engine stays in a sensible regime.
+  const vm = data.virality_mechanism || {};
+  const isComplex = (vm.type || '').toLowerCase().includes('complex');
+  const isRapid = (vm.speed || '').toLowerCase().includes('rapid');
+  const rules_suggested = {
+    threshold: isComplex ? 0.35 : 0.25,
+    immunity: 0.15,
+    counter_strength: Math.max(0.4, Math.min(0.9, ((chosen.strength_pct || 50) / 100))),
+    platform_boost: isRapid ? 0.8 : 0.6,
+  };
+
+  const diffusion = Array.isArray(data.diffusion_path)
+    ? data.diffusion_path.map(d => ({
+        demo: d.demographic || '',
+        platform: d.platform || '',
+        date: d.date || '',
+      }))
+    : [];
+
+  const title = (data.signal_extracted && String(data.signal_extracted).trim())
+    || (query && String(query).trim())
+    || 'Untitled signal';
+
+  const trend = {
+    name: title,
+    kind: 'dynamic',
+    one_line: data.one_line || '',
+    signs: signs.map(s => ({
+      stage: s.stage,
+      signifier: s.signifier || '',
+      signified: s.signified || '',
+      myth: s.myth || '—',
+    })),
+    axes: axes.map(a => ({
+      label: a.label || '',
+      values: a.values.map(v => Math.max(-1, Math.min(1, Number(v) || 0))),
+    })),
+    counter,
+    rules_suggested,
+    diffusion,
+  };
+
+  // Neutral demographic profile — the analysis doesn't produce per-axis
+  // weights, so drilldown stays flat (modulated only by zone adoption).
+  const neutralProfile = {
+    age:      { gz: 0.5, ml: 0.5, gx: 0.5, bb: 0.5 },
+    income:   { lo: 0.5, mid: 0.5, hi: 0.5 },
+    urban:    { urb: 0.5, sub: 0.5, rur: 0.5 },
+    politics: { left: 0.5, cen: 0.5, right: 0.5 },
+    race:     { w: 0.5, b: 0.5, a: 0.5, h: 0.5, o: 0.5 },
+    edu:      { col: 0.5, nonc: 0.5 },
+    platform: { tiktok: 0.5, ig: 0.5, x: 0.5, substack: 0.5, tv: 0.5 },
+    govt:     { dem: 0.5, mixed: 0.5, auth: 0.5 },
+    climate:  { temp: 0.5, sub: 0.5, trop: 0.5, arid: 0.5 },
+  };
+
+  const geo = {
+    origin: geoOrigin,
+    spread: [{ zone: geoOrigin, t: 0, intensity: 1.0 }],
+    profile: neutralProfile,
+  };
+
+  return { trend, geo };
 }
 
 // Single entry point for "the user wants to know about <question>".
@@ -2390,12 +2509,23 @@ function submitQuery(question, opts = {}) {
   state.query = q;
   const input = document.getElementById('signal-input');
   if (input) input.value = q;
-  runSimulatorQuery(q);
+  // Show the sim in loading state — the dynamic trend arrives once analysis
+  // completes (see pushSimulatorTrend in analyze / rehydrateAnalysisFromCache).
+  callSimulator('simulatorSetLoading', q);
   if (opts.rehydrateId != null && opts.rehydrateId !== '') {
     rehydrateAnalysisFromCache(opts.rehydrateId, q);
   } else {
     analyze(q);
   }
+}
+
+// Build a dynamic trend from analysis output and push it into the simulator.
+// No-op if the analysis is missing the required semiotic/geo fields — the
+// sim stays in the skeleton state rather than showing the wrong trend.
+function pushSimulatorTrend(data, question) {
+  const built = buildTrendFromAnalysis(data, question);
+  if (!built) return;
+  callSimulator('simulatorSetTrend', built.trend, built.geo);
 }
 
 // ══════════════════════════════════════════════
@@ -3716,6 +3846,7 @@ async function rehydrateAnalysisFromCache(id, question) {
     badge.textContent = sType;
     badge.style.display = 'inline-block';
     renderReport(data.full_analysis);
+    pushSimulatorTrend(data.full_analysis, question);
   } catch (err) {
     alert('Failed to rehydrate: ' + (err.message || err));
   }
@@ -3728,6 +3859,7 @@ function rehydrateFromLibrary(id, question) {
     document.getElementById('landing').classList.add('hidden');
     document.getElementById('app').classList.add('active');
   }
+  setMode('analysis');
   submitQuery(question, { rehydrateId: id });
 }
 

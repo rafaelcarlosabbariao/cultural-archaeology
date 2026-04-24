@@ -2,8 +2,13 @@
 // Top bar, mode toggle, and theme live on index.html; this component
 // provides the simulation content pane only.
 
+const DYNAMIC_ID = '__dynamic__';
+
 function App() {
   const [trendId, setTrendId] = React.useState('mob-wife');
+  // loadingQuery: analysis in flight, no trend yet. Title shown, sim pane
+  // renders a skeleton so users never see the wrong canonical stand-in.
+  const [loadingQuery, setLoadingQuery] = React.useState(null);
   const trend = TRENDS[trendId];
 
   const [t, setT] = React.useState(0.18);
@@ -25,21 +30,41 @@ function App() {
     setCounterMode(tr.counter.mode);
     setSelectedZone(TREND_GEO[id].origin);
     setT(0.1);
+    setLoadingQuery(null);
   }, []);
 
-  // Bridge from index.html's top-bar input: fuzzy-match an arbitrary query
-  // to a canon trend and pick it. Falls back to cringe-weapon for unknowns.
+  // Bridge from index.html: the analysis flow pushes a dynamic trend built
+  // from the live Claude output, so the sim is a projection of the analysis
+  // (not a hardcoded stand-in). Three entry points:
+  //   simulatorSetLoading(query) — analysis kicked off, show skeleton
+  //   simulatorSetTrend(trend, geo) — analysis done, render dynamic trend
+  //   simulatorReset() — back to landing / canonical demo
   React.useEffect(() => {
-    window.simulatorSetQuery = (query) => {
-      if (!query) return;
-      const q = String(query).toLowerCase().trim();
-      const hit = TREND_LIST.find(tr =>
-        q.includes(tr.name.toLowerCase().split(' ')[0]) || tr.name.toLowerCase().includes(q)
-      );
-      pickTrend(hit ? hit.id : 'cringe-weapon');
+    window.simulatorSetLoading = (query) => {
+      setLoadingQuery(query || '');
     };
-    return () => { delete window.simulatorSetQuery; };
-  }, [pickTrend]);
+    window.simulatorSetTrend = (dynTrend, dynGeo) => {
+      if (!dynTrend || !dynGeo || !dynGeo.origin) return;
+      // Inject into the globals the engine, globe, and drilldown read from.
+      // We use a single reserved slot so repeated excavations overwrite.
+      TRENDS[DYNAMIC_ID] = dynTrend;
+      TREND_GEO[DYNAMIC_ID] = dynGeo;
+      setTrendId(DYNAMIC_ID);
+      setRules(dynTrend.rules_suggested);
+      setCounterMode(dynTrend.counter.mode);
+      setSelectedZone(dynGeo.origin);
+      setT(0.1);
+      setLoadingQuery(null);
+    };
+    window.simulatorReset = () => {
+      setLoadingQuery(null);
+    };
+    return () => {
+      delete window.simulatorSetLoading;
+      delete window.simulatorSetTrend;
+      delete window.simulatorReset;
+    };
+  }, []);
 
   // Playback
   React.useEffect(() => {
@@ -66,6 +91,31 @@ function App() {
   const VAR_MAP = { A: VariationA, B: VariationB, C: VariationC };
   const VAR_LABEL = { A: 'Ink in water', B: 'Topographic', C: 'Editorial' };
   const ActiveVar = VAR_MAP[activeVar];
+
+  // Skeleton: analysis is in flight, dynamic trend not yet built. Show the
+  // query the user submitted so they're oriented, not the previous trend.
+  if (loadingQuery) {
+    return (
+      <div className="sim-content">
+        <section className="mw-hero">
+          <h1 className="mw-display">{loadingQuery}</h1>
+          <div className="mw-one-line" style={{ opacity: 0.7 }}>
+            Building simulation from analysis…
+          </div>
+          <div className="mw-hero-grid">
+            <article className="report-card mw-sim-card">
+              <div className="rc-head">
+                <span>Simulation · awaiting semiotic structure</span>
+              </div>
+              <div className="rc-body" style={{ minHeight: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', fontSize: 12 }}>
+                Toggle to Analysis to watch the report build. The simulation will populate here when it completes.
+              </div>
+            </article>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="sim-content">
