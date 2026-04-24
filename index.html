@@ -1870,6 +1870,7 @@ html, body {
 // STATE
 // ══════════════════════════════════════════════
 const state = {
+  query: null,
   data: null,
   scrubber: 0,
   playing: false,
@@ -2350,9 +2351,9 @@ function revealApp(question) {
   document.getElementById('signal-input').value = question;
   // Default to simulation view on submit; analysis loads in the background.
   setMode('simulation');
-  runSimulatorQuery(question);
-  // Small delay for transition to finish before triggering analysis
-  setTimeout(() => analyze(question), 300);
+  // Small delay for the landing→app CSS transition to finish before we kick
+  // off the streaming Claude render that will repaint the analysis pane.
+  setTimeout(() => submitQuery(question), 300);
 }
 
 // ── Unified mode + simulator bridge ──────────────────────
@@ -2376,6 +2377,25 @@ function runSimulatorQuery(q) {
     }
   };
   tick();
+}
+
+// Single entry point for "the user wants to know about <question>".
+// Every submit path (Enter key, trend chip, canon row, library row) routes
+// through here so the simulation pane and the analysis pane stay in sync.
+//   opts.rehydrateId — pull cached analysis from Supabase by row id instead
+//                      of calling Claude (used by Library / Recent Searches).
+function submitQuery(question, opts = {}) {
+  const q = (question || '').trim();
+  if (!q) return;
+  state.query = q;
+  const input = document.getElementById('signal-input');
+  if (input) input.value = q;
+  runSimulatorQuery(q);
+  if (opts.rehydrateId != null && opts.rehydrateId !== '') {
+    rehydrateAnalysisFromCache(opts.rehydrateId, q);
+  } else {
+    analyze(q);
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -3066,11 +3086,7 @@ function copyReport() {
 // ══════════════════════════════════════════════
 document.getElementById('signal-input').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') {
-    const q = e.target.value.trim();
-    if (q) {
-      runSimulatorQuery(q);
-      analyze(q);
-    }
+    submitQuery(e.target.value);
   }
 });
 
@@ -3607,11 +3623,10 @@ function attachTrendClickHandlers(container) {
       const q = el.dataset.q;
       if (!q) return;
       closeLiveTrends();
-      document.getElementById('signal-input').value = q;
       if (!document.getElementById('app').classList.contains('active')) {
         revealApp(q);
       } else {
-        analyze(q);
+        submitQuery(q);
       }
     });
   });
@@ -3683,7 +3698,7 @@ async function loadLibrary() {
   }
 }
 
-async function rehydrateFromLibrary(id, question) {
+async function rehydrateAnalysisFromCache(id, question) {
   if (!sb) return;
   try {
     const { data, error } = await sb
@@ -3693,12 +3708,6 @@ async function rehydrateFromLibrary(id, question) {
       .single();
     if (error) throw error;
     if (!data?.full_analysis) throw new Error('no analysis stored for this row');
-    closeLibrary();
-    document.getElementById('signal-input').value = question;
-    if (!document.getElementById('app').classList.contains('active')) {
-      document.getElementById('landing').classList.add('hidden');
-      document.getElementById('app').classList.add('active');
-    }
     state.data = data.full_analysis;
     state.conceptTooltips = data.full_analysis.concept_tooltips || {};
     state.ungrounded = false;
@@ -3710,6 +3719,16 @@ async function rehydrateFromLibrary(id, question) {
   } catch (err) {
     alert('Failed to rehydrate: ' + (err.message || err));
   }
+}
+
+function rehydrateFromLibrary(id, question) {
+  if (!sb) return;
+  closeLibrary();
+  if (!document.getElementById('app').classList.contains('active')) {
+    document.getElementById('landing').classList.add('hidden');
+    document.getElementById('app').classList.add('active');
+  }
+  submitQuery(question, { rehydrateId: id });
 }
 
 document.getElementById('library-btn').addEventListener('click', openLibrary);
@@ -3835,9 +3854,8 @@ function renderLandingTrends() {
 function openSimulationForTrend(trendId, trendName) {
   document.getElementById('landing').classList.add('hidden');
   document.getElementById('app').classList.add('active');
-  document.getElementById('signal-input').value = trendName;
   setMode('simulation');
-  runSimulatorQuery(trendName);
+  submitQuery(trendName);
 }
 
 function paintHistoryRows(el, rows, note) {
