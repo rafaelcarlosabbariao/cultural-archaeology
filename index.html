@@ -878,16 +878,23 @@ html, body {
 #sankey-svg .sk-link:hover { stroke-opacity: 0.7 !important; }
 #sankey-svg .sk-label {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 500;
   fill: var(--text);
   pointer-events: none;
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 4;
 }
 #sankey-svg .sk-stage-header {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 1px;
   fill: var(--text-dim);
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 3;
 }
 
 #sankey-tooltip {
@@ -946,12 +953,14 @@ html, body {
 #sankey-svg .tl-node:hover { stroke-width: 2.5; }
 #sankey-svg .tl-node-label {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
   fill: var(--text);
   pointer-events: none;
   paint-order: stroke;
   stroke: var(--bg);
-  stroke-width: 3;
+  stroke-width: 4;
 }
 #sankey-svg .tl-cursor {
   stroke: var(--signal);
@@ -1920,14 +1929,14 @@ html, body {
       <input type="range" id="scrubber" min="0" max="100" value="0" step="1">
     </div>
     <div id="term-cloud"></div>
-    <div id="graph-container" data-view="network">
+    <div id="graph-container" data-view="timeline">
       <svg id="graph-svg"></svg>
       <svg id="sankey-svg"></svg>
       <div id="graph-view-toggle" role="tablist">
-        <button class="graph-view-btn" data-view="network" data-active="true" title="Force-directed knowledge graph">Network</button>
+        <button class="graph-view-btn" data-view="timeline" data-active="true" title="Concepts plotted on a real time axis, grouped by category lane">Timeline</button>
+        <button class="graph-view-btn" data-view="network" title="Force-directed knowledge graph">Network</button>
         <button class="graph-view-btn" data-view="demographic" title="Demographic diffusion across adoption stages">Demographic</button>
         <button class="graph-view-btn" data-view="categories" title="Causal flow between node categories (social, economic, platform…)">Categories</button>
-        <button class="graph-view-btn" data-view="timeline" title="Concepts plotted on a real time axis, grouped by category lane">Timeline</button>
       </div>
       <div id="sankey-tooltip">
         <div class="st-label"></div>
@@ -2050,7 +2059,7 @@ const state = {
   playInterval: null,
   ungrounded: false,
   conceptTooltips: {},
-  graphView: 'network', // 'network' | 'demographic' | 'categories' | 'timeline'
+  graphView: 'timeline', // 'network' | 'demographic' | 'categories' | 'timeline'
   focusNodeId: null,    // id of focused network node, or null for full-graph view
 };
 
