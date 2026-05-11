@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -822,6 +823,166 @@ html, body {
 }
 
 #graph-container svg { width: 100%; height: 100%; }
+
+/* ── View toggle (Network / Sankey flows) ── */
+#graph-view-toggle {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  display: flex;
+  gap: 0;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-wrap: nowrap;
+  max-width: calc(100% - 24px);
+  scrollbar-width: none;
+  z-index: 10;
+}
+#graph-view-toggle::-webkit-scrollbar { display: none; }
+.graph-view-btn {
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 6px 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+.graph-view-btn:last-child { border-right: none; }
+.graph-view-btn:hover { color: var(--text); background: var(--border); }
+.graph-view-btn[data-active="true"] { color: var(--text); background: var(--border); }
+
+/* Swap which svg is visible based on active view */
+#sankey-svg { display: none; }
+#graph-container[data-view="network"] #graph-svg { display: block; }
+#graph-container[data-view="network"] #sankey-svg { display: none; }
+#graph-container:not([data-view="network"]) #graph-svg { display: none; }
+#graph-container:not([data-view="network"]) #sankey-svg { display: block; }
+
+/* Hide network-only chrome when a sankey view is active */
+#graph-container:not([data-view="network"]) #graph-zoom-controls,
+#graph-container:not([data-view="network"]) #graph-spacing-wrap { display: none; }
+
+/* Sankey styling */
+#sankey-svg .sk-node rect { cursor: pointer; }
+#sankey-svg .sk-link { fill: none; mix-blend-mode: screen; transition: stroke-opacity 0.15s; }
+#sankey-svg .sk-link:hover { stroke-opacity: 0.7 !important; }
+#sankey-svg .sk-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  fill: var(--text);
+  pointer-events: none;
+}
+#sankey-svg .sk-stage-header {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  fill: var(--text-dim);
+}
+
+#sankey-tooltip {
+  position: absolute;
+  display: none;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text);
+  pointer-events: none;
+  z-index: 20;
+  max-width: 240px;
+}
+#sankey-tooltip .st-label { font-weight: 500; margin-bottom: 2px; }
+#sankey-tooltip .st-meta { color: var(--text-dim); font-size: 10px; }
+
+/* ── Timeline (swim-lane chart in #sankey-svg) ── */
+#sankey-svg .tl-lane-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+#sankey-svg .tl-axis,
+#sankey-svg .tl-tick { stroke: var(--border); stroke-width: 1; }
+#sankey-svg .tl-axis-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  fill: var(--text-dim);
+}
+#sankey-svg .tl-stage-divider {
+  stroke: var(--border);
+  stroke-width: 1;
+  stroke-dasharray: 2,3;
+  opacity: 0.5;
+}
+#sankey-svg .tl-edge {
+  fill: none;
+  transition: stroke-opacity 0.15s;
+}
+#sankey-svg .tl-edge:hover { stroke-opacity: 0.9 !important; stroke-width: 2 !important; }
+#sankey-svg .tl-event {
+  stroke: var(--signal);
+  stroke-width: 1;
+  stroke-dasharray: 3,3;
+  cursor: pointer;
+}
+#sankey-svg .tl-node {
+  stroke: var(--node-stroke);
+  stroke-width: 1.5;
+  cursor: pointer;
+}
+#sankey-svg .tl-node:hover { stroke-width: 2.5; }
+#sankey-svg .tl-node-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  fill: var(--text);
+  pointer-events: none;
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 3;
+}
+#sankey-svg .tl-cursor {
+  stroke: var(--signal);
+  stroke-width: 1.5;
+  opacity: 0.65;
+  pointer-events: none;
+}
+
+/* ── Network focus mode: clear pill ── */
+#graph-focus-clear {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-2);
+  border: 1px solid var(--signal);
+  color: var(--signal);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 5px 10px;
+  border-radius: 14px;
+  cursor: pointer;
+  z-index: 11;
+  transition: background 0.15s;
+}
+#graph-focus-clear:hover { background: var(--border); }
 
 /* ── Graph zoom controls ── */
 #graph-zoom-controls {
@@ -1759,8 +1920,20 @@ html, body {
       <input type="range" id="scrubber" min="0" max="100" value="0" step="1">
     </div>
     <div id="term-cloud"></div>
-    <div id="graph-container">
+    <div id="graph-container" data-view="network">
       <svg id="graph-svg"></svg>
+      <svg id="sankey-svg"></svg>
+      <div id="graph-view-toggle" role="tablist">
+        <button class="graph-view-btn" data-view="network" data-active="true" title="Force-directed knowledge graph">Network</button>
+        <button class="graph-view-btn" data-view="demographic" title="Demographic diffusion across adoption stages">Demographic</button>
+        <button class="graph-view-btn" data-view="categories" title="Causal flow between node categories (social, economic, platform…)">Categories</button>
+        <button class="graph-view-btn" data-view="timeline" title="Concepts plotted on a real time axis, grouped by category lane">Timeline</button>
+      </div>
+      <div id="sankey-tooltip">
+        <div class="st-label"></div>
+        <div class="st-meta"></div>
+      </div>
+      <button id="graph-focus-clear" type="button" title="Clear focus">× clear focus</button>
       <div id="graph-zoom-controls">
         <button class="graph-ctrl-btn" id="graph-zoom-in" title="Zoom in">+</button>
         <button class="graph-ctrl-btn" id="graph-zoom-out" title="Zoom out">−</button>
@@ -1876,7 +2049,9 @@ const state = {
   playing: false,
   playInterval: null,
   ungrounded: false,
-  conceptTooltips: {}
+  conceptTooltips: {},
+  graphView: 'network', // 'network' | 'demographic' | 'categories' | 'timeline'
+  focusNodeId: null,    // id of focused network node, or null for full-graph view
 };
 
 // ══════════════════════════════════════════════
@@ -2670,6 +2845,11 @@ function renderReport(data) {
   // Build visualizations
   buildSCurve(data);
   buildGraph(data);
+  if (state.graphView === 'timeline') {
+    buildTimeline(data);
+  } else if (state.graphView && state.graphView !== 'network') {
+    buildSankey(data, state.graphView);
+  }
   buildTermCloud(data);
   updateScrubber(0);
 }
@@ -2834,10 +3014,24 @@ function buildSCurve(data) {
 // D3 GRAPH
 // ══════════════════════════════════════════════
 let graphSim = null;
+// applyGraphFocus is a closure set by buildGraph; updateScrubber calls it so
+// scrubber-driven opacity updates don't blow away the focused-node highlight.
+let applyGraphFocus = null;
+// Timeline registers its own scrubber callback (its DOM lives in #sankey-svg,
+// outside the loop in updateScrubber).
+let updateTimelineForScrubber = null;
+// Sankey views (demographic, categories) register their own scrubber callback —
+// fades nodes/links based on data-pct stamped at build time.
+let updateSankeyForScrubber = null;
 
 function buildGraph(data) {
   const svg = d3.select('#graph-svg');
   svg.selectAll('*').remove();
+  // New analysis = fresh graph; any prior focus is now meaningless.
+  state.focusNodeId = null;
+  applyGraphFocus = null;
+  const focusPill = document.getElementById('graph-focus-clear');
+  if (focusPill) focusPill.style.display = 'none';
 
   const container = document.getElementById('graph-container');
   const w = container.clientWidth;
@@ -2873,17 +3067,8 @@ function buildGraph(data) {
     .on('zoom', (event) => {
       graphGroup.attr('transform', event.transform);
       currentZoomScale = event.transform.k;
-      // Edge labels become more visible when zoomed in
-      edgeLabelEls.attr('opacity', function() {
-        const pct = +this.getAttribute('data-pct');
-        if (pct > state.scrubber) return 0;
-        return currentZoomScale > 1.3 ? 0.85 : 0.4;
-      });
-      edgeLabelBgEls.attr('opacity', function() {
-        const pct = +this.getAttribute('data-pct');
-        if (pct > state.scrubber) return 0;
-        return currentZoomScale > 1.3 ? 0.7 : 0;
-      });
+      // Single source of truth for opacities — combines scrubber, zoom, focus.
+      applyFocus();
     });
 
   svg.call(zoom);
@@ -3001,12 +3186,134 @@ function buildGraph(data) {
     const rect = container.getBoundingClientRect();
     tooltip.style.left = (e.clientX - rect.left + 15) + 'px';
     tooltip.style.top = (e.clientY - rect.top - 10) + 'px';
-    // Highlight connected edges
-    edgeEls.attr('stroke', ed => (ed.source.id === d.id || ed.target.id === d.id) ? 'var(--edge-hover)' : 'var(--edge-color)');
+    // Hover-highlight connected edges, but only when not in focus mode —
+    // focus mode owns the edge styling and we shouldn't fight it.
+    if (!state.focusNodeId) {
+      edgeEls.attr('stroke', ed => (ed.source.id === d.id || ed.target.id === d.id) ? 'var(--edge-hover)' : 'var(--edge-color)');
+    }
   }).on('mouseout', () => {
     tooltip.style.opacity = 0;
-    edgeEls.attr('stroke', 'var(--edge-color)');
+    if (!state.focusNodeId) edgeEls.attr('stroke', 'var(--edge-color)');
   });
+
+  // ── Focus mode ──
+  // Build adjacency once for fast 1-hop lookups.
+  const neighborsById = new Map(nodes.map(n => [n.id, new Set([n.id])]));
+  edges.forEach(e => {
+    const sid = (e.source && e.source.id) || e.source;
+    const tid = (e.target && e.target.id) || e.target;
+    neighborsById.get(sid)?.add(tid);
+    neighborsById.get(tid)?.add(sid);
+  });
+
+  function applyFocus() {
+    const v = state.scrubber;
+    const focused = state.focusNodeId;
+    const focusSet = focused ? neighborsById.get(focused) : null;
+
+    nodeEls.each(function(d) {
+      const pct = +this.getAttribute('data-pct');
+      const inWindow = pct <= v;
+      let op;
+      if (!inWindow) op = 0;
+      else if (!focusSet) op = 1;
+      else op = focusSet.has(d.id) ? 1 : 0.12;
+      d3.select(this).attr('opacity', op);
+      // Glow: scrubber's recent-arrival glow takes precedence on visible nodes,
+      // except the focused node always gets a glow when visible.
+      if (focused === d.id && inWindow) {
+        d3.select(this).attr('filter', 'url(#node-glow)');
+      } else if (inWindow && pct > v - 15) {
+        d3.select(this).attr('filter', 'url(#node-glow)');
+      } else {
+        d3.select(this).attr('filter', null);
+      }
+    });
+
+    labelEls.each(function(d) {
+      const pct = +this.getAttribute('data-pct');
+      const inWindow = pct <= v;
+      let op;
+      if (!inWindow) op = 0;
+      else if (!focusSet) op = 1;
+      else op = focusSet.has(d.id) ? 1 : 0;
+      d3.select(this).attr('opacity', op);
+    });
+
+    labelBgEls.each(function(d) {
+      const pct = +this.getAttribute('data-pct');
+      const inWindow = pct <= v;
+      let op;
+      if (!inWindow) op = 0;
+      else if (!focusSet) op = 0.75;
+      else op = focusSet.has(d.id) ? 0.75 : 0;
+      d3.select(this).attr('opacity', op);
+    });
+
+    edgeEls.each(function(d) {
+      const pct = +this.getAttribute('data-pct');
+      const inWindow = pct <= v;
+      const isFocusEdge = focused && (d.source.id === focused || d.target.id === focused);
+      let op;
+      if (!inWindow) op = 0;
+      else if (!focusSet) op = 1;
+      else op = isFocusEdge ? 1 : 0.05;
+      const sel = d3.select(this);
+      sel.attr('opacity', op);
+      sel.attr('stroke', isFocusEdge ? 'var(--edge-hover)' : 'var(--edge-color)');
+      sel.attr('stroke-width', isFocusEdge
+        ? Math.max(2, (d.weight || 0.5) * 5)
+        : Math.max(1.5, (d.weight || 0.5) * 4));
+    });
+
+    edgeLabelEls.each(function(d) {
+      const pct = +this.getAttribute('data-pct');
+      const inWindow = pct <= v;
+      const isFocusEdge = focused && (d.source.id === focused || d.target.id === focused);
+      let op;
+      if (!inWindow) op = 0;
+      else if (focusSet) op = isFocusEdge ? 1 : 0;
+      else op = currentZoomScale > 1.3 ? 0.85 : 0.4;
+      d3.select(this).attr('opacity', op);
+    });
+
+    edgeLabelBgEls.each(function(d) {
+      const pct = +this.getAttribute('data-pct');
+      const inWindow = pct <= v;
+      const isFocusEdge = focused && (d.source.id === focused || d.target.id === focused);
+      let op;
+      if (!inWindow) op = 0;
+      else if (focusSet) op = isFocusEdge ? 0.7 : 0;
+      else op = currentZoomScale > 1.3 ? 0.7 : 0;
+      d3.select(this).attr('opacity', op);
+    });
+
+    if (focusPill) focusPill.style.display = focused ? 'inline-flex' : 'none';
+  }
+
+  nodeEls.on('click', (ev, d) => {
+    ev.stopPropagation();
+    state.focusNodeId = state.focusNodeId === d.id ? null : d.id;
+    applyFocus();
+  });
+
+  // Click on empty SVG background clears focus.
+  svg.on('click', (ev) => {
+    if (ev.target === svg.node() && state.focusNodeId) {
+      state.focusNodeId = null;
+      applyFocus();
+    }
+  });
+
+  if (focusPill) {
+    focusPill.onclick = (ev) => {
+      ev.stopPropagation();
+      state.focusNodeId = null;
+      applyFocus();
+    };
+  }
+
+  applyGraphFocus = applyFocus;
 
   // ── Tick ──
   graphSim.on('tick', () => {
@@ -3036,6 +3343,502 @@ function buildGraph(data) {
       bg.attr('x', bbox.x - 3).attr('y', bbox.y - 1).attr('width', bbox.width + 6).attr('height', bbox.height + 2);
     });
   });
+}
+
+// ══════════════════════════════════════════════
+// SANKEY — two flow views of the same analysis
+//   demographic: stage-to-stage demographic chain from diffusion_path
+//   categories:  aggregated category↔category flow from graph.edges
+// (Timeline view is a separate swim-lane renderer — see buildTimeline below.)
+// ══════════════════════════════════════════════
+const SANKEY_CATEGORIES = ['social', 'economic', 'science', 'platform', 'cultural', 'counter'];
+const SANKEY_LIFECYCLE_STAGES = [
+  { label: 'Seed',       max: 16 },
+  { label: 'Subculture', max: 33 },
+  { label: 'Crossover',  max: 50 },
+  { label: 'Mainstream', max: 66 },
+  { label: 'Parody',     max: 83 },
+  { label: 'Revival',    max: 101 },
+];
+const SANKEY_CAT_COLOR = {
+  social:   'var(--social)',
+  economic: 'var(--economic)',
+  science:  'var(--science)',
+  platform: 'var(--platform)',
+  cultural: 'var(--cultural)',
+  counter:  'var(--counter-node)',
+};
+
+function buildSankeyData(data, mode) {
+  if (mode === 'demographic') {
+    const path = Array.isArray(data.diffusion_path) ? data.diffusion_path : [];
+    if (path.length < 2) return { nodes: [], links: [] };
+    // Each stage → one node labeled by its demographic. Link to next stage.
+    // Index-mapped pct so the scrubber fades stages in left-to-right.
+    const lastIdx = Math.max(1, path.length - 1);
+    const nodes = path.map((p, i) => ({
+      id: `stage${i}`,
+      name: (p.demographic || `Cohort ${i + 1}`).trim(),
+      stageLabel: `Stage ${p.stage || i + 1}${p.date ? ' · ' + p.date : ''}`,
+      platform: p.platform || '',
+      description: p.description || '',
+      color: 'var(--social)',
+      appears_at_pct: (i / lastIdx) * 100,
+    }));
+    const links = [];
+    for (let i = 0; i < nodes.length - 1; i++) {
+      links.push({
+        source: i, target: i + 1, value: 1,
+        label: path[i + 1]?.platform || '',
+        appears_at_pct: ((i + 1) / lastIdx) * 100,
+      });
+    }
+    return { nodes, links };
+  }
+
+  if (mode === 'categories') {
+    const g = data.graph || { nodes: [], edges: [] };
+    const nodeMap = new Map(g.nodes.map(n => [n.id, n]));
+    // Aggregate (sourceCat → targetCat) edge weights + earliest appearance.
+    const agg = new Map();
+    (g.edges || []).forEach(e => {
+      const s = nodeMap.get(e.source)?.category;
+      const t = nodeMap.get(e.target)?.category;
+      if (!s || !t || !SANKEY_CATEGORIES.includes(s) || !SANKEY_CATEGORIES.includes(t)) return;
+      if (s === t) return; // Skip self-loops — sankey can't render them.
+      const key = s + '→' + t;
+      const prior = agg.get(key) || { source: s, target: t, value: 0, appears_at_pct: Infinity };
+      prior.value += (e.weight || 0.5);
+      const ePct = Number.isFinite(+e.appears_at_pct) ? +e.appears_at_pct : 0;
+      prior.appears_at_pct = Math.min(prior.appears_at_pct, ePct);
+      agg.set(key, prior);
+    });
+    // Build node columns: left = sources, right = targets (same 6 categories).
+    // Use distinct ids for left vs right so d3-sankey treats them as columns.
+    const nodes = [];
+    const idx = new Map();
+    SANKEY_CATEGORIES.forEach(cat => {
+      idx.set('L:' + cat, nodes.length);
+      nodes.push({ id: 'L:' + cat, name: cat, side: 'source', color: SANKEY_CAT_COLOR[cat], appears_at_pct: Infinity });
+    });
+    SANKEY_CATEGORIES.forEach(cat => {
+      idx.set('R:' + cat, nodes.length);
+      nodes.push({ id: 'R:' + cat, name: cat, side: 'target', color: SANKEY_CAT_COLOR[cat], appears_at_pct: Infinity });
+    });
+    const links = [...agg.values()].map(l => ({
+      source: idx.get('L:' + l.source),
+      target: idx.get('R:' + l.target),
+      value: l.value,
+      appears_at_pct: Number.isFinite(l.appears_at_pct) ? l.appears_at_pct : 0,
+    }));
+    // Propagate each link's pct to its endpoints (earliest contributing edge).
+    links.forEach(l => {
+      nodes[l.source].appears_at_pct = Math.min(nodes[l.source].appears_at_pct, l.appears_at_pct);
+      nodes[l.target].appears_at_pct = Math.min(nodes[l.target].appears_at_pct, l.appears_at_pct);
+    });
+    // Drop orphan nodes so the layout isn't cluttered.
+    const used = new Set();
+    links.forEach(l => { used.add(l.source); used.add(l.target); });
+    const kept = nodes.map((n, i) => ({ ...n, _orig: i })).filter(n => used.has(n._orig));
+    const remap = new Map(kept.map((n, i) => [n._orig, i]));
+    const remapped = links.map(l => ({ source: remap.get(l.source), target: remap.get(l.target), value: l.value, appears_at_pct: l.appears_at_pct }));
+    kept.forEach(n => {
+      delete n._orig;
+      if (!Number.isFinite(n.appears_at_pct)) n.appears_at_pct = 0;
+    });
+    return { nodes: kept, links: remapped };
+  }
+
+  return { nodes: [], links: [] };
+}
+
+function buildSankey(data, mode) {
+  const svg = d3.select('#sankey-svg');
+  svg.selectAll('*').remove();
+
+  const container = document.getElementById('graph-container');
+  const w = container.clientWidth;
+  const h = container.clientHeight;
+  svg.attr('viewBox', `0 0 ${w} ${h}`);
+
+  const { nodes, links } = buildSankeyData(data, mode);
+  if (!nodes.length || !links.length) {
+    svg.append('text')
+      .attr('x', w / 2).attr('y', h / 2)
+      .attr('text-anchor', 'middle')
+      .attr('fill', 'var(--text-dim)')
+      .attr('font-family', 'var(--font-mono)')
+      .attr('font-size', 12)
+      .text('Not enough structure in this analysis to render a flow.');
+    return;
+  }
+
+  const padTop = 48, padBottom = 20, padX = Math.min(140, Math.max(60, w * 0.18));
+  const sankey = d3.sankey()
+    .nodeWidth(14)
+    .nodePadding(18)
+    .extent([[padX, padTop], [w - padX, h - padBottom]])
+    .nodeAlign(d3.sankeyJustify);
+
+  const graph = sankey({
+    nodes: nodes.map(n => ({ ...n })),
+    links: links.map(l => ({ ...l })),
+  });
+
+  // Links
+  const linkG = svg.append('g').attr('class', 'sankey-links').attr('fill', 'none');
+  linkG.selectAll('path')
+    .data(graph.links)
+    .enter().append('path')
+    .attr('class', 'sk-link')
+    .attr('d', d3.sankeyLinkHorizontal())
+    .attr('stroke', d => d.source.color || 'var(--edge-color)')
+    .attr('stroke-width', d => Math.max(1, d.width))
+    .attr('stroke-opacity', 0.35)
+    .attr('data-pct', d => d.appears_at_pct ?? 0)
+    .on('mousemove', (ev, d) => {
+      const tt = document.getElementById('sankey-tooltip');
+      tt.querySelector('.st-label').textContent = `${d.source.name} → ${d.target.name}`;
+      tt.querySelector('.st-meta').textContent =
+        mode === 'demographic' ? (d.label ? `via ${d.label}` : '')
+        : `weight ${d.value.toFixed(2)}`;
+      tt.style.display = 'block';
+      tt.style.left = (ev.offsetX + 12) + 'px';
+      tt.style.top  = (ev.offsetY + 12) + 'px';
+    })
+    .on('mouseleave', () => {
+      document.getElementById('sankey-tooltip').style.display = 'none';
+    });
+
+  // Nodes
+  const nodeG = svg.append('g').attr('class', 'sankey-nodes');
+  const nodeSel = nodeG.selectAll('g')
+    .data(graph.nodes)
+    .enter().append('g').attr('class', 'sk-node');
+
+  nodeSel.append('rect')
+    .attr('x', d => d.x0)
+    .attr('y', d => d.y0)
+    .attr('height', d => Math.max(1, d.y1 - d.y0))
+    .attr('width', d => d.x1 - d.x0)
+    .attr('fill', d => d.color || 'var(--text-dim)')
+    .attr('opacity', 0.9)
+    .attr('data-pct', d => d.appears_at_pct ?? 0)
+    .on('mousemove', (ev, d) => {
+      const tt = document.getElementById('sankey-tooltip');
+      tt.querySelector('.st-label').textContent = d.name;
+      const meta = d.stageLabel || (d.side ? (d.side === 'source' ? 'upstream' : 'downstream') : '');
+      tt.querySelector('.st-meta').textContent = meta + (d.description ? ' · ' + d.description : '');
+      tt.style.display = 'block';
+      tt.style.left = (ev.offsetX + 12) + 'px';
+      tt.style.top  = (ev.offsetY + 12) + 'px';
+    })
+    .on('mouseleave', () => {
+      document.getElementById('sankey-tooltip').style.display = 'none';
+    });
+
+  // Labels placed outside the rect on the nearer edge. Font scales down when
+  // many nodes stack on one side (mostly an issue in categories mode).
+  const leftCount = graph.nodes.filter(n => n.x0 < w / 2).length;
+  const rightCount = graph.nodes.filter(n => n.x0 >= w / 2).length;
+  const perSide = Math.max(leftCount, rightCount);
+  const labelFontSize = perSide > 7 ? 9 : perSide > 4 ? 10 : 11;
+  nodeSel.append('text')
+    .attr('class', 'sk-label')
+    .attr('x', d => d.x0 < w / 2 ? d.x1 + 6 : d.x0 - 6)
+    .attr('y', d => (d.y0 + d.y1) / 2)
+    .attr('dy', '0.35em')
+    .attr('text-anchor', d => d.x0 < w / 2 ? 'start' : 'end')
+    .attr('font-size', labelFontSize)
+    .attr('data-pct', d => d.appears_at_pct ?? 0)
+    .text(d => d.name);
+
+  // Scrubber-driven visibility — same pattern as the timeline. Walks all
+  // [data-pct] descendants and toggles opacity based on state.scrubber.
+  const applyScrubber = () => {
+    const v = state.scrubber;
+    svg.selectAll('[data-pct]').each(function() {
+      const pct = +this.getAttribute('data-pct');
+      const visible = pct <= v;
+      const cls = this.classList;
+      let target;
+      if (!visible) target = 0;
+      else if (cls.contains('sk-link')) target = 1;   // stroke-opacity handles dimming
+      else if (cls.contains('sk-label')) target = 1;
+      else target = 0.9;                              // node rect
+      d3.select(this).attr('opacity', target);
+    });
+  };
+  applyScrubber();
+  updateSankeyForScrubber = applyScrubber;
+}
+
+// ══════════════════════════════════════════════
+// TIMELINE — concepts plotted on a real time axis (appears_at_pct),
+// grouped into category swim lanes. Replaces the old lifecycle Sankey.
+// ══════════════════════════════════════════════
+function buildTimeline(data) {
+  const svg = d3.select('#sankey-svg');
+  svg.selectAll('*').remove();
+  updateTimelineForScrubber = null;
+
+  const container = document.getElementById('graph-container');
+  const w = container.clientWidth;
+  const h = container.clientHeight;
+  svg.attr('viewBox', `0 0 ${w} ${h}`);
+
+  const g = data.graph || { nodes: [], edges: [] };
+  if (!g.nodes.length) {
+    svg.append('text')
+      .attr('x', w / 2).attr('y', h / 2)
+      .attr('text-anchor', 'middle')
+      .attr('fill', 'var(--text-dim)')
+      .attr('font-family', 'var(--font-mono)')
+      .attr('font-size', 12)
+      .text('Not enough structure in this analysis to render a timeline.');
+    return;
+  }
+
+  // Active categories in canonical order, only those present in the data.
+  const present = new Set(g.nodes.map(n => n.category).filter(Boolean));
+  const lanes = SANKEY_CATEGORIES.filter(c => present.has(c));
+  if (!lanes.length) return;
+
+  const padTop = 44, padBottom = 38,
+        padLeft = Math.min(96, Math.max(60, w * 0.14)),
+        padRight = 24;
+  const x = d3.scaleLinear().domain([0, 100]).range([padLeft, w - padRight]);
+  const y = d3.scaleBand().domain(lanes).range([padTop, h - padBottom]).paddingInner(0.3);
+
+  // Stage band headers across the top — keep the lifecycle vocabulary as
+  // qualitative context for the percentage axis.
+  const stageHeader = svg.append('g').attr('class', 'tl-stage-headers');
+  let prevMax = 0;
+  SANKEY_LIFECYCLE_STAGES.forEach(s => {
+    const segMax = Math.min(100, s.max);
+    const center = (prevMax + segMax) / 2;
+    stageHeader.append('text')
+      .attr('class', 'sk-stage-header')
+      .attr('x', x(center)).attr('y', 22)
+      .attr('text-anchor', 'middle')
+      .text(s.label);
+    // Faint vertical divider between stages
+    if (s !== SANKEY_LIFECYCLE_STAGES[SANKEY_LIFECYCLE_STAGES.length - 1]) {
+      svg.append('line')
+        .attr('class', 'tl-stage-divider')
+        .attr('x1', x(segMax)).attr('x2', x(segMax))
+        .attr('y1', padTop - 6).attr('y2', h - padBottom + 4);
+    }
+    prevMax = segMax;
+  });
+
+  // Lane backgrounds + labels
+  const laneG = svg.append('g').attr('class', 'tl-lanes');
+  lanes.forEach(cat => {
+    laneG.append('rect')
+      .attr('x', padLeft).attr('y', y(cat))
+      .attr('width', w - padLeft - padRight)
+      .attr('height', y.bandwidth())
+      .attr('fill', SANKEY_CAT_COLOR[cat])
+      .attr('opacity', 0.05);
+    laneG.append('text')
+      .attr('x', padLeft - 10).attr('y', y(cat) + y.bandwidth() / 2)
+      .attr('dy', '0.35em')
+      .attr('text-anchor', 'end')
+      .attr('class', 'tl-lane-label')
+      .attr('fill', SANKEY_CAT_COLOR[cat])
+      .text(cat);
+  });
+
+  // Bottom axis line + percentage ticks
+  svg.append('line')
+    .attr('class', 'tl-axis')
+    .attr('x1', padLeft).attr('x2', w - padRight)
+    .attr('y1', h - padBottom + 6).attr('y2', h - padBottom + 6);
+  const tickG = svg.append('g').attr('class', 'tl-ticks');
+  for (let p = 0; p <= 100; p += 20) {
+    tickG.append('line')
+      .attr('class', 'tl-tick')
+      .attr('x1', x(p)).attr('x2', x(p))
+      .attr('y1', h - padBottom + 4).attr('y2', h - padBottom + 10);
+    tickG.append('text')
+      .attr('class', 'tl-axis-label')
+      .attr('x', x(p)).attr('y', h - padBottom + 22)
+      .attr('text-anchor', 'middle')
+      .text(p + '%');
+  }
+
+  // Position every node and stash it for edge lookup.
+  const nodeMap = new Map();
+  const positioned = [];
+  g.nodes.forEach(n => {
+    if (!lanes.includes(n.category)) return;
+    const pct = Math.max(0, Math.min(100, +n.appears_at_pct || 0));
+    const cx = x(pct);
+    const cy = y(n.category) + y.bandwidth() / 2;
+    const r = 4 + (n.weight || 0.5) * 6;
+    const obj = { ...n, _x: cx, _y: cy, _r: r, _pct: pct };
+    nodeMap.set(n.id, obj);
+    positioned.push(obj);
+  });
+
+  // Edges — gentle bezier arcs. The mid-control points push perpendicular to
+  // the source→target line so same-lane and cross-lane edges both stay readable.
+  const edgeG = svg.append('g').attr('class', 'tl-edges').attr('fill', 'none');
+  edgeG.selectAll('path')
+    .data((g.edges || []).filter(e => nodeMap.has(e.source) && nodeMap.has(e.target)))
+    .enter().append('path')
+    .attr('class', 'tl-edge')
+    .attr('d', e => {
+      const s = nodeMap.get(e.source);
+      const t = nodeMap.get(e.target);
+      const dx = t._x - s._x;
+      const arc = Math.min(38, Math.max(10, Math.abs(dx) * 0.28));
+      // Curve away from the straight line: lift control points if endpoints
+      // share a lane, else bow toward the lane mid-line.
+      const sameLane = s._y === t._y;
+      const cy1 = sameLane ? s._y - arc : s._y;
+      const cy2 = sameLane ? t._y - arc : t._y;
+      const cx1 = s._x + dx * 0.35;
+      const cx2 = s._x + dx * 0.65;
+      return `M${s._x},${s._y}C${cx1},${cy1} ${cx2},${cy2} ${t._x},${t._y}`;
+    })
+    .attr('stroke', e => SANKEY_CAT_COLOR[nodeMap.get(e.source).category] || 'var(--edge-color)')
+    .attr('stroke-width', e => Math.max(0.8, (e.weight || 0.5) * 2))
+    .attr('stroke-opacity', 0.45)
+    .attr('data-pct', e => Math.max(nodeMap.get(e.source)._pct, nodeMap.get(e.target)._pct))
+    .on('mousemove', (ev, e) => {
+      const tt = document.getElementById('sankey-tooltip');
+      const s = nodeMap.get(e.source);
+      const t = nodeMap.get(e.target);
+      tt.querySelector('.st-label').textContent = `${s.label} → ${t.label}`;
+      tt.querySelector('.st-meta').textContent = (e.label || '') + (e.weight ? ` · weight ${(+e.weight).toFixed(2)}` : '');
+      tt.style.display = 'block';
+      tt.style.left = (ev.offsetX + 12) + 'px';
+      tt.style.top  = (ev.offsetY + 12) + 'px';
+    })
+    .on('mouseleave', () => {
+      document.getElementById('sankey-tooltip').style.display = 'none';
+    });
+
+  // Event_log dashed verticals (independent of category lanes).
+  const eventG = svg.append('g').attr('class', 'tl-events');
+  (data.event_log || []).forEach(ev => {
+    const pct = Math.max(0, Math.min(100, +ev.time_pct || 0));
+    eventG.append('line')
+      .attr('class', 'tl-event')
+      .attr('x1', x(pct)).attr('x2', x(pct))
+      .attr('y1', padTop).attr('y2', h - padBottom + 4)
+      .attr('data-pct', pct)
+      .on('mousemove', (mev) => {
+        const tt = document.getElementById('sankey-tooltip');
+        tt.querySelector('.st-label').textContent = 'event';
+        tt.querySelector('.st-meta').textContent = ev.description || '';
+        tt.style.display = 'block';
+        tt.style.left = (mev.offsetX + 12) + 'px';
+        tt.style.top  = (mev.offsetY + 12) + 'px';
+      })
+      .on('mouseleave', () => {
+        document.getElementById('sankey-tooltip').style.display = 'none';
+      });
+  });
+
+  // Nodes
+  const nodeG = svg.append('g').attr('class', 'tl-nodes');
+  nodeG.selectAll('circle')
+    .data(positioned)
+    .enter().append('circle')
+    .attr('class', 'tl-node')
+    .attr('cx', d => d._x).attr('cy', d => d._y).attr('r', d => d._r)
+    .attr('fill', d => SANKEY_CAT_COLOR[d.category] || 'var(--text-dim)')
+    .attr('data-pct', d => d._pct)
+    .on('mousemove', (ev, d) => {
+      const tt = document.getElementById('sankey-tooltip');
+      tt.querySelector('.st-label').textContent = d.label;
+      tt.querySelector('.st-meta').textContent = d.description || '';
+      tt.style.display = 'block';
+      tt.style.left = (ev.offsetX + 12) + 'px';
+      tt.style.top  = (ev.offsetY + 12) + 'px';
+    })
+    .on('mouseleave', () => {
+      document.getElementById('sankey-tooltip').style.display = 'none';
+    });
+
+  // Node labels (above each circle)
+  const labelG = svg.append('g').attr('class', 'tl-labels');
+  labelG.selectAll('text')
+    .data(positioned)
+    .enter().append('text')
+    .attr('class', 'tl-node-label')
+    .attr('x', d => d._x).attr('y', d => d._y - d._r - 4)
+    .attr('text-anchor', 'middle')
+    .attr('data-pct', d => d._pct)
+    .text(d => d.label);
+
+  // Scrubber cursor (vertical line that follows state.scrubber)
+  const cursor = svg.append('line')
+    .attr('class', 'tl-cursor')
+    .attr('y1', padTop - 6).attr('y2', h - padBottom + 4);
+
+  const applyScrubber = () => {
+    const v = state.scrubber;
+    cursor.attr('x1', x(v)).attr('x2', x(v));
+    svg.selectAll('[data-pct]').each(function() {
+      const pct = +this.getAttribute('data-pct');
+      const visible = pct <= v;
+      const cls = this.classList;
+      let target;
+      if (!visible) target = 0;
+      else if (cls.contains('tl-edge')) target = 0.45;
+      else if (cls.contains('tl-event')) target = 0.5;
+      else if (cls.contains('tl-node-label')) target = 0.9;
+      else target = 1;
+      d3.select(this).attr('opacity', target);
+    });
+  };
+  applyScrubber();
+  updateTimelineForScrubber = applyScrubber;
+}
+
+function setGraphView(view) {
+  state.graphView = view;
+  const container = document.getElementById('graph-container');
+  container.setAttribute('data-view', view);
+  document.querySelectorAll('.graph-view-btn').forEach(b => {
+    b.setAttribute('data-active', String(b.dataset.view === view));
+  });
+  // Clear non-network scrubber closures; the next renderer (if any) re-registers.
+  updateTimelineForScrubber = null;
+  updateSankeyForScrubber = null;
+  if (view === 'network') return; // Network already built by buildGraph.
+  if (!state.data) return;
+  if (view === 'timeline') buildTimeline(state.data);
+  else buildSankey(state.data, view);
+}
+
+// Wire the toggle once (DOM exists at load, data may not).
+document.querySelectorAll('.graph-view-btn').forEach(btn => {
+  btn.addEventListener('click', () => setGraphView(btn.dataset.view));
+});
+
+// Re-render Sankey/Timeline when #graph-container resizes. Network's force
+// layout adapts via viewBox so it stays in place. Debounced so dragging
+// window edges doesn't thrash the layout.
+{
+  const graphContainerEl = document.getElementById('graph-container');
+  if (graphContainerEl && typeof ResizeObserver !== 'undefined') {
+    let resizeRebuildTimer = null;
+    new ResizeObserver(() => {
+      clearTimeout(resizeRebuildTimer);
+      resizeRebuildTimer = setTimeout(() => {
+        const v = state.graphView;
+        if (!state.data || !v || v === 'network') return;
+        if (v === 'timeline') buildTimeline(state.data);
+        else buildSankey(state.data, v);
+        updateScrubber(state.scrubber);
+      }, 200);
+    }).observe(graphContainerEl);
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -3073,36 +3876,17 @@ function updateScrubber(val) {
     return +this.getAttribute('data-pct') <= val ? 1 : 0;
   });
 
-  // Graph nodes, edges, labels
-  d3.select('#graph-svg .graph-group').selectAll('[data-pct]').each(function() {
-    const pct = +this.getAttribute('data-pct');
-    const visible = pct <= val;
-    const el = d3.select(this);
-    const isEdgeLabel = el.classed('edge-label');
-    const isEdgeLabelBg = el.classed('edge-label-bg');
-    const isLabelBg = el.classed('label-bg');
-    // Edge labels: dim by default, brighter when zoomed in (handled by zoom callback)
-    // Edge label bgs: hidden by default, visible when zoomed
-    let targetOpacity;
-    if (!visible) {
-      targetOpacity = 0;
-    } else if (isEdgeLabel) {
-      targetOpacity = 0.4;
-    } else if (isEdgeLabelBg) {
-      targetOpacity = 0;
-    } else if (isLabelBg) {
-      targetOpacity = 0.75;
-    } else {
-      targetOpacity = 1;
-    }
-    el.transition().duration(150).attr('opacity', targetOpacity);
-    // Glow on nodes that just appeared (within 15% window)
-    if (this.tagName === 'circle' && visible && pct > val - 15) {
-      el.attr('filter', 'url(#node-glow)');
-    } else if (this.tagName === 'circle') {
-      el.attr('filter', null);
-    }
-  });
+  // Graph: a single closure inside buildGraph computes every element's
+  // opacity from (scrubber × zoom × focus). Drives both scrubber updates and
+  // focus-mode toggles so nothing fights for ownership.
+  if (applyGraphFocus) applyGraphFocus();
+
+  // Timeline: registers its own scrubber callback (its DOM lives in
+  // #sankey-svg, outside the graph-svg subtree).
+  if (updateTimelineForScrubber) updateTimelineForScrubber();
+
+  // Sankey (demographic/categories) registers a callback the same way.
+  if (updateSankeyForScrubber) updateSankeyForScrubber();
 
   // Term cloud
   document.querySelectorAll('.term-tag').forEach(el => {
