@@ -1850,6 +1850,7 @@ html, body {
   <button id="live-btn" title="Live trends from Google / Reddit / YouTube / Bluesky / Last.fm">&#x25CE; Live</button>
   <button id="library-btn" title="Library of past analyses">&#x29C9; Library</button>
   <button id="memory-btn">&#x1D5C6; Memory</button>
+  <button id="dispatch-btn" title="Open this analysis as a readable dispatch">Read as dispatch &rarr;</button>
   <button id="theme-btn" title="Toggle light/dark mode">&#x2600;</button>
   <button id="settings-btn" title="Settings">&#x2699;</button>
 </div>
@@ -2399,6 +2400,11 @@ OUTPUT SCHEMA (return exactly this structure):
     { "type": "film | music | literature | art | other", "title": "...", "year": "YYYY", "description": "..." }
   ],
   "pull_quote": "Single line for social card or content use.",
+  "implications": {
+    "strategist": "For brand strategists. One paragraph naming the positioning move the gap reveals — where to plant the flag, what to avoid sounding like, what the unmet need actually is. Concrete and actionable, not a restatement of the gap.",
+    "creator": "For creators and content planners. One paragraph naming the content angle that travels in this moment — which counter-signal flavor has more durable upside (within-frame vs exit), and what kind of work belongs to it.",
+    "researcher": "For researchers and analysts. One paragraph naming the leading indicator to watch — what signal will show this trend's next inflection (or collapse) before the metrics do."
+  },
   "related_terms": [
     { "term": "...", "category": "primary | related | counter", "appears_at_pct": 0 }
   ],
@@ -2446,6 +2452,7 @@ IMPORTANT:
 - Include at least 5 related_terms
 - Both counter_signal.within_frame.strength_pct and counter_signal.exit.strength_pct should be 0-100
 - pull_quote must express the gap_reframe, not sympathize with the phenomenon. Adversarial posture to the sign is the sincewhen voice. A sympathetic pull quote means move three was not completed
+- implications is required. All three audiences (strategist, creator, researcher) get one paragraph each, written as a directive — what to DO with this insight. The strategist paragraph must point at a positioning move grounded in the gap_reframe, not paraphrase the gap. The creator paragraph must commit to either the within-frame backlash or the exit move as the more interesting bet for durable audience, with reasoning. The researcher paragraph must name a single leading indicator to watch — a specific behavior, signal, or population whose movement will mark the next phase
 - semiotic_stages MUST have exactly 6 entries in order: seed, subculture, crossover, mainstream, parody, revival. Each entry needs signifier (the observable form), signified (what it denotes at that stage), and myth (the connotation that hardens — use "—" only for the seed stage where no myth has accreted yet). The signs MUST MUTATE across stages; copying the same signifier across rows is a bug.
 - opposition_axes MUST have 3–4 entries. Each "values" array is exactly 6 numbers in [-1, 1], one per stage, representing Saussurean drift. Pick axes specific to the phenomenon (not generic filler). The values should tell a story: something meaningful happens between seed and revival.
 - geo_origin.zone_id MUST be exactly one of these canonical zones (pick the single closest match to where the signal seeded): staten_island, nyc, la, miami, austin, chicago, rural_us, toronto, london, paris, berlin, milan, copenhagen, warsaw, seoul, tokyo, shanghai, mumbai, jakarta, manila, saopaulo, mexico, bogota, lagos, nairobi, capetown, dubai, istanbul, sydney. Do not invent new ids. If the true origin is diffuse or ambiguous, pick the zone that would be most recognizable as the seeding context (e.g., "nyc" for US-internet-native signals with no sharper locus).`;
@@ -4881,11 +4888,49 @@ setTheme(localStorage.getItem('mcwhy_theme') || 'light');
 
 refreshMemoryList();
 
-// Focus the landing input
-document.getElementById('landing-input').focus();
+// ── "Read as dispatch →" handoff ──────────────────────────
+// The dispatch view at /dispatch.html is a strategist-friendly editorial
+// surface that consumes the same `mcwhy_analyses` localStorage entries.
+// We route by query string so it can pick up the result.
+document.getElementById('dispatch-btn').addEventListener('click', () => {
+  const q = (document.getElementById('signal-input').value || state.query || '').trim();
+  if (!q) {
+    // No active analysis — drop them on the dispatch gallery.
+    window.location.href = 'dispatch.html';
+    return;
+  }
+  window.location.href = 'dispatch.html?q=' + encodeURIComponent(q);
+});
 
-// If no API key, prompt settings after a moment
-if (!getKey('claude')) {
+// ── URL param handoff (from the dispatch view's "Open in analyst view →") ──
+// If the page loads with ?q=X, jump straight into that analysis. Reuse the
+// cached result when present so we don't re-burn an API call on every hop.
+(function bootFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const q = (params.get('q') || '').trim();
+  if (!q) return;
+  const cached = getAnalyses()[q];
+  if (cached) {
+    document.getElementById('landing').classList.add('hidden');
+    document.getElementById('app').classList.add('active');
+    document.getElementById('signal-input').value = q;
+    state.query = q;
+    state.ungrounded = false;
+    setMode('analysis');
+    renderReport(cached.data);
+    pushSimulatorTrend(cached.data, q);
+  } else {
+    revealApp(q);
+  }
+})();
+
+// Focus the landing input (skipped if a query auto-loaded above)
+if (!document.getElementById('landing').classList.contains('hidden')) {
+  document.getElementById('landing-input').focus();
+}
+
+// If no API key, prompt settings after a moment (but only on the landing page)
+if (!getKey('claude') && !document.getElementById('landing').classList.contains('hidden')) {
   setTimeout(() => document.getElementById('settings-overlay').classList.add('open'), 800);
 }
 </script>

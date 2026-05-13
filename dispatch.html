@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>sincewhen — Dispatch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --signal: #c85318;
+  --counter: #1a6ea8;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'EB Garamond', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+[data-theme="light"] {
+  --paper: #F8F5EE;
+  --paper-2: #F0ECE2;
+  --ink: #1A1815;
+  --ink-soft: #3D3933;
+  --muted: #6B665E;
+  --rule: #D9D3C5;
+  --rule-soft: #E8E2D4;
+  --accent: #c85318;
+  --accent-soft: #f4dccc;
+  --shadow: rgba(26, 24, 21, 0.06);
+}
+
+[data-theme="dark"] {
+  --paper: #14130F;
+  --paper-2: #1C1A16;
+  --ink: #ECE6D8;
+  --ink-soft: #B8B2A4;
+  --muted: #8A857C;
+  --rule: #2A2823;
+  --rule-soft: #1E1C18;
+  --accent: #e87544;
+  --accent-soft: #3a2418;
+  --shadow: rgba(0, 0, 0, 0.4);
+}
+
+html, body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 19px;
+  line-height: 1.65;
+  font-feature-settings: "kern", "liga", "onum";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection { background: var(--accent-soft); color: var(--ink); }
+
+a { color: var(--accent); text-decoration: none; border-bottom: 1px solid currentColor; padding-bottom: 1px; transition: opacity 0.15s ease; }
+a:hover { opacity: 0.7; }
+
+/* ────── MASTHEAD ────── */
+.masthead {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 32px 24px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.masthead-left { display: flex; align-items: baseline; gap: 16px; font-family: var(--font-sans); font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--muted); }
+.masthead-left .wordmark { font-family: var(--font-display); font-weight: 700; font-size: 22px; color: var(--ink); text-transform: none; letter-spacing: -0.01em; }
+.masthead-left .wordmark .accent { color: var(--accent); }
+.masthead-left .sep { color: var(--rule); }
+
+.masthead-right { display: flex; align-items: center; gap: 8px; font-family: var(--font-sans); font-size: 12px; }
+.masthead-btn {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+.masthead-btn:hover { border-color: var(--accent); color: var(--accent); }
+.masthead-btn.copied { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.theme-toggle { font-size: 14px; padding: 5px 10px; }
+
+/* ────── ARTICLE ────── */
+article.dispatch {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 64px 32px 96px;
+}
+
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 24px;
+}
+.eyebrow .geo { color: var(--muted); margin-left: 12px; }
+
+.headline {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 64px;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin-bottom: 24px;
+}
+
+.dek {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 24px;
+  line-height: 1.4;
+  color: var(--ink-soft);
+  margin-bottom: 40px;
+  max-width: 600px;
+}
+
+.byline {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 14px 0;
+  margin-bottom: 56px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.byline strong { color: var(--ink-soft); font-weight: 600; }
+
+/* ── BODY PROSE ── */
+.prose p {
+  font-size: 19px;
+  line-height: 1.7;
+  margin-bottom: 1.3em;
+  color: var(--ink);
+}
+
+.prose .lede { font-size: 21px; line-height: 1.6; }
+.prose .lede::first-letter {
+  font-family: var(--font-display);
+  font-weight: 700;
+  float: left;
+  font-size: 76px;
+  line-height: 0.85;
+  padding: 6px 12px 0 0;
+  color: var(--accent);
+}
+
+.section-label {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 56px 0 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 16px 0 24px;
+}
+
+/* ── PULL QUOTE / GAP CALLOUT ── */
+.gap-callout {
+  margin: 48px -16px;
+  padding: 40px 32px;
+  background: var(--paper-2);
+  border-left: 4px solid var(--accent);
+  border-radius: 2px;
+}
+.gap-callout .gap-label {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+.gap-callout .gap-reframe {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-style: italic;
+  font-size: 28px;
+  line-height: 1.25;
+  color: var(--ink);
+  margin-bottom: 24px;
+  letter-spacing: -0.005em;
+}
+.gap-callout .gap-rows { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 16px; }
+@media (min-width: 640px) { .gap-callout .gap-rows { grid-template-columns: 1fr 1fr; gap: 24px; } }
+.gap-row .gap-row-label {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.gap-row .gap-row-body { font-size: 16px; line-height: 1.55; color: var(--ink-soft); }
+
+/* ── TIMELINE FIGURE ── */
+.figure {
+  margin: 40px -16px;
+  padding: 24px;
+  background: var(--paper-2);
+  border-radius: 2px;
+}
+.figure .figure-caption {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.figure .figure-caption .figure-link { color: var(--accent); }
+
+.timeline-strip { display: grid; grid-template-columns: 1fr; gap: 14px; }
+@media (min-width: 640px) { .timeline-strip { grid-template-columns: repeat(4, 1fr); gap: 16px; } }
+.timeline-beat { position: relative; padding-top: 16px; }
+.timeline-beat::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--rule);
+}
+.timeline-beat[data-active="true"]::before { background: var(--accent); }
+.timeline-beat .tl-date { font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: var(--accent); margin-bottom: 4px; }
+.timeline-beat .tl-stage { font-family: var(--font-sans); font-size: 10px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.timeline-beat .tl-body { font-size: 14px; line-height: 1.45; color: var(--ink-soft); }
+
+/* ── COUNTER-SIGNAL CARDS ── */
+.counter-grid { display: grid; grid-template-columns: 1fr; gap: 20px; margin: 24px 0; }
+@media (min-width: 640px) { .counter-grid { grid-template-columns: 1fr 1fr; } }
+.counter-card {
+  padding: 24px;
+  background: var(--paper-2);
+  border-radius: 2px;
+  border-top: 3px solid var(--counter);
+}
+.counter-card .cc-label { font-family: var(--font-sans); font-size: 10px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--counter); margin-bottom: 8px; }
+.counter-card .cc-name { font-family: var(--font-display); font-weight: 700; font-size: 20px; line-height: 1.25; color: var(--ink); margin-bottom: 12px; }
+.counter-card .cc-body { font-size: 15px; line-height: 1.55; color: var(--ink-soft); margin-bottom: 16px; }
+.counter-card .cc-strength { display: flex; align-items: center; gap: 10px; font-family: var(--font-sans); font-size: 11px; color: var(--muted); }
+.counter-card .cc-bar { flex: 1; height: 4px; background: var(--rule-soft); border-radius: 2px; overflow: hidden; }
+.counter-card .cc-bar-fill { height: 100%; background: var(--counter); }
+.counter-card .cc-status { font-family: var(--font-sans); font-size: 11px; color: var(--muted); margin-top: 6px; font-style: italic; }
+
+/* ── IMPLICATIONS ── */
+.implications-list { display: grid; gap: 28px; margin-top: 8px; }
+.implication { padding: 24px 0; border-top: 1px solid var(--rule); }
+.implication:first-child { border-top: none; padding-top: 8px; }
+.implication .imp-eyebrow { font-family: var(--font-sans); font-size: 10px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.implication .imp-title { font-family: var(--font-display); font-weight: 700; font-size: 22px; line-height: 1.2; color: var(--ink); margin-bottom: 12px; }
+.implication .imp-body { font-size: 17px; line-height: 1.6; color: var(--ink-soft); }
+
+/* ── SOURCES & METHOD (collapsible) ── */
+details.method {
+  margin-top: 64px;
+  padding-top: 32px;
+  border-top: 1px solid var(--rule);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+details.method summary { cursor: pointer; font-size: 12px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); list-style: none; }
+details.method summary::after { content: " ↓"; color: var(--muted); }
+details.method[open] summary::after { content: " ↑"; }
+details.method .method-body { margin-top: 20px; line-height: 1.55; }
+details.method .method-body p { margin-bottom: 14px; }
+details.method .method-body strong { color: var(--ink); }
+.concept-grid { display: grid; gap: 14px; margin-top: 16px; }
+.concept-row { display: grid; grid-template-columns: 180px 1fr; gap: 16px; font-size: 13px; }
+.concept-row .ck { font-weight: 600; color: var(--ink); font-family: var(--font-sans); }
+.concept-row .cv { color: var(--ink-soft); line-height: 1.5; }
+@media (max-width: 540px) { .concept-row { grid-template-columns: 1fr; gap: 4px; } }
+
+/* ── FOOTER NAV ── */
+.dispatch-footer {
+  margin-top: 80px;
+  padding-top: 32px;
+  border-top: 1px solid var(--rule);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+}
+.dispatch-footer .row { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.dispatch-footer a { font-weight: 500; }
+.dispatch-footer .footer-mark { font-family: var(--font-display); font-weight: 700; color: var(--ink); border: none; padding: 0; font-size: 14px; }
+.dispatch-footer .footer-mark .accent { color: var(--accent); }
+
+/* ────── GALLERY VIEW ────── */
+.gallery {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 48px 32px 96px;
+}
+.gallery-hero {
+  max-width: 700px;
+  margin: 32px auto 64px;
+  text-align: center;
+}
+.gallery-hero .eyebrow { color: var(--accent); margin-bottom: 16px; }
+.gallery-hero h1 {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 56px;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin-bottom: 16px;
+}
+.gallery-hero h1 .accent { color: var(--accent); font-style: italic; }
+.gallery-hero p {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 21px;
+  line-height: 1.4;
+  color: var(--ink-soft);
+  max-width: 540px;
+  margin: 0 auto 24px;
+}
+.gallery-input-wrap {
+  max-width: 540px;
+  margin: 0 auto;
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+.gallery-input {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: 18px;
+  padding: 14px 18px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  color: var(--ink);
+  border-radius: 2px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.gallery-input:focus { border-color: var(--accent); }
+.gallery-input::placeholder { color: var(--muted); font-style: italic; }
+.gallery-submit {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: var(--accent);
+  color: var(--paper);
+  border: 1px solid var(--accent);
+  padding: 0 22px;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: opacity 0.15s ease;
+}
+.gallery-submit:hover { opacity: 0.85; }
+
+.gallery-section-label {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 56px 0 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--rule);
+}
+.gallery-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+}
+@media (min-width: 720px) { .gallery-grid { grid-template-columns: 1fr 1fr; gap: 40px; } }
+@media (min-width: 1024px) { .gallery-grid { grid-template-columns: repeat(3, 1fr); } }
+
+.gallery-card {
+  display: block;
+  padding: 28px 4px;
+  border: none;
+  border-top: 2px solid var(--ink);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: opacity 0.15s ease;
+  color: inherit;
+}
+.gallery-card:hover { opacity: 0.65; }
+.gallery-card .gc-eyebrow { font-family: var(--font-sans); font-size: 10px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+.gallery-card .gc-title { font-family: var(--font-display); font-weight: 700; font-size: 26px; line-height: 1.15; letter-spacing: -0.01em; color: var(--ink); margin-bottom: 12px; }
+.gallery-card .gc-dek { font-size: 16px; line-height: 1.5; color: var(--ink-soft); margin-bottom: 14px; }
+.gallery-card .gc-meta { font-family: var(--font-sans); font-size: 11px; letter-spacing: 0.04em; color: var(--muted); }
+.gallery-card[data-placeholder="true"] { opacity: 0.7; }
+.gallery-card[data-placeholder="true"] .gc-eyebrow { color: var(--muted); }
+
+/* ────── EMPTY STATE ────── */
+.empty-state {
+  max-width: 600px;
+  margin: 120px auto;
+  padding: 0 32px;
+  text-align: center;
+}
+.empty-state .eyebrow { color: var(--muted); margin-bottom: 20px; }
+.empty-state h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 36px;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+.empty-state h2 em { color: var(--accent); }
+.empty-state p { font-size: 18px; line-height: 1.55; color: var(--ink-soft); margin-bottom: 28px; }
+.empty-state .empty-cta {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: var(--accent);
+  color: var(--paper);
+  border: 1px solid var(--accent);
+  padding: 14px 24px;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+/* ────── RESPONSIVE ────── */
+@media (max-width: 640px) {
+  .headline { font-size: 44px; }
+  .dek { font-size: 20px; }
+  article.dispatch { padding: 40px 24px 64px; }
+  .section-title { font-size: 26px; }
+  .gap-callout { margin: 32px -8px; padding: 28px 24px; }
+  .gap-callout .gap-reframe { font-size: 22px; }
+  .figure { margin: 28px -8px; padding: 20px; }
+  .gallery-hero h1 { font-size: 40px; }
+  .masthead { padding: 20px 20px 16px; flex-direction: column; align-items: flex-start; gap: 12px; }
+}
+
+/* ── helpers ── */
+.hidden { display: none !important; }
+.toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  z-index: 100;
+}
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-left">
+    <span class="wordmark">since<span class="accent">when</span></span>
+    <span class="sep">·</span>
+    <span>Dispatch</span>
+    <span class="sep">·</span>
+    <span id="masthead-date"></span>
+  </div>
+  <div class="masthead-right">
+    <button class="masthead-btn" id="copy-link-btn" title="Copy link to this dispatch">Copy link</button>
+    <button class="masthead-btn" id="copy-md-btn" title="Copy as markdown">Copy as MD</button>
+    <button class="masthead-btn" id="print-btn" title="Print or save as PDF">Print</button>
+    <button class="masthead-btn theme-toggle" id="theme-btn" title="Toggle light / dark">☾</button>
+  </div>
+</header>
+
+<!-- ─── ARTICLE VIEW (when ?q= and cached) ─── -->
+<article class="dispatch hidden" id="article-view">
+  <div class="eyebrow" id="art-eyebrow"></div>
+  <h1 class="headline" id="art-headline"></h1>
+  <p class="dek" id="art-dek"></p>
+  <div class="byline">
+    <span><strong>Filed</strong> <span id="art-filed-date"></span></span>
+    <span><strong>Signal type</strong> <span id="art-signal-type"></span></span>
+    <span><strong>Method</strong> three-move semiotic analysis</span>
+  </div>
+
+  <div class="prose" id="art-body"></div>
+
+  <div class="dispatch-footer">
+    <div class="row">
+      <a id="art-analyst-link" href="#">↗ Open the analyst view</a>
+      <a href="dispatch.html">← Read another dispatch</a>
+    </div>
+    <div class="row">
+      <span class="footer-mark">since<span class="accent">when</span> · dispatch</span>
+      <span style="color: var(--muted)">Cultural archaeology in plain English.</span>
+    </div>
+  </div>
+</article>
+
+<!-- ─── GALLERY VIEW (when no ?q=) ─── -->
+<section class="gallery hidden" id="gallery-view">
+  <div class="gallery-hero">
+    <div class="eyebrow">A reading room for cultural trends</div>
+    <h1>Why is <span class="accent">everything</span> a trend?</h1>
+    <p>Plain-English dispatches that trace any cultural moment back to its origin — and tell you what to do about it.</p>
+    <form class="gallery-input-wrap" id="gallery-form">
+      <input type="text" class="gallery-input" id="gallery-input" placeholder="Why is aura-farming everywhere?" autocomplete="off">
+      <button type="submit" class="gallery-submit">Read</button>
+    </form>
+  </div>
+
+  <div class="gallery-section-label" id="user-dispatches-label">Your dispatches</div>
+  <div class="gallery-grid" id="user-dispatches-grid"></div>
+
+  <div class="gallery-section-label" id="showcase-label">Try a dispatch</div>
+  <div class="gallery-grid" id="showcase-grid"></div>
+</section>
+
+<!-- ─── EMPTY STATE (when ?q= but not cached) ─── -->
+<section class="empty-state hidden" id="empty-state">
+  <div class="eyebrow">No dispatch on file</div>
+  <h2>This one hasn't been written <em>yet</em>.</h2>
+  <p id="empty-detail">The analyst view runs the analysis; the dispatch view reads the result. Open this question in the analyst view to generate it, and it'll show up here automatically.</p>
+  <a class="empty-cta" id="empty-cta-link" href="#">Open in analyst view →</a>
+  <p style="margin-top: 24px; font-size: 14px;"><a href="dispatch.html">← Back to the reading room</a></p>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+// THEME
+// ══════════════════════════════════════════════
+function setTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('mcwhy_theme', t);
+  document.getElementById('theme-btn').textContent = t === 'dark' ? '☼' : '☾';
+}
+setTheme(localStorage.getItem('mcwhy_theme') || 'light');
+document.getElementById('theme-btn').addEventListener('click', () => {
+  setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+});
+
+// ══════════════════════════════════════════════
+// SHARED STORE (same key the analyst view uses)
+// ══════════════════════════════════════════════
+function getAnalyses() {
+  try { return JSON.parse(localStorage.getItem('mcwhy_analyses') || '{}'); }
+  catch (e) { return {}; }
+}
+
+// ══════════════════════════════════════════════
+// SHOWCASE FALLBACK
+// (placeholders for the gallery when no user history exists)
+// ══════════════════════════════════════════════
+const SHOWCASE_QUESTIONS = [
+  { q: 'Why is aura-farming everywhere?',           dek: 'How a TikTok pose became a worldview.' },
+  { q: 'What caused quiet quitting to spread so fast?', dek: 'When the contract stopped being a contract.' },
+  { q: 'Where did looksmaxxing come from?',          dek: 'The mirror as the new market.' },
+  { q: 'Why does everyone suddenly say "delulu"?',   dek: 'A vibe shift in a single word.' },
+  { q: 'Why is everyone watching short videos?',     dek: 'Attention rents collapsing.' },
+  { q: 'Why is OnlyFans so popular?',                dek: 'Intimacy at industrial scale.' }
+];
+
+// ══════════════════════════════════════════════
+// UTIL
+// ══════════════════════════════════════════════
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function fmtDate(ts) {
+  const d = new Date(ts);
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+function todayISO() {
+  return new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+function getQueryParam(name) {
+  return new URLSearchParams(window.location.search).get(name);
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 1800);
+}
+function titleCase(s) {
+  if (!s) return '';
+  return s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+function humanizeZone(zoneId) {
+  if (!zoneId) return '';
+  const map = {
+    nyc: 'New York', staten_island: 'Staten Island', la: 'Los Angeles',
+    saopaulo: 'São Paulo', capetown: 'Cape Town', rural_us: 'Rural United States'
+  };
+  if (map[zoneId]) return map[zoneId];
+  return zoneId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+// ══════════════════════════════════════════════
+// HEADLINE / DEK DERIVATION
+// ══════════════════════════════════════════════
+function deriveHeadline(question, data) {
+  const signal = (data?.signal_extracted || '').trim();
+  if (signal) {
+    const s = signal.charAt(0).toUpperCase() + signal.slice(1);
+    return `${s}, explained.`;
+  }
+  return question;
+}
+function deriveDek(data) {
+  return data?.pull_quote || data?.one_line || '';
+}
+
+// ══════════════════════════════════════════════
+// SECTION RENDERERS — return HTML strings
+// ══════════════════════════════════════════════
+function renderLede(question, data) {
+  const oneLine = data?.one_line || '';
+  const firstYear = data?.adoption_timeline?.first_emergence?.date || '';
+  const cleanQ = question.replace(/\?$/, '').replace(/^why\s+/i, '').replace(/^where\s+did\s+/i, '');
+  let lede = '';
+  if (oneLine) {
+    lede = oneLine;
+  } else {
+    lede = `Lately the question keeps surfacing: ${escapeHtml(question)} The short answer is rarely the interesting one.`;
+  }
+  return `<p class="lede">${escapeHtml(lede)}</p>`;
+}
+
+function renderOriginSection(data) {
+  const t = data?.adoption_timeline;
+  if (!t) return '';
+  const beats = [
+    { key: 'first_emergence',       label: 'First emergence',     active: false },
+    { key: 'inflection_point',      label: 'Inflection',          active: true  },
+    { key: 'capital_infrastructure',label: 'Capital arrives',     active: true  },
+    { key: 'mainstream_crossing',   label: 'Mainstream',          active: false }
+  ];
+  const beatHtml = beats
+    .filter(b => t[b.key] && (t[b.key].date || t[b.key].description))
+    .map(b => `
+      <div class="timeline-beat" data-active="${b.active}">
+        <div class="tl-date">${escapeHtml(t[b.key].date || '—')}</div>
+        <div class="tl-stage">${escapeHtml(b.label)}</div>
+        <div class="tl-body">${escapeHtml(t[b.key].description || '')}</div>
+      </div>`).join('');
+
+  // narrative paragraphs from timeline + diffusion
+  const firstDate = t.first_emergence?.date || 'an earlier moment';
+  const firstDesc = t.first_emergence?.description || '';
+  const inflDesc  = t.inflection_point?.description || '';
+  const capDesc   = t.capital_infrastructure?.description || '';
+  const mainDesc  = t.mainstream_crossing?.description || '';
+  const status    = t.current_status || '';
+  const diff0     = data?.diffusion_path?.[0];
+
+  let paras = '';
+  if (firstDesc) {
+    const seed = diff0 ? `, mostly inside ${escapeHtml(diff0.demographic || 'a small audience')} on ${escapeHtml(diff0.platform || 'early platforms')}` : '';
+    paras += `<p>It surfaced around <strong>${escapeHtml(firstDate)}</strong>${seed}. ${escapeHtml(firstDesc)}</p>`;
+  }
+  if (inflDesc) paras += `<p>${escapeHtml(inflDesc)}</p>`;
+  if (capDesc)  paras += `<p>${escapeHtml(capDesc)}</p>`;
+  if (mainDesc) paras += `<p>${escapeHtml(mainDesc)}</p>`;
+  if (status)   paras += `<p><em>Where it stands now.</em> ${escapeHtml(status)}</p>`;
+
+  return `
+    <div class="section-label">The origin</div>
+    <h2 class="section-title">How it got here</h2>
+    ${paras}
+    <figure class="figure">
+      <div class="timeline-strip">${beatHtml}</div>
+      <figcaption class="figure-caption">
+        <span>Adoption beats, as the analysis dates them.</span>
+        <span class="figure-link" data-graph-link>Inspect the full graph →</span>
+      </figcaption>
+    </figure>
+  `;
+}
+
+function renderGapSection(data) {
+  const g = data?.semiotic_analysis?.gap_exposed;
+  if (!g) return '';
+  return `
+    <div class="section-label">The gap</div>
+    <h2 class="section-title">What the trend promises vs. what it delivers</h2>
+    <p>Every cultural shift comes packaged with a promise. The strategist's job is to find the daylight between the promise and what actually arrives.</p>
+    <div class="gap-callout">
+      <div class="gap-label">Gap reframe</div>
+      <div class="gap-reframe">${escapeHtml(g.gap_reframe || '')}</div>
+      <div class="gap-rows">
+        <div class="gap-row">
+          <div class="gap-row-label">Sign promise</div>
+          <div class="gap-row-body">${escapeHtml(g.sign_promise || '')}</div>
+        </div>
+        <div class="gap-row">
+          <div class="gap-row-label">System delivery</div>
+          <div class="gap-row-body">${escapeHtml(g.system_delivery || '')}</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderVirality(data) {
+  const v = data?.virality_mechanism;
+  const anchor = data?.socioeconomic_anchor;
+  if (!v && !anchor) return '';
+  let paras = '';
+  if (v?.scientific_basis) {
+    const typeLine = v.type ? `<em>${escapeHtml(v.type)}${v.speed ? `, ${escapeHtml(v.speed)}` : ''}.</em> ` : '';
+    paras += `<p>${typeLine}${escapeHtml(v.scientific_basis)}</p>`;
+  }
+  if (v?.identity_layer?.identity_performative) {
+    paras += `<p><strong>The identity layer.</strong> ${escapeHtml(v.identity_layer.identity_performative)}</p>`;
+  }
+  if (anchor?.primary || anchor?.evidence) {
+    const anchorBody = anchor.evidence || anchor.primary || '';
+    paras += `<p><strong>The ground it grew in.</strong> ${escapeHtml(anchorBody)}</p>`;
+  }
+  return `
+    <div class="section-label">Why it spreads</div>
+    <h2 class="section-title">The mechanism, in plain English</h2>
+    ${paras}
+  `;
+}
+
+function renderCounterSignal(data) {
+  const c = data?.counter_signal;
+  if (!c) return '';
+  const wf = c.within_frame || {};
+  const ex = c.exit || {};
+  const card = (title, label, name, body, strength, status) => `
+    <div class="counter-card">
+      <div class="cc-label">${escapeHtml(label)}</div>
+      <div class="cc-name">${escapeHtml(name || '—')}</div>
+      <div class="cc-body">${escapeHtml(body || '')}</div>
+      <div class="cc-strength">
+        <span>${escapeHtml(String(strength || 0))}%</span>
+        <div class="cc-bar"><div class="cc-bar-fill" style="width:${Math.min(100, Math.max(0, Number(strength) || 0))}%"></div></div>
+      </div>
+      <div class="cc-status">${escapeHtml(status || '')}</div>
+    </div>
+  `;
+  return `
+    <div class="section-label">The counter-signal</div>
+    <h2 class="section-title">What's pushing back</h2>
+    <p>Every dominant signal generates its own opposition. Two flavors: a backlash inside the same logic, and an exit that abandons the frame entirely.</p>
+    <div class="counter-grid">
+      ${card('Within frame', 'Within frame', wf.name, wf.description, wf.strength_pct, wf.status)}
+      ${card('Exit', 'Exit', ex.name, ex.description, ex.strength_pct, ex.status)}
+    </div>
+  `;
+}
+
+function deriveImplications(data) {
+  // For analyses without an `implications` block, derive plausible ones from existing fields.
+  const gap = data?.semiotic_analysis?.gap_exposed?.gap_reframe || '';
+  const wfName = data?.counter_signal?.within_frame?.name || '';
+  const exName = data?.counter_signal?.exit?.name || '';
+  const out = {};
+  if (gap) {
+    out.strategist = `The gap is the brief. Position against the system that produced this signal, not against the signal itself — that's where the unmet need lives. Specifically: ${gap.replace(/^"/, '').replace(/"$/, '')}`;
+  }
+  if (wfName || exName) {
+    out.creator = `The within-frame backlash (${wfName || 'an in-house critique'}) is where the most engagement lives right now; the exit move (${exName || 'a structural break'}) is where the durable audience is forming. Pick which one your work belongs to and commit.`;
+  }
+  if (data?.virality_mechanism?.identity_layer?.identity_performative) {
+    out.researcher = `Watch the identity layer. Adoption here is performative, so the leading indicator isn't usage — it's who is willing to be seen using it. Track that signal and you'll see the next inflection before the metrics do.`;
+  }
+  return out;
+}
+
+function renderImplications(data) {
+  const i = data?.implications || deriveImplications(data);
+  if (!i || (!i.strategist && !i.creator && !i.researcher)) return '';
+  const block = (eyebrow, title, body) => body ? `
+    <div class="implication">
+      <div class="imp-eyebrow">${escapeHtml(eyebrow)}</div>
+      <div class="imp-title">${escapeHtml(title)}</div>
+      <div class="imp-body">${escapeHtml(body)}</div>
+    </div>
+  ` : '';
+  return `
+    <div class="section-label">Implications</div>
+    <h2 class="section-title">So what should you do with this?</h2>
+    <div class="implications-list">
+      ${block('For brand strategists', 'Where the positioning lives', i.strategist)}
+      ${block('For creators & planners', 'Where the audience is forming', i.creator)}
+      ${block('For researchers', 'What to watch next', i.researcher)}
+    </div>
+  `;
+}
+
+function renderMethod(data) {
+  const tooltips = data?.concept_tooltips || {};
+  const keys = Object.keys(tooltips).slice(0, 12);
+  const conceptHtml = keys.map(k => `
+    <div class="concept-row">
+      <div class="ck">${escapeHtml(k)}</div>
+      <div class="cv">${escapeHtml(tooltips[k])}</div>
+    </div>
+  `).join('');
+
+  const detectors = (data?.cultural_detectors || []).slice(0, 4).map(d => `
+    <div class="concept-row">
+      <div class="ck">${escapeHtml(d.title || '')} ${d.year ? `(${escapeHtml(d.year)})` : ''}</div>
+      <div class="cv">${escapeHtml(d.description || '')}</div>
+    </div>
+  `).join('');
+
+  return `
+    <details class="method">
+      <summary>Sources & method</summary>
+      <div class="method-body">
+        <p><strong>How this dispatch was built.</strong> sincewhen runs a three-move semiotic analysis: <em>decode the sign</em> (what the trend signals), <em>name the code</em> (the rule set producing it), and <em>expose the gap</em> (the distance between what it promises and what the system actually delivers). The gap is the strategic insight; everything else is supporting evidence.</p>
+        <p>The reading is grounded against live data from across the social web — Reddit, YouTube, Bluesky, Google Trends, academic citations — plus the analyst's training. When the live grounding fails, the analysis is labeled accordingly.</p>
+        ${detectors ? `<p style="margin-top:18px"><strong>Cultural detectors</strong> — works that saw it before the data did.</p><div class="concept-grid">${detectors}</div>` : ''}
+        ${conceptHtml ? `<p style="margin-top:18px"><strong>Key concepts in plain English.</strong></p><div class="concept-grid">${conceptHtml}</div>` : ''}
+      </div>
+    </details>
+  `;
+}
+
+// ══════════════════════════════════════════════
+// ARTICLE RENDER
+// ══════════════════════════════════════════════
+function renderArticle(question, entry) {
+  const data = entry?.data || {};
+  const filed = entry?.timestamp ? fmtDate(entry.timestamp) : todayISO();
+  const signalType = data?.signal_type ? titleCase(data.signal_type) : '—';
+  const geo = humanizeZone(data?.geo_origin?.zone_id);
+
+  document.getElementById('art-eyebrow').innerHTML =
+    `Dispatch · ${escapeHtml(filed)}` +
+    (geo ? ` <span class="geo">From ${escapeHtml(geo)}</span>` : '');
+  document.getElementById('art-headline').textContent = deriveHeadline(question, data);
+  document.getElementById('art-dek').textContent = deriveDek(data);
+  document.getElementById('art-filed-date').textContent = filed;
+  document.getElementById('art-signal-type').textContent = signalType;
+
+  const bodyHtml =
+    renderLede(question, data) +
+    renderOriginSection(data) +
+    renderGapSection(data) +
+    renderVirality(data) +
+    renderCounterSignal(data) +
+    renderImplications(data) +
+    renderMethod(data);
+  document.getElementById('art-body').innerHTML = bodyHtml;
+
+  const analystUrl = `index.html?q=${encodeURIComponent(question)}`;
+  document.getElementById('art-analyst-link').href = analystUrl;
+  document.querySelectorAll('[data-graph-link]').forEach(el => {
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', () => { window.location.href = analystUrl; });
+  });
+
+  document.getElementById('masthead-date').textContent = filed;
+  document.title = `${deriveHeadline(question, data)} — sincewhen dispatch`;
+  document.getElementById('article-view').classList.remove('hidden');
+}
+
+// ══════════════════════════════════════════════
+// GALLERY RENDER
+// ══════════════════════════════════════════════
+function renderGallery() {
+  document.getElementById('masthead-date').textContent = todayISO();
+  const analyses = getAnalyses();
+  const userKeys = Object.keys(analyses).sort((a, b) => analyses[b].timestamp - analyses[a].timestamp);
+  const userGrid = document.getElementById('user-dispatches-grid');
+  const userLabel = document.getElementById('user-dispatches-label');
+
+  if (userKeys.length === 0) {
+    userLabel.classList.add('hidden');
+    userGrid.classList.add('hidden');
+  } else {
+    userLabel.classList.remove('hidden');
+    userGrid.classList.remove('hidden');
+    userGrid.innerHTML = userKeys.slice(0, 9).map(q => {
+      const entry = analyses[q];
+      const data = entry?.data || {};
+      const headline = deriveHeadline(q, data);
+      const dek = data?.pull_quote || data?.one_line || '';
+      const date = entry?.timestamp ? fmtDate(entry.timestamp) : '';
+      const geo = humanizeZone(data?.geo_origin?.zone_id);
+      return `
+        <button class="gallery-card" data-q="${escapeHtml(q)}">
+          <div class="gc-eyebrow">${escapeHtml(date)}${geo ? ` · ${escapeHtml(geo)}` : ''}</div>
+          <div class="gc-title">${escapeHtml(headline)}</div>
+          <div class="gc-dek">${escapeHtml(dek)}</div>
+          <div class="gc-meta">Read the dispatch →</div>
+        </button>
+      `;
+    }).join('');
+    userGrid.querySelectorAll('.gallery-card').forEach(btn => {
+      btn.addEventListener('click', () => {
+        window.location.search = `?q=${encodeURIComponent(btn.dataset.q)}`;
+      });
+    });
+  }
+
+  const showcaseGrid = document.getElementById('showcase-grid');
+  showcaseGrid.innerHTML = SHOWCASE_QUESTIONS.map(s => {
+    const cached = analyses[s.q];
+    const cachedHeadline = cached ? deriveHeadline(s.q, cached.data) : `${s.q.replace(/\?$/, '')}.`;
+    const cachedDek = cached?.data?.pull_quote || cached?.data?.one_line || s.dek;
+    return `
+      <button class="gallery-card" data-q="${escapeHtml(s.q)}" data-placeholder="${!cached}">
+        <div class="gc-eyebrow">${cached ? 'Filed' : 'Sample'}</div>
+        <div class="gc-title">${escapeHtml(cachedHeadline)}</div>
+        <div class="gc-dek">${escapeHtml(cachedDek)}</div>
+        <div class="gc-meta">${cached ? 'Read the dispatch →' : 'Open in analyst view to generate →'}</div>
+      </button>
+    `;
+  }).join('');
+  showcaseGrid.querySelectorAll('.gallery-card').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const q = btn.dataset.q;
+      const isPlaceholder = btn.dataset.placeholder === 'true';
+      if (isPlaceholder) {
+        window.location.href = `index.html?q=${encodeURIComponent(q)}`;
+      } else {
+        window.location.search = `?q=${encodeURIComponent(q)}`;
+      }
+    });
+  });
+
+  document.getElementById('gallery-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const q = document.getElementById('gallery-input').value.trim();
+    if (!q) return;
+    const analyses2 = getAnalyses();
+    if (analyses2[q]) {
+      window.location.search = `?q=${encodeURIComponent(q)}`;
+    } else {
+      window.location.href = `index.html?q=${encodeURIComponent(q)}`;
+    }
+  });
+
+  document.getElementById('gallery-view').classList.remove('hidden');
+}
+
+// ══════════════════════════════════════════════
+// EMPTY STATE
+// ══════════════════════════════════════════════
+function renderEmpty(question) {
+  document.getElementById('masthead-date').textContent = todayISO();
+  document.getElementById('empty-detail').innerHTML =
+    `<strong style="color: var(--ink)">${escapeHtml(question)}</strong> hasn't been analyzed on this device yet. The analyst view generates the analysis; the dispatch view turns it into something you can read and share. Run it once and it'll show up here.`;
+  document.getElementById('empty-cta-link').href = `index.html?q=${encodeURIComponent(question)}`;
+  document.getElementById('empty-state').classList.remove('hidden');
+}
+
+// ══════════════════════════════════════════════
+// SHARE / EXPORT
+// ══════════════════════════════════════════════
+function buildMarkdown(question, entry) {
+  const data = entry?.data || {};
+  const lines = [];
+  lines.push(`# ${deriveHeadline(question, data)}`);
+  lines.push('');
+  if (data.pull_quote) lines.push(`_${data.pull_quote}_`);
+  if (data.one_line)   lines.push('', data.one_line);
+  lines.push('', `**Filed:** ${entry?.timestamp ? fmtDate(entry.timestamp) : todayISO()}`);
+  if (data.signal_type) lines.push(`**Signal type:** ${data.signal_type}`);
+  lines.push('', '## The origin');
+  const t = data.adoption_timeline || {};
+  ['first_emergence','inflection_point','capital_infrastructure','mainstream_crossing'].forEach(k => {
+    if (t[k]?.description) lines.push(`- **${titleCase(k)}** (${t[k].date || '—'}) — ${t[k].description}`);
+  });
+  if (t.current_status) lines.push('', `_${t.current_status}_`);
+
+  const g = data.semiotic_analysis?.gap_exposed;
+  if (g) {
+    lines.push('', '## The gap');
+    lines.push(`> ${g.gap_reframe || ''}`);
+    if (g.sign_promise)    lines.push('', `- **Sign promise** — ${g.sign_promise}`);
+    if (g.system_delivery) lines.push(`- **System delivery** — ${g.system_delivery}`);
+  }
+
+  if (data.virality_mechanism?.scientific_basis) {
+    lines.push('', '## Why it spreads');
+    lines.push(data.virality_mechanism.scientific_basis);
+  }
+
+  const c = data.counter_signal;
+  if (c) {
+    lines.push('', '## Counter-signal');
+    if (c.within_frame?.name) lines.push(`- **Within frame** — ${c.within_frame.name}: ${c.within_frame.description || ''}`);
+    if (c.exit?.name)         lines.push(`- **Exit** — ${c.exit.name}: ${c.exit.description || ''}`);
+  }
+
+  const i = data.implications || deriveImplications(data);
+  if (i && (i.strategist || i.creator || i.researcher)) {
+    lines.push('', '## Implications');
+    if (i.strategist)  lines.push(`- **Strategists:** ${i.strategist}`);
+    if (i.creator)     lines.push(`- **Creators / planners:** ${i.creator}`);
+    if (i.researcher)  lines.push(`- **Researchers:** ${i.researcher}`);
+  }
+
+  lines.push('', '---', '', `_From sincewhen — ${window.location.href}_`);
+  return lines.join('\n');
+}
+
+async function copyToClipboard(text) {
+  try { await navigator.clipboard.writeText(text); return true; }
+  catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); document.body.removeChild(ta); return true; }
+    catch (e2) { document.body.removeChild(ta); return false; }
+  }
+}
+
+document.getElementById('copy-link-btn').addEventListener('click', async (e) => {
+  const ok = await copyToClipboard(window.location.href);
+  if (ok) { showToast('Link copied'); e.currentTarget.classList.add('copied'); setTimeout(() => e.currentTarget.classList.remove('copied'), 1200); }
+});
+
+document.getElementById('copy-md-btn').addEventListener('click', async (e) => {
+  const q = getQueryParam('q');
+  if (!q) { showToast('Open a dispatch first'); return; }
+  const entry = getAnalyses()[q];
+  if (!entry) { showToast('This dispatch isn’t cached yet'); return; }
+  const md = buildMarkdown(q, entry);
+  const ok = await copyToClipboard(md);
+  if (ok) { showToast('Copied as markdown'); e.currentTarget.classList.add('copied'); setTimeout(() => e.currentTarget.classList.remove('copied'), 1200); }
+});
+
+document.getElementById('print-btn').addEventListener('click', () => { window.print(); });
+
+// ══════════════════════════════════════════════
+// ROUTER
+// ══════════════════════════════════════════════
+(function init() {
+  const q = getQueryParam('q');
+  if (!q) { renderGallery(); return; }
+  const entry = getAnalyses()[q];
+  if (!entry) { renderEmpty(q); return; }
+  renderArticle(q, entry);
+})();
+</script>
+
+<style media="print">
+  .masthead-right, .dispatch-footer, .figure .figure-caption .figure-link { display: none !important; }
+  body { background: white; color: black; }
+  article.dispatch { max-width: none; padding: 0; }
+  .gap-callout, .figure, .counter-card { background: #f6f3eb; }
+  a { color: black; border-bottom: none; }
+</style>
+
+</body>
+</html>
