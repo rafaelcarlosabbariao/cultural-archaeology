@@ -3503,12 +3503,17 @@ function buildCategoryMatrix(data) {
   const padX = 22;
   const headlineY = 22; // baseline near top — the view-toggle now lives below the chart
   const colLabelH = 54, rowGut = 104, driverW = 78, drivenH = 64;
-  const gridLeft = padX + rowGut;
+  const gridLeftBase = padX + rowGut;
   const gridTop = headlineY + 16 + colLabelH;
-  const availW = (w - padX - driverW) - gridLeft;
+  const availW = (w - padX - driverW) - gridLeftBase;
   const availH = (h - padX - drivenH) - gridTop;
-  const cell = Math.max(18, Math.min(availW / n, availH / n, 88));
+  // Cap at 160px so a 2-lens edge case doesn't produce comically huge cells;
+  // the common 5–6 lens case is height-bound well under that.
+  const cell = Math.max(18, Math.min(availW / n, availH / n, 160));
   const gridW = cell * n, gridH = cell * n;
+  // Centre the matrix horizontally so surplus width is balanced, not piled on
+  // the right. Headline (left edge) and legend (right edge) stay pinned.
+  const gridLeft = gridLeftBase + Math.max(0, (availW - gridW) / 2);
   const gridRight = gridLeft + gridW, gridBottom = gridTop + gridH;
   const cx = j => gridLeft + j * cell;   // left edge of column j
   const cyy = i => gridTop + i * cell;    // top edge of row i
