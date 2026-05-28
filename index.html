@@ -872,10 +872,7 @@ html, body {
 #graph-container:not([data-view="network"]) #graph-zoom-controls,
 #graph-container:not([data-view="network"]) #graph-spacing-wrap { display: none; }
 
-/* Sankey styling */
-#sankey-svg .sk-node rect { cursor: pointer; }
-#sankey-svg .sk-link { fill: none; mix-blend-mode: screen; transition: stroke-opacity 0.15s; }
-#sankey-svg .sk-link:hover { stroke-opacity: 0.7 !important; }
+/* Shared label styling (used by Timeline + Diffusion Journey) */
 #sankey-svg .sk-label {
   font-family: var(--font-mono);
   font-size: 12px;
@@ -967,6 +964,51 @@ html, body {
   stroke-width: 1.5;
   opacity: 0.65;
   pointer-events: none;
+}
+
+/* ── Diffusion Journey (cohort track in #sankey-svg) ── */
+#sankey-svg .dj-baseline { stroke: var(--border); stroke-width: 2; }
+#sankey-svg .dj-segment { stroke-linecap: round; transition: stroke-opacity 0.15s; }
+#sankey-svg .dj-tick { stroke: var(--border); stroke-width: 1; }
+#sankey-svg .dj-dot {
+  stroke: var(--node-stroke);
+  stroke-width: 1.5;
+  cursor: pointer;
+}
+#sankey-svg .dj-dot:hover { stroke-width: 2.5; }
+#sankey-svg .dj-meta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  fill: var(--text-dim);
+  pointer-events: none;
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 3;
+}
+
+/* ── Category influence matrix (in #sankey-svg) ── */
+#sankey-svg .cm-grid { fill: none; stroke: var(--border); stroke-opacity: 0.45; }
+#sankey-svg .cm-cell { cursor: pointer; transition: opacity 0.15s; }
+#sankey-svg .cm-cell:hover { stroke: var(--text); stroke-width: 1.5; }
+#sankey-svg .cm-diag { pointer-events: none; }
+#sankey-svg .cm-axis-label,
+#sankey-svg .cm-margin-cap {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  fill: var(--text-dim);
+}
+#sankey-svg .cm-lens-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  pointer-events: none;
+}
+#sankey-svg .cm-headline {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  fill: var(--text);
 }
 
 /* ── Network focus mode: clear pill ── */
@@ -1952,7 +1994,7 @@ html, body {
       </div>
       <div id="graph-spacing-wrap">
         <span id="graph-spacing-label">Spacing</span>
-        <input type="range" id="graph-spacing" min="0.5" max="3" value="1" step="0.1">
+        <input type="range" id="graph-spacing" min="0.5" max="3" value="1.5" step="0.1">
       </div>
       <div id="graph-tooltip">
         <div class="gt-label"></div>
@@ -2861,10 +2903,8 @@ function renderReport(data) {
   // Build visualizations
   buildSCurve(data);
   buildGraph(data);
-  if (state.graphView === 'timeline') {
-    buildTimeline(data);
-  } else if (state.graphView && state.graphView !== 'network') {
-    buildSankey(data, state.graphView);
+  if (state.graphView && state.graphView !== 'network') {
+    renderGraphView(state.graphView, data);
   }
   buildTermCloud(data);
   updateScrubber(0);
@@ -3099,18 +3139,22 @@ function buildGraph(data) {
   const baseCharge = -120;
   const baseCollision = 35;
 
+  // Default spacing factor — applied to all three force params at init so the
+  // first render matches the slider's default position.
+  const defaultSpacing = 1.5;
+
   // Force simulation
   graphSim = d3.forceSimulation(nodes)
-    .force('link', d3.forceLink(edges).id(d => d.id).distance(baseLinkDist).strength(1.2))
-    .force('charge', d3.forceManyBody().strength(baseCharge))
+    .force('link', d3.forceLink(edges).id(d => d.id).distance(baseLinkDist * defaultSpacing).strength(1.2))
+    .force('charge', d3.forceManyBody().strength(baseCharge * defaultSpacing))
     .force('center', d3.forceCenter(w / 2, h / 2))
-    .force('collision', d3.forceCollide(baseCollision))
+    .force('collision', d3.forceCollide(baseCollision * defaultSpacing))
     .force('x', d3.forceX(w / 2).strength(0.04))
     .force('y', d3.forceY(h / 2).strength(0.04));
 
   // ── Spacing slider ──
   const spacingSlider = document.getElementById('graph-spacing');
-  spacingSlider.value = 1;
+  spacingSlider.value = defaultSpacing;
   spacingSlider.oninput = () => {
     const factor = parseFloat(spacingSlider.value);
     graphSim.force('link').distance(baseLinkDist * factor);
@@ -3384,205 +3428,212 @@ const SANKEY_CAT_COLOR = {
   cultural: 'var(--cultural)',
   counter:  'var(--counter-node)',
 };
+const DEMOGRAPHIC_STAGE_COLORS = [
+  'var(--social)',       // origin / innovators
+  'var(--science)',      // early adopters
+  'var(--platform)',     // early majority
+  'var(--cultural)',     // late majority
+  'var(--economic)',     // laggards
+  'var(--counter-node)', // revival / parody
+];
 
-function buildSankeyData(data, mode) {
-  if (mode === 'demographic') {
-    const path = Array.isArray(data.diffusion_path) ? data.diffusion_path : [];
-    if (path.length < 2) return { nodes: [], links: [] };
-    // Each stage → one node labeled by its demographic. Link to next stage.
-    // Index-mapped pct so the scrubber fades stages in left-to-right.
-    const lastIdx = Math.max(1, path.length - 1);
-    const nodes = path.map((p, i) => ({
-      id: `stage${i}`,
-      name: (p.demographic || `Cohort ${i + 1}`).trim(),
-      stageLabel: `Stage ${p.stage || i + 1}${p.date ? ' · ' + p.date : ''}`,
-      platform: p.platform || '',
-      description: p.description || '',
-      color: 'var(--social)',
-      appears_at_pct: (i / lastIdx) * 100,
-    }));
-    const links = [];
-    for (let i = 0; i < nodes.length - 1; i++) {
-      links.push({
-        source: i, target: i + 1, value: 1,
-        label: path[i + 1]?.platform || '',
-        appears_at_pct: ((i + 1) / lastIdx) * 100,
-      });
-    }
-    return { nodes, links };
-  }
-
-  if (mode === 'categories') {
-    const g = data.graph || { nodes: [], edges: [] };
-    const nodeMap = new Map(g.nodes.map(n => [n.id, n]));
-    // Aggregate (sourceCat → targetCat) edge weights + earliest appearance.
-    const agg = new Map();
-    (g.edges || []).forEach(e => {
-      const s = nodeMap.get(e.source)?.category;
-      const t = nodeMap.get(e.target)?.category;
-      if (!s || !t || !SANKEY_CATEGORIES.includes(s) || !SANKEY_CATEGORIES.includes(t)) return;
-      if (s === t) return; // Skip self-loops — sankey can't render them.
-      const key = s + '→' + t;
-      const prior = agg.get(key) || { source: s, target: t, value: 0, appears_at_pct: Infinity };
-      prior.value += (e.weight || 0.5);
-      const ePct = Number.isFinite(+e.appears_at_pct) ? +e.appears_at_pct : 0;
-      prior.appears_at_pct = Math.min(prior.appears_at_pct, ePct);
-      agg.set(key, prior);
-    });
-    // Build node columns: left = sources, right = targets (same 6 categories).
-    // Use distinct ids for left vs right so d3-sankey treats them as columns.
-    const nodes = [];
-    const idx = new Map();
-    SANKEY_CATEGORIES.forEach(cat => {
-      idx.set('L:' + cat, nodes.length);
-      nodes.push({ id: 'L:' + cat, name: cat, side: 'source', color: SANKEY_CAT_COLOR[cat], appears_at_pct: Infinity });
-    });
-    SANKEY_CATEGORIES.forEach(cat => {
-      idx.set('R:' + cat, nodes.length);
-      nodes.push({ id: 'R:' + cat, name: cat, side: 'target', color: SANKEY_CAT_COLOR[cat], appears_at_pct: Infinity });
-    });
-    const links = [...agg.values()].map(l => ({
-      source: idx.get('L:' + l.source),
-      target: idx.get('R:' + l.target),
-      value: l.value,
-      appears_at_pct: Number.isFinite(l.appears_at_pct) ? l.appears_at_pct : 0,
-    }));
-    // Propagate each link's pct to its endpoints (earliest contributing edge).
-    links.forEach(l => {
-      nodes[l.source].appears_at_pct = Math.min(nodes[l.source].appears_at_pct, l.appears_at_pct);
-      nodes[l.target].appears_at_pct = Math.min(nodes[l.target].appears_at_pct, l.appears_at_pct);
-    });
-    // Drop orphan nodes so the layout isn't cluttered.
-    const used = new Set();
-    links.forEach(l => { used.add(l.source); used.add(l.target); });
-    const kept = nodes.map((n, i) => ({ ...n, _orig: i })).filter(n => used.has(n._orig));
-    const remap = new Map(kept.map((n, i) => [n._orig, i]));
-    const remapped = links.map(l => ({ source: remap.get(l.source), target: remap.get(l.target), value: l.value, appears_at_pct: l.appears_at_pct }));
-    kept.forEach(n => {
-      delete n._orig;
-      if (!Number.isFinite(n.appears_at_pct)) n.appears_at_pct = 0;
-    });
-    return { nodes: kept, links: remapped };
-  }
-
-  return { nodes: [], links: [] };
-}
-
-function buildSankey(data, mode) {
+// ══════════════════════════════════════════════
+// CATEGORY INFLUENCE MATRIX  (directed lens → lens causal adjacency)
+// ══════════════════════════════════════════════
+// graph.edges are directed + causal (source "legitimized / accelerated / …"
+// target). Aggregated to a lens-by-lens grid this is a small directed weighted
+// adjacency, rendered as a heatmap — lossless: direction (row=cause→col=effect),
+// magnitude (cell luminance), self-loops (diagonal) AND absence (empty cells)
+// are all visible. A narrative layer (headline takeaway + driver/driven margin
+// bars) makes it legible to non-experts. Complements the Network view (topology
+// gestalt) by being the precise causal-adjacency instrument.
+function buildCategoryMatrix(data) {
   const svg = d3.select('#sankey-svg');
   svg.selectAll('*').remove();
+  updateSankeyForScrubber = null;
 
   const container = document.getElementById('graph-container');
   const w = container.clientWidth;
   const h = container.clientHeight;
   svg.attr('viewBox', `0 0 ${w} ${h}`);
 
-  const { nodes, links } = buildSankeyData(data, mode);
-  if (!nodes.length || !links.length) {
+  // ── Aggregate directed lens→lens cells (self-loops kept this time) ──
+  const g = data.graph || { nodes: [], edges: [] };
+  const nodeMap = new Map(g.nodes.map(n => [n.id, n]));
+  const cellMap = new Map(); // `${s}|${t}` → { source, target, value, pct, labels:Set }
+  (g.edges || []).forEach(e => {
+    const s = nodeMap.get(e.source)?.category;
+    const t = nodeMap.get(e.target)?.category;
+    if (!SANKEY_CATEGORIES.includes(s) || !SANKEY_CATEGORIES.includes(t)) return;
+    const key = s + '|' + t;
+    const c = cellMap.get(key) || { source: s, target: t, value: 0, pct: Infinity, labels: new Set() };
+    c.value += (e.weight || 0.5);
+    const p = Number.isFinite(+e.appears_at_pct) ? +e.appears_at_pct : 0;
+    c.pct = Math.min(c.pct, p);
+    if (e.label) c.labels.add(e.label);
+    cellMap.set(key, c);
+  });
+  const cells = [...cellMap.values()];
+  if (!cells.length) {
     svg.append('text')
       .attr('x', w / 2).attr('y', h / 2)
       .attr('text-anchor', 'middle')
       .attr('fill', 'var(--text-dim)')
       .attr('font-family', 'var(--font-mono)')
       .attr('font-size', 12)
-      .text('Not enough structure in this analysis to render a flow.');
+      .text('Not enough cross-lens structure in this analysis to render a matrix.');
     return;
   }
 
-  const padTop = 48, padBottom = 20, padX = Math.min(140, Math.max(60, w * 0.18));
-  const sankey = d3.sankey()
-    .nodeWidth(14)
-    .nodePadding(18)
-    .extent([[padX, padTop], [w - padX, h - padBottom]])
-    .nodeAlign(d3.sankeyJustify);
+  // Row sums = "drives", column sums = "driven". Present lenses, seriated by
+  // total involvement so dominant lenses cluster top-left (same order both axes
+  // keeps the diagonal a diagonal).
+  const rowSum = {}, colSum = {};
+  SANKEY_CATEGORIES.forEach(c => { rowSum[c] = 0; colSum[c] = 0; });
+  cells.forEach(c => { rowSum[c.source] += c.value; colSum[c.target] += c.value; });
+  const order = SANKEY_CATEGORIES
+    .filter(c => rowSum[c] > 0 || colSum[c] > 0)
+    .sort((a, b) => (rowSum[b] + colSum[b]) - (rowSum[a] + colSum[a]));
+  const pos = new Map(order.map((c, i) => [c, i]));
+  const n = order.length;
+  const maxVal = Math.max(...cells.map(c => c.value));
+  const maxRow = Math.max(...order.map(c => rowSum[c]), 1e-6);
+  const maxCol = Math.max(...order.map(c => colSum[c]), 1e-6);
 
-  const graph = sankey({
-    nodes: nodes.map(n => ({ ...n })),
-    links: links.map(l => ({ ...l })),
+  // ── Layout ──
+  const padX = 22;
+  const headlineY = 46; // baseline below the view-toggle button row (top:10 + ~30px)
+  const colLabelH = 54, rowGut = 104, driverW = 78, drivenH = 64;
+  const gridLeft = padX + rowGut;
+  const gridTop = headlineY + 16 + colLabelH;
+  const availW = (w - padX - driverW) - gridLeft;
+  const availH = (h - padX - drivenH) - gridTop;
+  const cell = Math.max(18, Math.min(availW / n, availH / n, 88));
+  const gridW = cell * n, gridH = cell * n;
+  const gridRight = gridLeft + gridW, gridBottom = gridTop + gridH;
+  const cx = j => gridLeft + j * cell;   // left edge of column j
+  const cyy = i => gridTop + i * cell;    // top edge of row i
+
+  const showTip = (ev, label, meta) => {
+    const tt = document.getElementById('sankey-tooltip');
+    tt.querySelector('.st-label').textContent = label;
+    tt.querySelector('.st-meta').textContent = meta;
+    tt.style.display = 'block';
+    tt.style.left = (ev.offsetX + 12) + 'px';
+    tt.style.top  = (ev.offsetY + 12) + 'px';
+  };
+  const hideTip = () => { document.getElementById('sankey-tooltip').style.display = 'none'; };
+
+  // ── Faint grid background (shows absence honestly) ──
+  const gridG = svg.append('g').attr('class', 'cm-gridcells');
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+    gridG.append('rect').attr('class', 'cm-grid')
+      .attr('x', cx(j)).attr('y', cyy(i)).attr('width', cell).attr('height', cell);
+  }
+
+  // ── Value cells: sequential intensity = magnitude (single perceptual channel) ──
+  const cellG = svg.append('g').attr('class', 'cm-cells');
+  cells.forEach(c => {
+    const i = pos.get(c.source), j = pos.get(c.target);
+    cellG.append('rect')
+      .attr('class', 'cm-cell')
+      .attr('x', cx(j) + 1).attr('y', cyy(i) + 1)
+      .attr('width', cell - 2).attr('height', cell - 2).attr('rx', 2)
+      .attr('fill', 'var(--signal)')
+      .attr('fill-opacity', 0.12 + 0.88 * (c.value / maxVal))
+      .attr('data-pct', c.pct)
+      .on('mousemove', ev => showTip(ev, `${c.source} → ${c.target}`,
+        `influence ${c.value.toFixed(1)}` + (c.labels.size ? ' · ' + [...c.labels].slice(0, 3).join(', ') : '')))
+      .on('mouseleave', hideTip);
+    if (c.source === c.target) { // self-reinforcement — flag with a lens-colored ring
+      cellG.append('rect').attr('class', 'cm-diag')
+        .attr('x', cx(j) + 1).attr('y', cyy(i) + 1)
+        .attr('width', cell - 2).attr('height', cell - 2).attr('rx', 2)
+        .attr('fill', 'none').attr('stroke', SANKEY_CAT_COLOR[c.source]).attr('stroke-width', 1.5)
+        .attr('data-pct', c.pct);
+    }
   });
 
-  // Links
-  const linkG = svg.append('g').attr('class', 'sankey-links').attr('fill', 'none');
-  linkG.selectAll('path')
-    .data(graph.links)
-    .enter().append('path')
-    .attr('class', 'sk-link')
-    .attr('d', d3.sankeyLinkHorizontal())
-    .attr('stroke', d => d.source.color || 'var(--edge-color)')
-    .attr('stroke-width', d => Math.max(1, d.width))
-    .attr('stroke-opacity', 0.35)
-    .attr('data-pct', d => d.appears_at_pct ?? 0)
-    .on('mousemove', (ev, d) => {
-      const tt = document.getElementById('sankey-tooltip');
-      tt.querySelector('.st-label').textContent = `${d.source.name} → ${d.target.name}`;
-      tt.querySelector('.st-meta').textContent =
-        mode === 'demographic' ? (d.label ? `via ${d.label}` : '')
-        : `weight ${d.value.toFixed(2)}`;
-      tt.style.display = 'block';
-      tt.style.left = (ev.offsetX + 12) + 'px';
-      tt.style.top  = (ev.offsetY + 12) + 'px';
-    })
-    .on('mouseleave', () => {
-      document.getElementById('sankey-tooltip').style.display = 'none';
-    });
+  // ── Axis micro-labels ──
+  svg.append('text').attr('class', 'cm-axis-label')
+    .attr('x', gridLeft).attr('y', gridTop - colLabelH + 2).attr('text-anchor', 'start')
+    .text('→ driven (effect)');
+  svg.append('text').attr('class', 'cm-axis-label')
+    .attr('x', padX).attr('y', gridTop - 6).attr('text-anchor', 'start')
+    .text('drives ↓');
 
-  // Nodes
-  const nodeG = svg.append('g').attr('class', 'sankey-nodes');
-  const nodeSel = nodeG.selectAll('g')
-    .data(graph.nodes)
-    .enter().append('g').attr('class', 'sk-node');
+  // ── Lens labels (column = rotated, row = right-aligned), colored by lens ──
+  order.forEach((catg, j) => {
+    const lx = cx(j) + cell / 2, ly = gridTop - 8;
+    svg.append('text').attr('class', 'cm-lens-label')
+      .attr('x', lx).attr('y', ly).attr('text-anchor', 'start')
+      .attr('transform', `rotate(-40 ${lx} ${ly})`)
+      .attr('fill', SANKEY_CAT_COLOR[catg]).text(catg);
+  });
+  order.forEach((catg, i) => {
+    svg.append('text').attr('class', 'cm-lens-label')
+      .attr('x', gridLeft - 12).attr('y', cyy(i) + cell / 2).attr('dy', '0.35em')
+      .attr('text-anchor', 'end').attr('fill', SANKEY_CAT_COLOR[catg]).text(catg);
+  });
 
-  nodeSel.append('rect')
-    .attr('x', d => d.x0)
-    .attr('y', d => d.y0)
-    .attr('height', d => Math.max(1, d.y1 - d.y0))
-    .attr('width', d => d.x1 - d.x0)
-    .attr('fill', d => d.color || 'var(--text-dim)')
-    .attr('opacity', 0.9)
-    .attr('data-pct', d => d.appears_at_pct ?? 0)
-    .on('mousemove', (ev, d) => {
-      const tt = document.getElementById('sankey-tooltip');
-      tt.querySelector('.st-label').textContent = d.name;
-      const meta = d.stageLabel || (d.side ? (d.side === 'source' ? 'upstream' : 'downstream') : '');
-      tt.querySelector('.st-meta').textContent = meta + (d.description ? ' · ' + d.description : '');
-      tt.style.display = 'block';
-      tt.style.left = (ev.offsetX + 12) + 'px';
-      tt.style.top  = (ev.offsetY + 12) + 'px';
-    })
-    .on('mouseleave', () => {
-      document.getElementById('sankey-tooltip').style.display = 'none';
-    });
+  // ── Driver margin bars (right): rowSum. Driven margin bars (below): colSum. ──
+  const driverG = svg.append('g').attr('class', 'cm-drivers');
+  order.forEach((catg, i) => {
+    driverG.append('rect')
+      .attr('x', gridRight + 6).attr('y', cyy(i) + cell / 2 - 4)
+      .attr('width', Math.max(1, (rowSum[catg] / maxRow) * (driverW - 14))).attr('height', 8)
+      .attr('rx', 2).attr('fill', SANKEY_CAT_COLOR[catg]).attr('fill-opacity', 0.85);
+  });
+  svg.append('text').attr('class', 'cm-margin-cap')
+    .attr('x', gridRight + 6).attr('y', gridTop - 6).text('drives');
+  const drivenG = svg.append('g').attr('class', 'cm-driven');
+  order.forEach((catg, j) => {
+    drivenG.append('rect')
+      .attr('x', cx(j) + cell / 2 - 4).attr('y', gridBottom + 6)
+      .attr('width', 8).attr('height', Math.max(1, (colSum[catg] / maxCol) * (drivenH - 18)))
+      .attr('rx', 2).attr('fill', SANKEY_CAT_COLOR[catg]).attr('fill-opacity', 0.85);
+  });
+  svg.append('text').attr('class', 'cm-margin-cap')
+    .attr('x', gridLeft).attr('y', gridBottom + drivenH).text('driven');
 
-  // Labels placed outside the rect on the nearer edge. Font scales down when
-  // many nodes stack on one side (mostly an issue in categories mode).
-  const leftCount = graph.nodes.filter(n => n.x0 < w / 2).length;
-  const rightCount = graph.nodes.filter(n => n.x0 >= w / 2).length;
-  const perSide = Math.max(leftCount, rightCount);
-  const labelFontSize = perSide > 7 ? 9 : perSide > 4 ? 10 : 11;
-  nodeSel.append('text')
-    .attr('class', 'sk-label')
-    .attr('x', d => d.x0 < w / 2 ? d.x1 + 6 : d.x0 - 6)
-    .attr('y', d => (d.y0 + d.y1) / 2)
-    .attr('dy', '0.35em')
-    .attr('text-anchor', d => d.x0 < w / 2 ? 'start' : 'end')
-    .attr('font-size', labelFontSize)
-    .attr('data-pct', d => d.appears_at_pct ?? 0)
-    .text(d => d.name);
+  // ── Legend (weak → strong) ──
+  const legX = w - padX - 96, legY = headlineY - 7;
+  for (let k = 0; k < 5; k++) {
+    svg.append('rect')
+      .attr('x', legX + k * 14).attr('y', legY).attr('width', 13).attr('height', 8).attr('rx', 1)
+      .attr('fill', 'var(--signal)').attr('fill-opacity', 0.12 + 0.88 * (k / 4));
+  }
+  svg.append('text').attr('class', 'cm-margin-cap')
+    .attr('x', legX - 6).attr('y', legY + 8).attr('text-anchor', 'end').text('weak');
+  svg.append('text').attr('class', 'cm-margin-cap')
+    .attr('x', legX + 72).attr('y', legY + 8).attr('text-anchor', 'start').text('strong');
 
-  // Scrubber-driven visibility — same pattern as the timeline. Walks all
-  // [data-pct] descendants and toggles opacity based on state.scrubber.
+  // ── Headline takeaway (plain language, synthesized + honest) ──
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const targetLens = order.slice().sort((a, b) => colSum[b] - colSum[a])
+    .find(t => cells.some(c => c.target === t && c.source !== t)) || order[0];
+  const drivers = cells.filter(c => c.target === targetLens && c.source !== targetLens)
+    .sort((a, b) => b.value - a.value).map(c => c.source);
+  let headline = '';
+  if (drivers.length) {
+    headline = `${drivers.slice(0, 2).map(cap).join(' and ')} forces most strongly drove ${targetLens}.`;
+  }
+  const counterDrivers = cells.filter(c => c.target === 'counter' && c.source !== 'counter')
+    .sort((a, b) => b.value - a.value);
+  if (counterDrivers.length && targetLens !== 'counter') {
+    headline += ` ${cap(counterDrivers[0].source)} fed the counter-signal.`;
+  }
+  if (headline) {
+    svg.append('text').attr('class', 'cm-headline')
+      .attr('x', padX).attr('y', headlineY).text(headline);
+  }
+
+  // ── Scrubber: cells fade in by appears_at_pct; margins + headline are the
+  // conclusion and stay constant. ──
   const applyScrubber = () => {
     const v = state.scrubber;
     svg.selectAll('[data-pct]').each(function() {
-      const pct = +this.getAttribute('data-pct');
-      const visible = pct <= v;
-      const cls = this.classList;
-      let target;
-      if (!visible) target = 0;
-      else if (cls.contains('sk-link')) target = 1;   // stroke-opacity handles dimming
-      else if (cls.contains('sk-label')) target = 1;
-      else target = 0.9;                              // node rect
-      d3.select(this).attr('opacity', target);
+      d3.select(this).attr('opacity', +this.getAttribute('data-pct') > v ? 0 : 1);
     });
   };
   applyScrubber();
@@ -3696,6 +3747,35 @@ function buildTimeline(data) {
     const obj = { ...n, _x: cx, _y: cy, _r: r, _pct: pct };
     nodeMap.set(n.id, obj);
     positioned.push(obj);
+  });
+
+  // Anti-overlap: within each lane, assign nodes to sub-rows so labels don't
+  // overprint. Row 0 sits at lane center; subsequent rows zig-zag up/down.
+  const byLane = new Map();
+  positioned.forEach(n => {
+    if (!byLane.has(n.category)) byLane.set(n.category, []);
+    byLane.get(n.category).push(n);
+  });
+  byLane.forEach((nodesInLane, cat) => {
+    nodesInLane.sort((a, b) => a._x - b._x);
+    const maxR = nodesInLane.reduce((m, n) => Math.max(m, n._r), 0);
+    const bandH = y.bandwidth();
+    const rowDelta = Math.max(10, Math.min(14, (bandH - 2 * maxR - 18) / 4));
+    const rowRightEdge = []; // per-row rightmost label edge (in screen px)
+    nodesInLane.forEach(n => {
+      const halfW = (String(n.label || '').length * 7.2) / 2 + 4;
+      n._halfW = halfW;
+      let row = 0;
+      while (row < rowRightEdge.length && rowRightEdge[row] > n._x - halfW) row++;
+      rowRightEdge[row] = n._x + halfW;
+      // Zig-zag: 0 → 0, 1 → -1, 2 → +1, 3 → -2, 4 → +2, ...
+      const sign = row === 0 ? 0 : (row % 2 === 1 ? -1 : 1);
+      const mag = Math.ceil(row / 2);
+      const offset = sign * mag * rowDelta;
+      const laneTop = y(cat) + n._r + 8;
+      const laneBot = y(cat) + bandH - n._r - 8;
+      n._y = Math.max(laneTop, Math.min(laneBot, n._y + offset));
+    });
   });
 
   // Edges — gentle bezier arcs. The mid-control points push perpendicular to
@@ -3816,6 +3896,238 @@ function buildTimeline(data) {
   updateTimelineForScrubber = applyScrubber;
 }
 
+// ══════════════════════════════════════════════
+// DIFFUSION JOURNEY  (demographic cohorts over time)
+// ══════════════════════════════════════════════
+// diffusion_path is a linear ordered sequence of cohorts — there is NO honest
+// per-cohort volume in the analysis, so we render it as a single horizontal
+// track of labeled "stations" rather than a (volume-implying) Sankey. The x
+// position encodes sequence order, not real elapsed time; each station's real
+// date lives in its label. Stage-band headers are qualitative context, exactly
+// as in buildTimeline.
+function buildDiffusionJourney(data) {
+  const svg = d3.select('#sankey-svg');
+  svg.selectAll('*').remove();
+  updateSankeyForScrubber = null;
+
+  const container = document.getElementById('graph-container');
+  const w = container.clientWidth;
+  const h = container.clientHeight;
+  svg.attr('viewBox', `0 0 ${w} ${h}`);
+
+  const path = Array.isArray(data.diffusion_path) ? data.diffusion_path : [];
+  if (path.length < 2) {
+    svg.append('text')
+      .attr('x', w / 2).attr('y', h / 2)
+      .attr('text-anchor', 'middle')
+      .attr('fill', 'var(--text-dim)')
+      .attr('font-family', 'var(--font-mono)')
+      .attr('font-size', 12)
+      .text('Not enough structure in this analysis to render a diffusion path.');
+    return;
+  }
+
+  const lastIdx = Math.max(1, path.length - 1);
+  const cohorts = path.map((p, i) => ({
+    name: (p.demographic || `Cohort ${i + 1}`).trim(),
+    stage: p.stage || i + 1,
+    date: p.date || '',
+    platform: p.platform || '',
+    description: p.description || '',
+    color: DEMOGRAPHIC_STAGE_COLORS[i % DEMOGRAPHIC_STAGE_COLORS.length],
+    pct: (i / lastIdx) * 100,
+  }));
+
+  const padTop = 44, padBottom = 38,
+        padLeft = Math.min(96, Math.max(60, w * 0.14)),
+        padRight = 24;
+  const x = d3.scaleLinear().domain([0, 100]).range([padLeft, w - padRight]);
+  const cy = (padTop + (h - padBottom)) / 2;
+
+  // ── Stage band headers + dividers (qualitative backdrop, matches Timeline) ──
+  const stageHeader = svg.append('g').attr('class', 'tl-stage-headers');
+  let prevMax = 0;
+  SANKEY_LIFECYCLE_STAGES.forEach(s => {
+    const segMax = Math.min(100, s.max);
+    const center = (prevMax + segMax) / 2;
+    stageHeader.append('text')
+      .attr('class', 'sk-stage-header')
+      .attr('x', x(center)).attr('y', 22)
+      .attr('text-anchor', 'middle')
+      .text(s.label);
+    if (s !== SANKEY_LIFECYCLE_STAGES[SANKEY_LIFECYCLE_STAGES.length - 1]) {
+      svg.append('line')
+        .attr('class', 'tl-stage-divider')
+        .attr('x1', x(segMax)).attr('x2', x(segMax))
+        .attr('y1', padTop - 6).attr('y2', h - padBottom + 4);
+    }
+    prevMax = segMax;
+  });
+
+  // ── Bottom axis + percentage ticks ──
+  svg.append('line')
+    .attr('class', 'tl-axis')
+    .attr('x1', padLeft).attr('x2', w - padRight)
+    .attr('y1', h - padBottom + 6).attr('y2', h - padBottom + 6);
+  const tickG = svg.append('g').attr('class', 'tl-ticks');
+  for (let p = 0; p <= 100; p += 20) {
+    tickG.append('line')
+      .attr('class', 'tl-tick')
+      .attr('x1', x(p)).attr('x2', x(p))
+      .attr('y1', h - padBottom + 4).attr('y2', h - padBottom + 10);
+    tickG.append('text')
+      .attr('class', 'tl-axis-label')
+      .attr('x', x(p)).attr('y', h - padBottom + 22)
+      .attr('text-anchor', 'middle')
+      .text(p + '%');
+  }
+
+  // ── Track baseline + colored connector segments ──
+  svg.append('line')
+    .attr('class', 'dj-baseline')
+    .attr('x1', x(cohorts[0].pct)).attr('x2', x(cohorts[lastIdx].pct))
+    .attr('y1', cy).attr('y2', cy);
+  const segG = svg.append('g').attr('class', 'dj-segments');
+  for (let i = 0; i < cohorts.length - 1; i++) {
+    segG.append('line')
+      .attr('class', 'dj-segment')
+      .attr('x1', x(cohorts[i].pct)).attr('x2', x(cohorts[i + 1].pct))
+      .attr('y1', cy).attr('y2', cy)
+      .attr('stroke', cohorts[i].color)
+      .attr('stroke-width', 3)
+      .attr('stroke-opacity', 0.7)
+      .attr('data-pct', cohorts[i + 1].pct);
+  }
+
+  // Tooltip — surfaces the description field, which no other view shows.
+  const showTip = (ev, c) => {
+    const tt = document.getElementById('sankey-tooltip');
+    tt.querySelector('.st-label').textContent = c.name;
+    const bits = [`Stage ${c.stage}`];
+    if (c.date) bits.push(c.date);
+    if (c.platform) bits.push(c.platform);
+    tt.querySelector('.st-meta').textContent =
+      bits.join(' · ') + (c.description ? ' · ' + c.description : '');
+    tt.style.display = 'block';
+    tt.style.left = (ev.offsetX + 12) + 'px';
+    tt.style.top  = (ev.offsetY + 12) + 'px';
+  };
+  const hideTip = () => { document.getElementById('sankey-tooltip').style.display = 'none'; };
+
+  // ── Station dots ──
+  const dotR = 7;
+  svg.append('g').attr('class', 'dj-dots').selectAll('circle')
+    .data(cohorts)
+    .enter().append('circle')
+    .attr('class', 'dj-dot')
+    .attr('cx', c => x(c.pct)).attr('cy', cy).attr('r', dotR)
+    .attr('fill', c => c.color)
+    .attr('data-pct', c => c.pct)
+    .on('mousemove', showTip).on('mouseleave', hideTip);
+
+  // ── Labels: alternating tiers above/below the track ──
+  // Even index → above, odd → below. Same-tier stations sit two steps apart, so
+  // bounding each label's width to <= the same-tier spacing guarantees no
+  // horizontal overlap; long names wrap to <=2 lines and ellipsize.
+  const CHAR_W = 7.2, lineH = 13, tickLen = 12;
+  const stepPct = 100 / lastIdx;
+  const sameTierPx = Math.abs(x(2 * stepPct) - x(0));
+  const maxW = Math.max(90, Math.min(220, sameTierPx * 0.9));
+  const maxChars = Math.max(6, Math.floor(maxW / CHAR_W));
+
+  function wrapName(str) {
+    const words = String(str).trim().split(/\s+/);
+    const lines = [];
+    let cur = '';
+    for (const word of words) {
+      const trial = cur ? cur + ' ' + word : word;
+      if (trial.length <= maxChars) { cur = trial; }
+      else { if (cur) lines.push(cur); cur = word; if (lines.length === 2) break; }
+    }
+    if (cur && lines.length < 2) lines.push(cur);
+    const truncated = lines.join(' ').split(/\s+/).length < words.length;
+    // Hard-cap any over-long line (e.g. a single long word) and mark truncation.
+    for (let k = 0; k < lines.length; k++) {
+      if (lines[k].length > maxChars) lines[k] = lines[k].slice(0, maxChars - 1) + '…';
+    }
+    if (truncated && !/…$/.test(lines[lines.length - 1])) lines[lines.length - 1] += '…';
+    return lines.length ? lines : [String(str)];
+  }
+
+  const labelG = svg.append('g').attr('class', 'dj-labels');
+  cohorts.forEach((c, i) => {
+    const above = i % 2 === 0;
+    const anchorX = x(c.pct);
+    const textAnchor = i === 0 ? 'start' : i === lastIdx ? 'end' : 'middle';
+    const nameLines = wrapName(c.name);
+    const meta = [c.date, c.platform].filter(Boolean).join(' · ');
+
+    const g = labelG.append('g')
+      .attr('class', 'dj-label')
+      .attr('data-pct', c.pct);
+
+    // Connector tick from dot to label block.
+    g.append('line')
+      .attr('class', 'dj-tick')
+      .attr('x1', anchorX).attr('x2', anchorX)
+      .attr('y1', above ? cy - dotR : cy + dotR)
+      .attr('y2', above ? cy - dotR - tickLen : cy + dotR + tickLen);
+
+    let nameFirstY, metaY;
+    if (above) {
+      metaY = cy - dotR - tickLen - 6;
+      const nameLastY = meta ? metaY - lineH : metaY;
+      nameFirstY = nameLastY - (nameLines.length - 1) * lineH;
+    } else {
+      nameFirstY = cy + dotR + tickLen + 12;
+      metaY = nameFirstY + nameLines.length * lineH - 2;
+    }
+
+    const nameText = g.append('text')
+      .attr('class', 'sk-label')
+      .attr('x', anchorX).attr('y', nameFirstY)
+      .attr('text-anchor', textAnchor);
+    nameLines.forEach((ln, li) => {
+      nameText.append('tspan')
+        .attr('x', anchorX)
+        .attr('dy', li === 0 ? 0 : lineH)
+        .text(ln);
+    });
+
+    if (meta) {
+      g.append('text')
+        .attr('class', 'dj-meta')
+        .attr('x', anchorX).attr('y', metaY)
+        .attr('text-anchor', textAnchor)
+        .text(meta);
+    }
+  });
+
+  // ── Scrubber cursor + reveal (same pattern as Timeline) ──
+  const cursor = svg.append('line')
+    .attr('class', 'tl-cursor')
+    .attr('y1', padTop - 6).attr('y2', h - padBottom + 4);
+
+  const applyScrubber = () => {
+    const v = state.scrubber;
+    cursor.attr('x1', x(v)).attr('x2', x(v));
+    svg.selectAll('[data-pct]').each(function() {
+      const pct = +this.getAttribute('data-pct');
+      const target = pct > v ? 0 : (this.classList.contains('dj-segment') ? 0.7 : 1);
+      d3.select(this).attr('opacity', target);
+    });
+  };
+  applyScrubber();
+  updateSankeyForScrubber = applyScrubber;
+}
+
+// Dispatch a non-network view to its renderer. Network is handled by buildGraph.
+function renderGraphView(view, data) {
+  if (view === 'timeline') buildTimeline(data);
+  else if (view === 'demographic') buildDiffusionJourney(data);
+  else buildCategoryMatrix(data); // 'categories'
+}
+
 function setGraphView(view) {
   state.graphView = view;
   const container = document.getElementById('graph-container');
@@ -3828,8 +4140,7 @@ function setGraphView(view) {
   updateSankeyForScrubber = null;
   if (view === 'network') return; // Network already built by buildGraph.
   if (!state.data) return;
-  if (view === 'timeline') buildTimeline(state.data);
-  else buildSankey(state.data, view);
+  renderGraphView(view, state.data);
 }
 
 // Wire the toggle once (DOM exists at load, data may not).
@@ -3849,8 +4160,7 @@ document.querySelectorAll('.graph-view-btn').forEach(btn => {
       resizeRebuildTimer = setTimeout(() => {
         const v = state.graphView;
         if (!state.data || !v || v === 'network') return;
-        if (v === 'timeline') buildTimeline(state.data);
-        else buildSankey(state.data, v);
+        renderGraphView(v, state.data);
         updateScrubber(state.scrubber);
       }, 200);
     }).observe(graphContainerEl);
