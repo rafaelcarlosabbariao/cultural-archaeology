@@ -826,9 +826,9 @@ html, body {
 
 /* ── View toggle (Network / Sankey flows) ── */
 #graph-view-toggle {
-  position: absolute;
-  top: 10px;
-  left: 12px;
+  flex-shrink: 0;
+  align-self: center;
+  margin-top: 4px;
   display: flex;
   gap: 0;
   background: var(--surface-2);
@@ -837,9 +837,8 @@ html, body {
   overflow-x: auto;
   overflow-y: hidden;
   flex-wrap: nowrap;
-  max-width: calc(100% - 24px);
+  max-width: 100%;
   scrollbar-width: none;
-  z-index: 10;
 }
 #graph-view-toggle::-webkit-scrollbar { display: none; }
 .graph-view-btn {
@@ -1975,12 +1974,6 @@ html, body {
     <div id="graph-container" data-view="timeline">
       <svg id="graph-svg"></svg>
       <svg id="sankey-svg"></svg>
-      <div id="graph-view-toggle" role="tablist">
-        <button class="graph-view-btn" data-view="timeline" data-active="true" title="Concepts plotted on a real time axis, grouped by category lane">Timeline</button>
-        <button class="graph-view-btn" data-view="network" title="Force-directed knowledge graph">Network</button>
-        <button class="graph-view-btn" data-view="demographic" title="Demographic diffusion across adoption stages">Demographic</button>
-        <button class="graph-view-btn" data-view="categories" title="Causal flow between node categories (social, economic, platform…)">Categories</button>
-      </div>
       <div id="sankey-tooltip">
         <div class="st-label"></div>
         <div class="st-meta"></div>
@@ -2009,6 +2002,12 @@ html, body {
         <div class="legend-item"><div class="legend-dot" style="background:var(--cultural)"></div>Cultural</div>
         <div class="legend-item"><div class="legend-dot" style="background:var(--counter-node)"></div>Counter</div>
       </div>
+    </div>
+    <div id="graph-view-toggle" role="tablist">
+      <button class="graph-view-btn" data-view="timeline" data-active="true" title="Concepts plotted on a real time axis, grouped by category lane">Timeline</button>
+      <button class="graph-view-btn" data-view="network" title="Force-directed knowledge graph">Network</button>
+      <button class="graph-view-btn" data-view="demographic" title="Demographic diffusion across adoption stages">Demographic</button>
+      <button class="graph-view-btn" data-view="categories" title="Causal flow between node categories (social, economic, platform…)">Categories</button>
     </div>
   </div>
 </div>
@@ -3502,7 +3501,7 @@ function buildCategoryMatrix(data) {
 
   // ── Layout ──
   const padX = 22;
-  const headlineY = 46; // baseline below the view-toggle button row (top:10 + ~30px)
+  const headlineY = 22; // baseline near top — the view-toggle now lives below the chart
   const colLabelH = 54, rowGut = 104, driverW = 78, drivenH = 64;
   const gridLeft = padX + rowGut;
   const gridTop = headlineY + 16 + colLabelH;
