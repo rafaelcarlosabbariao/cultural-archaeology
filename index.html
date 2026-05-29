@@ -754,7 +754,7 @@ html, body {
 
 #scurve-container {
   width: 100%;
-  height: 180px;
+  height: 120px;
   background: var(--surface);
   border-radius: 8px;
   border: 1px solid var(--border);
@@ -1167,6 +1167,53 @@ html, body {
   border-radius: 3px;
   width: fit-content;
 }
+
+/* ── Report table of contents (sticky chip row at top of #panel-left) ── */
+#report-toc {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 0 10px;
+  margin: 0 0 4px;
+  background: var(--bg);
+  z-index: 5;
+}
+#report-toc:empty { display: none; }
+.toc-link {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 4px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.toc-link:hover { color: var(--text); border-color: var(--text-dim); }
+.toc-link[data-active="true"] {
+  color: var(--signal);
+  border-color: var(--signal);
+}
+
+/* ── Collapsible report cards (h3 is the toggle; scoped to analysis report) ── */
+#report-content .report-card h3 { cursor: pointer; user-select: none; }
+#report-content .report-card h3::before {
+  content: '▾';
+  display: inline-block;
+  margin-right: 6px;
+  color: var(--text-dim);
+  transition: transform 0.15s;
+}
+#report-content .report-card.collapsed h3::before { transform: rotate(-90deg); }
+#report-content .report-card.collapsed { padding-bottom: 14px; }
+#report-content .report-card.collapsed h3 { margin-bottom: 0; }
+#report-content .report-card.collapsed > *:not(h3) { display: none; }
 
 .report-card {
   background: var(--surface);
@@ -1914,6 +1961,7 @@ html, body {
     <div id="report-content">
       <div id="ungrounded-label">Ungrounded analysis — no live search data</div>
       <div id="one-line"></div>
+      <nav id="report-toc" aria-label="Report sections"></nav>
 
       <div class="report-card" id="card-timeline">
         <h3>Adoption Timeline</h3>
@@ -2907,6 +2955,59 @@ function renderReport(data) {
   }
   buildTermCloud(data);
   updateScrubber(0);
+  wireReportNav();
+}
+
+// Build the report TOC from the rendered card h3 titles and wire per-card
+// collapse. Called at the end of renderReport so the TOC always matches
+// whatever cards the analysis actually populated. Idempotent: re-running
+// clears the prior TOC and resets all collapse state.
+function wireReportNav() {
+  const toc = document.getElementById('report-toc');
+  if (!toc) return;
+  toc.innerHTML = '';
+  const cards = [...document.querySelectorAll('#report-content > .report-card')];
+  const linkByCard = new Map();
+  cards.forEach(card => {
+    card.classList.remove('collapsed');
+    const h3 = card.querySelector('h3');
+    if (!h3) return;
+    h3.setAttribute('role', 'button');
+    h3.setAttribute('aria-expanded', 'true');
+    h3.onclick = () => {
+      const collapsed = card.classList.toggle('collapsed');
+      h3.setAttribute('aria-expanded', String(!collapsed));
+    };
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'toc-link';
+    btn.dataset.target = '#' + card.id;
+    btn.textContent = h3.textContent.trim();
+    btn.onclick = () => {
+      card.classList.remove('collapsed');
+      h3.setAttribute('aria-expanded', 'true');
+      card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+    toc.appendChild(btn);
+    linkByCard.set(card.id, btn);
+  });
+  // Highlight the most-visible card's TOC chip while scrolling panel-left.
+  if (toc._observer) toc._observer.disconnect();
+  const root = document.getElementById('panel-left');
+  if ('IntersectionObserver' in window && root) {
+    toc._observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        const link = linkByCard.get(e.target.id);
+        if (!link) return;
+        if (e.isIntersecting && e.intersectionRatio > 0.4) {
+          toc.querySelectorAll('.toc-link[data-active="true"]')
+            .forEach(b => b.removeAttribute('data-active'));
+          link.setAttribute('data-active', 'true');
+        }
+      });
+    }, { root, threshold: [0.4, 0.6] });
+    cards.forEach(c => toc._observer.observe(c));
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -3764,7 +3865,14 @@ function buildTimeline(data) {
     nodesInLane.sort((a, b) => a._x - b._x);
     const maxR = nodesInLane.reduce((m, n) => Math.max(m, n._r), 0);
     const bandH = y.bandwidth();
-    const rowDelta = Math.max(10, Math.min(14, (bandH - 2 * maxR - 18) / 4));
+    // Labels at font 12 + 4px halo stroke are ~18-20px tall — adjacent tiers
+    // must clear that. Floor 18 guarantees separation; cap 22 lets bigger
+    // bandH buy more tier spacing without producing absurd offsets.
+    const rowDelta = Math.max(18, Math.min(22, (bandH - 2 * maxR - 14) / 4));
+    // Let displaced labels use the inter-lane padding (scaleBand paddingInner
+    // 0.3) the lane backgrounds leave empty — each lane "owns" its band plus
+    // halfGap on each side, roughly doubling the available tiers.
+    const halfGap = Math.max(0, (y.step() - bandH) / 2);
     const rowRightEdge = []; // per-row rightmost label edge (in screen px)
     nodesInLane.forEach(n => {
       const halfW = (String(n.label || '').length * 7.2) / 2 + 4;
@@ -3776,8 +3884,8 @@ function buildTimeline(data) {
       const sign = row === 0 ? 0 : (row % 2 === 1 ? -1 : 1);
       const mag = Math.ceil(row / 2);
       const offset = sign * mag * rowDelta;
-      const laneTop = y(cat) + n._r + 8;
-      const laneBot = y(cat) + bandH - n._r - 8;
+      const laneTop = y(cat) - halfGap + n._r + 4;
+      const laneBot = y(cat) + bandH + halfGap - n._r - 4;
       n._y = Math.max(laneTop, Math.min(laneBot, n._y + offset));
     });
   });
