@@ -1003,11 +1003,16 @@ html, body {
   font-size: 11px;
   pointer-events: none;
 }
-#sankey-svg .cm-headline {
+/* Shared one-line synthesized title for all four graph views. */
+#graph-container .view-headline {
   font-family: var(--font-mono);
   font-size: 14px;
   font-weight: 500;
   fill: var(--text);
+  pointer-events: none;
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 4;
 }
 
 /* ── Network focus mode: clear pill ── */
@@ -3503,6 +3508,22 @@ function buildGraph(data) {
       bg.attr('x', bbox.x - 3).attr('y', bbox.y - 1).attr('width', bbox.width + 6).attr('height', bbox.height + 2);
     });
   });
+
+  // Synthesized headline — concept/edge counts + hub identification (top-degree
+  // node). Appended last so the halo stroke keeps it legible over floating nodes.
+  if (nodes.length) {
+    const degree = {};
+    edges.forEach(e => {
+      const s = typeof e.source === 'object' ? e.source.id : e.source;
+      const t = typeof e.target === 'object' ? e.target.id : e.target;
+      degree[s] = (degree[s] || 0) + 1;
+      degree[t] = (degree[t] || 0) + 1;
+    });
+    const hub = nodes.slice().sort((a, b) => (degree[b.id] || 0) - (degree[a.id] || 0))[0];
+    const headline = `${nodes.length} concepts, ${edges.length} causal links — “${hub.label}” anchors the most connections.`;
+    svg.append('text').attr('class', 'view-headline')
+      .attr('x', 22).attr('y', 26).text(headline);
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -3729,7 +3750,7 @@ function buildCategoryMatrix(data) {
     headline += ` ${cap(counterDrivers[0].source)} fed the counter-signal.`;
   }
   if (headline) {
-    svg.append('text').attr('class', 'cm-headline')
+    svg.append('text').attr('class', 'view-headline')
       .attr('x', padX).attr('y', headlineY).text(headline);
   }
 
@@ -3776,7 +3797,7 @@ function buildTimeline(data) {
   const lanes = SANKEY_CATEGORIES.filter(c => present.has(c));
   if (!lanes.length) return;
 
-  const padTop = 44, padBottom = 38,
+  const padTop = 68, padBottom = 38,
         padLeft = Math.min(96, Math.max(60, w * 0.14)),
         padRight = 24;
   const x = d3.scaleLinear().domain([0, 100]).range([padLeft, w - padRight]);
@@ -3791,7 +3812,7 @@ function buildTimeline(data) {
     const center = (prevMax + segMax) / 2;
     stageHeader.append('text')
       .attr('class', 'sk-stage-header')
-      .attr('x', x(center)).attr('y', 22)
+      .attr('x', x(center)).attr('y', 50)
       .attr('text-anchor', 'middle')
       .text(s.label);
     // Faint vertical divider between stages
@@ -3983,6 +4004,20 @@ function buildTimeline(data) {
     .attr('data-pct', d => d._pct)
     .text(d => d.label);
 
+  // Synthesized headline — count + earliest→latest lens in the temporal arc.
+  {
+    const sorted = g.nodes.filter(n => lanes.includes(n.category))
+      .slice().sort((a, b) => (+a.appears_at_pct || 0) - (+b.appears_at_pct || 0));
+    if (sorted.length) {
+      const first = sorted[0].category, last = sorted[sorted.length - 1].category;
+      const headline = first === last
+        ? `${sorted.length} concepts, all in the ${first} lens.`
+        : `${sorted.length} concepts span ${first} → ${last} across ${lanes.length} lenses.`;
+      svg.append('text').attr('class', 'view-headline')
+        .attr('x', padLeft).attr('y', 26).text(headline);
+    }
+  }
+
   // Scrubber cursor (vertical line that follows state.scrubber)
   const cursor = svg.append('line')
     .attr('class', 'tl-cursor')
@@ -4050,7 +4085,7 @@ function buildDiffusionJourney(data) {
     pct: (i / lastIdx) * 100,
   }));
 
-  const padTop = 44, padBottom = 38,
+  const padTop = 68, padBottom = 38,
         padLeft = Math.min(96, Math.max(60, w * 0.14)),
         padRight = 24;
   const x = d3.scaleLinear().domain([0, 100]).range([padLeft, w - padRight]);
@@ -4064,7 +4099,7 @@ function buildDiffusionJourney(data) {
     const center = (prevMax + segMax) / 2;
     stageHeader.append('text')
       .attr('class', 'sk-stage-header')
-      .attr('x', x(center)).attr('y', 22)
+      .attr('x', x(center)).attr('y', 50)
       .attr('text-anchor', 'middle')
       .text(s.label);
     if (s !== SANKEY_LIFECYCLE_STAGES[SANKEY_LIFECYCLE_STAGES.length - 1]) {
@@ -4214,6 +4249,13 @@ function buildDiffusionJourney(data) {
         .text(meta);
     }
   });
+
+  // Synthesized headline — first → last cohort across the journey.
+  if (cohorts.length >= 2) {
+    const headline = `${cohorts.length} cohorts trace from ${cohorts[0].name} to ${cohorts[lastIdx].name}.`;
+    svg.append('text').attr('class', 'view-headline')
+      .attr('x', padLeft).attr('y', 26).text(headline);
+  }
 
   // ── Scrubber cursor + reveal (same pattern as Timeline) ──
   const cursor = svg.append('line')
