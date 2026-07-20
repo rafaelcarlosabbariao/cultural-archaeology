@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hindsight · the Positioning Audit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Cormorant+Garamond:ital@1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/audit.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap row">
+    <div class="brand">
+      <span class="wordmark">H<span class="istem">i</span>ndsight</span>
+      <span class="brand-sub">the Positioning Audit</span>
+    </div>
+    <nav class="tabs">
+      <a href="#" id="nav-new">New audit</a>
+      <a href="#" id="nav-demo">Sample: Liquid Death</a>
+      <a href="../" class="dim">sincewhen v1</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTAKE ============ -->
+  <section id="view-intake" class="view active">
+    <p class="eyebrow"><span class="dot">●</span> PEOPLEWATCHING · INSTRUMENT · PAST</p>
+    <h1>Every cultural audit is an opinion.<br><em>This one reproduces your history first.</em></h1>
+    <p class="editorial">Enter your service. The instrument reads your position backward,
+      carriers named, hops dated, receipts stored, then reads your present against the
+      moving culture. Where the reproduction diverges from your own story is where your
+      brand is wrong about itself.</p>
+
+    <form id="intake-form" class="intake">
+      <label>
+        <span class="field-label">Service or brand name</span>
+        <input type="text" id="in-name" required autocomplete="off" placeholder="Liquid Death">
+      </label>
+      <label>
+        <span class="field-label">Site URL</span>
+        <input type="url" id="in-url" required placeholder="https://liquiddeath.com">
+      </label>
+      <label>
+        <span class="field-label">In one sentence: what do you believe your positioning is?</span>
+        <textarea id="in-claim" required rows="2"
+          placeholder="We are the water brand that made hydration a punk identity."></textarea>
+        <span class="field-note">This sentence becomes the hypothesis the backtest tests.
+          Everything else is excavated from evidence.</span>
+      </label>
+      <button type="submit" class="btn btn-solid">Run the audit</button>
+      <button type="button" class="btn" id="btn-demo">Open the sample audit</button>
+    </form>
+  </section>
+
+  <!-- ============ RUN ============ -->
+  <section id="view-run" class="view">
+    <p class="eyebrow"><span class="dot">●</span> AUDIT IN PROGRESS · <span id="run-subject"></span></p>
+    <h2 id="run-headline">Gathering the public record</h2>
+    <ol class="stages" id="stage-list">
+      <li data-stage="evidence"><span class="st-name">Evidence</span><span class="st-note">news archive, your own site over time, trend series</span><span class="st-state"></span></li>
+      <li data-stage="excavate"><span class="st-name">Excavation</span><span class="st-note">category, attached signals, eras, your claim vs the record</span><span class="st-state"></span></li>
+      <li data-stage="trace"><span class="st-name">Position trace</span><span class="st-note">hop by hop, carriers named, authorship tagged</span><span class="st-state"></span></li>
+      <li data-stage="retrodict"><span class="st-name">Blind backtest</span><span class="st-note">the model predicts each era without seeing it, then is scored</span><span class="st-state"></span></li>
+      <li data-stage="present"><span class="st-name">Present pass</span><span class="st-note">branding, delivery, positioning against live codes</span><span class="st-state"></span></li>
+    </ol>
+    <p class="run-log mono" id="run-log"></p>
+    <div id="run-error" class="error-card" hidden></div>
+  </section>
+
+  <!-- ============ INSTRUMENT ============ -->
+  <section id="view-instrument" class="view">
+    <div class="verdict-strip" id="verdict-strip"></div>
+    <div class="grid-main">
+      <div class="col-graph">
+        <div class="panel">
+          <p class="panel-title">Migration graph · <span class="muted">how the position assembled</span></p>
+          <div class="chart-scroll"><svg id="migration-svg" role="img"></svg></div>
+          <div class="scrub-row">
+            <input type="range" id="scrubber" min="0" max="100" value="100">
+            <span class="mono" id="scrub-label"></span>
+          </div>
+          <p class="legend mono">
+            <span><span class="sw sw-you"></span>authored by you</span>
+            <span><span class="sw sw-foryou"></span>authored for you</span>
+            <span><span class="sw sw-inferred"></span>inferred (no receipt)</span>
+          </p>
+        </div>
+        <div class="panel" id="ledger-panel">
+          <p class="panel-title">Authorship ledger</p>
+          <div id="ledger"></div>
+        </div>
+      </div>
+      <div class="col-side">
+        <div class="panel" id="present-panel"></div>
+        <div class="panel seam" id="seam-panel"></div>
+        <div class="panel" id="backtest-panel"></div>
+        <a class="btn btn-solid btn-wide" id="btn-dossier" href="#">Read the dossier →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DOSSIER ============ -->
+  <section id="view-dossier" class="view dossier"></section>
+
+</main>
+
+<!-- receipts drawer -->
+<aside id="drawer" class="drawer" aria-hidden="true">
+  <div class="drawer-head">
+    <span class="panel-title">Receipts</span>
+    <button id="drawer-close" class="drawer-x" type="button">×</button>
+  </div>
+  <div id="drawer-body"></div>
+</aside>
+<div id="drawer-veil" class="drawer-veil" hidden></div>
+
+<footer class="wrap foot mono">
+  HINDSIGHT · THE POSITIONING AUDIT · PEOPLEWATCHING · EVERY CLAIM CARRIES A RECEIPT OR SAYS IT DOES NOT
+</footer>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
