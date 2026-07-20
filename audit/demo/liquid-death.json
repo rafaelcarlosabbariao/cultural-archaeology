@@ -1,0 +1,692 @@
+{
+ "meta": {
+  "subject": "Liquid Death",
+  "url": "https://liquiddeath.com",
+  "self_claim": "We are a healthy beverage company that makes water and iced tea cool enough to bring to a party, marketed like a brand that should be bad for you.",
+  "run_date": "2026-07-20",
+  "version": "0.1.0",
+  "demo": true,
+  "generated_by": "gen_demo.py via claude CLI; live GDELT + Wayback evidence"
+ },
+ "volume_series": [
+  {
+   "year": "2017",
+   "value": 199
+  },
+  {
+   "year": "2018",
+   "value": 88
+  },
+  {
+   "year": "2019",
+   "value": 373
+  },
+  {
+   "year": "2020",
+   "value": 227
+  },
+  {
+   "year": "2021",
+   "value": 542
+  },
+  {
+   "year": "2022",
+   "value": 616
+  },
+  {
+   "year": "2023",
+   "value": 364
+  },
+  {
+   "year": "2024",
+   "value": 488
+  },
+  {
+   "year": "2025",
+   "value": 512
+  },
+  {
+   "year": "2026",
+   "value": 201
+  }
+ ],
+ "evidence": [
+  {
+   "id": "E1",
+   "source": "gdelt",
+   "date": "20191017",
+   "title": "Liquid Death Uses Witchcraft To Kill Thirst -- And Plastic Bottles",
+   "url": "https://www.mediapost.com/publications/article/342164/liquid-death-uses-witchcraft-to-kill-thirst-and.html",
+   "excerpt": "mediapost.com",
+   "block": "2019"
+  },
+  {
+   "id": "E2",
+   "source": "gdelt",
+   "date": "20191018",
+   "title": "Ex - Netflix exec hires witch doctor to pump life into  Liquid Death  ",
+   "url": "https://www.foxbusiness.com/markets/former-netflix-creative-chief-hires-witch-doctor-to-cast-spell-over-liquid-death",
+   "excerpt": "foxbusiness.com",
+   "block": "2019"
+  },
+  {
+   "id": "E3",
+   "source": "gdelt",
+   "date": "20191020",
+   "title": "Liquid Death Uses Witchcraft To Kill Thirst -- And Plastic Bottles",
+   "url": "https://www.mediapost.com/publications/article/342164/",
+   "excerpt": "mediapost.com",
+   "block": "2019"
+  },
+  {
+   "id": "E4",
+   "source": "gdelt",
+   "date": "20191017",
+   "title": "Liquid Death : Certified Cursed",
+   "url": "https://www.thedrum.com/creative-works/project/liquid-death-certified-cursed",
+   "excerpt": "thedrum.com",
+   "block": "2019"
+  },
+  {
+   "id": "E5",
+   "source": "gdelt",
+   "date": "20191017",
+   "title": "Liquid Death Cursed Canned Water Makes You a Demon Magnet",
+   "url": "https://loudwire.com/liquid-death-cursed-water-demon-magnet/",
+   "excerpt": "loudwire.com",
+   "block": "2019"
+  },
+  {
+   "id": "E6",
+   "source": "gdelt",
+   "date": "20191017",
+   "title": "Liquid Death Put A Curse On Their Own Product For Halloween",
+   "url": "https://www.bleedingcool.com/2019/10/17/liquid-death-put-a-curse-on-their-own-product-for-halloween/",
+   "excerpt": "bleedingcool.com",
+   "block": "2019"
+  },
+  {
+   "id": "E7",
+   "source": "gdelt",
+   "date": "20191019",
+   "title": "Drink at Your Own Risk : Liquid Death Hires Witch Doctor to Hex Its Water",
+   "url": "https://www.adweek.com/creativity/drink-at-your-own-risk-liquid-death-hires-witch-doctor-to-hex-its-water/",
+   "excerpt": "adweek.com",
+   "block": "2019"
+  },
+  {
+   "id": "E8",
+   "source": "gdelt",
+   "date": "20191028",
+   "title": "Can a Water Called Liquid Death Beat the Energy Drinks at Their Own Game ? ",
+   "url": "https://www.adweek.com/creativity/can-a-water-called-liquid-death-beat-the-energy-drinks-at-their-own-game/",
+   "excerpt": "adweek.com",
+   "block": "2019"
+  },
+  {
+   "id": "E9",
+   "source": "gdelt",
+   "date": "20211206",
+   "title": "How Liquid Death Water Took Over Whole Foods Shelves",
+   "url": "https://www.eater.com/22814834/liquid-death-water-sparkling-bottled-water-canned",
+   "excerpt": "eater.com",
+   "block": "2020-2021"
+  },
+  {
+   "id": "E10",
+   "source": "gdelt",
+   "date": "20211028",
+   "title": "Liquid Death and Postmates Open  Vegan Cannibal Steakhouse  ",
+   "url": "https://www.adweek.com/brand-marketing/liquid-death-opens-cruelty-free-vegan-cannibal-steakhouse-with-postmates/",
+   "excerpt": "adweek.com",
+   "block": "2020-2021"
+  },
+  {
+   "id": "E11",
+   "source": "gdelt",
+   "date": "20211102",
+   "title": "The Boys : When Eric Kripke Wants Milk He Gonna Get Milk , People",
+   "url": "https://bleedingcool.com/tv/the-boys-when-eric-kripke-wants-milk-hes-gonna-get-milk-people/",
+   "excerpt": "bleedingcool.com",
+   "block": "2020-2021"
+  },
+  {
+   "id": "E12",
+   "source": "gdelt",
+   "date": "20211105",
+   "title": "The Boys Season 3 First Look at Laurie Holden as Crimson Countess",
+   "url": "https://bleedingcool.com/tv/the-boys-season-3-first-look-at-laurie-holden-as-crimson-countess/",
+   "excerpt": "bleedingcool.com",
+   "block": "2020-2021"
+  },
+  {
+   "id": "E13",
+   "source": "gdelt",
+   "date": "20211106",
+   "title": "The Boys Season 3 : Check Out Crimson Countes Costume Concept Art",
+   "url": "https://bleedingcool.com/tv/the-boys-season-3-check-out-crimson-countess-costume-concept-art/",
+   "excerpt": "bleedingcool.com",
+   "block": "2020-2021"
+  },
+  {
+   "id": "E14",
+   "source": "gdelt",
+   "date": "20211024",
+   "title": "The Boys Goes  What If ...?: Hughlander , Milk Train ; S02 Deleted Scene",
+   "url": "https://bleedingcool.com/tv/the-boys-goes-what-if-hughlander-milk-train-s02-deleted-scene/",
+   "excerpt": "bleedingcool.com",
+   "block": "2020-2021"
+  },
+  {
+   "id": "E15",
+   "source": "gdelt",
+   "date": "20211101",
+   "title": "The Boys : Starr Turns Kripke Into Homelander But Something Missing",
+   "url": "https://bleedingcool.com/tv/the-boys-starr-turns-kripke-into-homelander-but-somethings-missing/",
+   "excerpt": "bleedingcool.com",
+   "block": "2020-2021"
+  },
+  {
+   "id": "E16",
+   "source": "gdelt",
+   "date": "20211013",
+   "title": "7 - Eleven , Paqui and Liquid Death are Bringing the Heat with the ONE SLICE CHALLENGE\u2122 This October",
+   "url": "https://www.prnewswire.com:443/news-releases/7-eleven-paqui-and-liquid-death-are-bringing-the-heat-with-the-one-slice-challenge-this-october-301399456.html",
+   "excerpt": "prnewswire.com",
+   "block": "2020-2021"
+  },
+  {
+   "id": "E17",
+   "source": "gdelt",
+   "date": "20260617",
+   "title": "Liquid Death Puts Their Tea Against The Long Island Usual",
+   "url": "https://bleedingcool.com/pop-culture/liquid-death-puts-their-tea-against-the-long-island-usual/",
+   "excerpt": "bleedingcool.com",
+   "block": "2024-2026"
+  },
+  {
+   "id": "E18",
+   "source": "gdelt",
+   "date": "20260715",
+   "title": "Liquid Death Sparkling Energy Wants You To Have Chicken Wings",
+   "url": "https://bleedingcool.com/pop-culture/liquid-death-sparkling-energy-wants-you-to-have-chicken-wings/",
+   "excerpt": "bleedingcool.com",
+   "block": "2024-2026"
+  },
+  {
+   "id": "E19",
+   "source": "gdelt",
+   "date": "20260429",
+   "title": "Heart surgeon warns one drink is  liquid death  and says avoid it - not alcohol",
+   "url": "https://www.dailystar.co.uk/health/heart-surgeon-warns-one-drink-37082449",
+   "excerpt": "dailystar.co.uk",
+   "block": "2024-2026"
+  },
+  {
+   "id": "E20",
+   "source": "gdelt",
+   "date": "20260520",
+   "title": "How Ibotta LiveLift drove real - time optimization for Liquid Death launch",
+   "url": "https://www.thedrum.com/awards-case-study/how-ibotta-s-livelift-drove-real-time-optimization-for-liquid-death-s-launch",
+   "excerpt": "thedrum.com",
+   "block": "2024-2026"
+  },
+  {
+   "id": "E21",
+   "source": "wayback",
+   "date": "20190124",
+   "title": "liquiddeath.com as of 2019: Liquid Death Mountain Water | Murder Your Thirst | Liquid Death",
+   "url": "https://web.archive.org/web/20190124160016/https://liquiddeath.com/",
+   "excerpt": "Liquid Death Mountain Water | Murder Your Thirst | Liquid Death This water may be disturbing to persons under 18 years of age. I'm over 18 I'm under 18 Skip to content Submit Close search * ONLY AVAILABLE ONLINE IN SELECT BARS * Shop Sell Your Soul About Summon Us Log in Cart Buy Log in Cart Shop Sell Your Soul About Summon Us Instagram Facebook Pristine water from the Austrian Alps. Murder your thirst. SENTENCE YOUR THIRST TO DEATH. \u2022 100% NATURAL MOUNTAIN WATER \u2022 SOURCED FROM THE AUSTRIAN ALPS",
+   "block": "2019"
+  },
+  {
+   "id": "E22",
+   "source": "wayback",
+   "date": "20210119",
+   "title": "liquiddeath.com as of 2021: Liquid Death Mountain Water | Murder Your Thirst",
+   "url": "https://web.archive.org/web/20210119213150/https://liquiddeath.com/",
+   "excerpt": "Liquid Death Mountain Water | Murder Your Thirst Liquid Death Mountain Water | Murder Your Thirst | Liquid Death Liquid Death Mountain Water | Murder Your Thirst | Liquid Death Available online only. Stores are too afraid to carry it. $2 OFF auto applied at checkout. X [Close] Skip to content Submit Close search Shop Merch Store Country Club Gift Your Soul Cutie Polluties About Summon Us Log in Cart HELL YES Log in Cart Shop Merch Store Country Club Gift Your Soul Cutie Polluties About Summon Us",
+   "block": "2021"
+  },
+  {
+   "id": "E23",
+   "source": "wayback",
+   "date": "20230101",
+   "title": "liquiddeath.com as of 2023: Liquid Death Mountain Water | Murder Your Thirst | Liquid Death",
+   "url": "https://web.archive.org/web/20230101065108/https://liquiddeath.com/",
+   "excerpt": "Liquid Death Mountain Water | Murder Your Thirst | Liquid Death Skip to content SHOP Water (Still Sparkling) MERCH STORE LOCATOR SELL YOUR SOUL ABOUT Timewaster 5000 Sign in Cart 0 items items SHOP Water (Still Sparkling) MERCH STORE LOCATOR SELL YOUR SOUL ABOUT Timewaster 5000 Sign in Cart 0 items Murder Your Thirst Death To Plastic DEATH CLOCK II Buy Liquid Death Sell Liquid Death Shop Merch Store Locator Sell Your Soul DON\u2019T BE SCARED. IT\u2019S JUST WATER. Shop Water LIQUID DEATH STORE LOCATOR De",
+   "block": "2023"
+  },
+  {
+   "id": "E24",
+   "source": "wayback",
+   "date": "20260103",
+   "title": "liquiddeath.com as of 2026: ",
+   "url": "https://web.archive.org/web/20260103203254/https://liquiddeath.com/",
+   "excerpt": "\ufffd\b\u0000\u0000\u0000\u0000\u0000\u0000\u0003\ufffd}k[\ufffd\ufffd\ufffd\ufffd\ufffd \ufffd\ufffd\u0012\ufffdu ;\ufffd\ufffd\u001a^\ufffd\ufffdha\ufffd\u000e\ufffdt\ufffd\ufffd0\ufffd\ufffd$\u001a +\ufffd\u0014 %\ufffd\ufffd\ufffdY\ufffd\ufffd\u0639\ufffd\ufffd\ufffd}\ufffd>\ufffds\ufffdepdyiii\ufffd$--\ufffd\ufffd\u0013\ufffd\ufffd\ufffd&H\u001b\ufffdq\ufffd\ufffd\u034f\ufffdG \"\ufffdRO\ufffdI\ufffd \u0575\u020f\ufffd\ufffd\ufffdb}\ufffd\u001bM\ufffdq\ufffd\ufffd\u0010 4\ufffd\u01ddrY;KPD\ufffdP\u001b\ufffd\ufffdi\u0003 !\ufffd\ufffd\ufffd\ufffd}\ufffd\ufffd[m\ufffd\ufffd\ufffd\ufffdW*\u0011\ufffdc\ufffd\ufffd\u0010\ufffdld\u0007d\\ \u00b8BGdRa\ufffdV\ufffdV\ufffd)E\ufffdV\ufffd`:\ufffdqy\ufffd\ufffdr@\ufffd\u0010\ufffd\u0014\ufffd\ufffd\u0004 \ufffd\ufffd\ufffd\u0604 \u000e\ufffd \\'\u0000\ufffdW\ufffd\u0006\ufffd\u0012\ufffdW\ufffd\ufffd\"\ufffd\u0018=\ufffd\ufffd\ufffdD\u0005\ufffdn\ufffdZ6\ufffd\u0004H\ufffd\u00d9v3 \ufffdtK\ufffd\ufffd\u04a9?\u0660\ufffd\ufffd?\ufffd\ufffdL\u0003\ufffd\ufffd[TP\ufffd\ufffdx\ufffd\ufffd\ufffdJ\ufffd\u007fL\ufffd\u0011\u007f\ufffd\ufffd\ufffd\ufffd]\ufffd\u0005J)\ufffdkn\ufffd\ufffd\ufffd\ufffd\ufffdqK\u001b\ufffdv m\ufffd\u007f\ufffdq |\ufffd\ufffd$\u0001\ufffd\u0248v>\"\u0013 \ufffd_\ufffd>\ufffd\ufffdF\ufffd\u0016\ufffd\u00115>x\ufffd\ufffdvq\ufffd\ufffd\ufffd\ufffd\ufffd\u0780Q\u0011\ufffd\ufffd\ufffd\ufffdfL\u0016\ufffd \u0015\ufffd\u0014\ufffd\ufffdrq\u0017S\ufffdb\ufffdP \ufffd\u0014\ufffdH{\ufffd\ufffdGb\ufffdbv\u0002\ufffd(\u0004\u007f\u0002\ufffdt \u0013\u0484LP\ufffd\ufffd$D\ufffd7+\ufffd\ufffd\ufffdK\u0000x\"\ufffd\u0019\ufffdU@%k\ufffd\ufffd\ufffd\ud86c\udfd9\ufffd#\ufffd0\ufffd\ufffd1\u02b5\ufffd\ufffd\u0012S\ufffdk\ufffdp\ufffd\ufffd\ufffd\ufffd\u0005 #2eFq-\u00c2\ufffd$'\ufffd8U*|\ufffd\ufffd\ufffdi>+L\ufffd#\u0018\ufffd\ufffd0G\ufffd'\ufffd\ufffd\ufffd$\ufffdE\ufffd\ufffd\ufffd\ufffdik -\ufffd\ufffd\u025e\u04e7 +\ufffdj\ufffd\ufffd9F\ufffd\u0007\ufffd\u0012\ufffd\ufffd\ufffd",
+   "block": "2026"
+  }
+ ],
+ "excavation": {
+  "category": "Canned water and non-alcoholic beverages (bottled water category entrant marketed as an entertainment brand)",
+  "attached_signals": [
+   "heavy metal and horror aesthetics (Murder Your Thirst, Sell Your Soul, curses and witch doctors)",
+   "stunt-driven entertainment marketing (hexed product, Vegan Cannibal Steakhouse, One Slice Challenge)",
+   "anti-plastic environmentalism (Death To Plastic, aluminum cans framed against plastic bottles)",
+   "energy-drink and tallboy visual codes applied to water",
+   "bar and party distribution framing (only available online in select bars)",
+   "irony and mock danger (age-gate joke, Don't Be Scared It's Just Water)"
+  ],
+  "claimed_values": [
+   "health",
+   "coolness and party suitability",
+   "subversive bad-for-you styled marketing",
+   "product breadth beyond water (iced tea, inferred:true as a core identity claim, receipts show it only from 2026)"
+  ],
+  "self_claim_assessment": {
+   "verdict": "partial",
+   "gap_note": "The marketed-like-a-brand-that-should-be-bad-for-you half of the claim is strongly receipted from launch: curses, witch doctors, death branding, and tallboy energy-drink codes applied to water (E4, E7, E8, E21). The healthy beverage half is mostly implicit; receipts never show the brand leading with health, only with mock menace, and the closest artifact is the 2023 site reveal line Don't Be Scared It's Just Water (E23). The claim also understates current scope: by 2026 the brand is receipted selling sparkling energy products (E18), which strains the healthy water and tea framing. So the self-claim is an accurate description of the mechanism but a curated description of the portfolio.",
+   "receipt_ids": [
+    "E4",
+    "E7",
+    "E8",
+    "E17",
+    "E18",
+    "E21",
+    "E23"
+   ]
+  },
+  "one_line": "A water company that borrowed the visual and emotional codes of energy drinks and metal, got famous for the marketing before the product, and now stretches that engine across a portfolio its healthy self-claim only partly covers."
+ },
+ "eras": [
+  {
+   "id": "era1",
+   "label": "Pre-noise launch: a joke can looking for distribution",
+   "start": "2017",
+   "end": "2018",
+   "evidence_density": "thin",
+   "receipt_ids": []
+  },
+  {
+   "id": "era2",
+   "label": "Stunt breakout: witchcraft, curses, and death branding put canned water in the ad press",
+   "start": "2019",
+   "end": "2019",
+   "evidence_density": "dense",
+   "receipt_ids": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E5",
+    "E6",
+    "E7",
+    "E8",
+    "E21"
+   ]
+  },
+  {
+   "id": "era3",
+   "label": "Retail legitimization: from select bars to Whole Foods shelves while stunts continue",
+   "start": "2020",
+   "end": "2021",
+   "evidence_density": "adequate",
+   "receipt_ids": [
+    "E9",
+    "E10",
+    "E16",
+    "E22"
+   ]
+  },
+  {
+   "id": "era4",
+   "label": "Peak volume and softened self-presentation: It's Just Water, store locators, sparkling line",
+   "start": "2022",
+   "end": "2023",
+   "evidence_density": "thin",
+   "receipt_ids": [
+    "E23"
+   ]
+  },
+  {
+   "id": "era5",
+   "label": "Portfolio expansion: iced tea and sparkling energy carried by the same entertainment engine",
+   "start": "2024",
+   "end": "2026",
+   "evidence_density": "adequate",
+   "receipt_ids": [
+    "E17",
+    "E18",
+    "E20",
+    "E24"
+   ]
+  }
+ ],
+ "position_trace": [
+  {
+   "era_id": "era1",
+   "hop": "Founder applies heavy metal tallboy codes to mountain water as a deliberate category violation",
+   "carrier": "Mike Cessario and the founding team",
+   "channel": "product design and early viral video",
+   "authorship": "you",
+   "receipt_ids": [],
+   "inferred": true,
+   "narrative": "The sign is a skull-branded tallboy that reads as energy drink or beer; the code being borrowed is punk and metal menace, which signals authenticity to audiences allergic to wellness marketing. The gap is total and intentional: the contents are plain water. In this era the joke exists but has no distribution or press body, so the position is authored but not yet culturally ratified."
+  },
+  {
+   "era_id": "era1",
+   "hop": "Scarcity and bar-adjacent framing positions water as a nightlife substance rather than a grocery item",
+   "carrier": "the brand's own e-commerce and bar placement pitch",
+   "channel": "direct-to-consumer web and select bars",
+   "authorship": "you",
+   "receipt_ids": [],
+   "inferred": true,
+   "narrative": "By routing around grocery shelves, the brand codes water as something you order where alcohol lives. The gap between healthy contents and vice-coded context becomes the entire product. This is authored positioning waiting for a carrier with reach."
+  },
+  {
+   "era_id": "era2",
+   "hop": "The launch site performs mock danger as onboarding: Murder Your Thirst, a joke age gate, and Sell Your Soul",
+   "carrier": "liquiddeath.com itself",
+   "channel": "owned website copy",
+   "authorship": "you",
+   "receipt_ids": [
+    "E21"
+   ],
+   "inferred": false,
+   "narrative": "The sign is an 18-plus warning on water and the tagline Sentence Your Thirst To Death. The code is transgressive content gating, borrowed from porn and alcohol. The gap, that nothing behind the gate is dangerous, is the punchline, and the site makes the visitor complicit in the bit before they buy anything."
+  },
+  {
+   "era_id": "era2",
+   "hop": "The brand hires a witch doctor to curse its own product for Halloween, converting a media stunt into product lore",
+   "carrier": "the hired witch doctor and the Certified Cursed campaign",
+   "channel": "brand stunt campaign",
+   "authorship": "you",
+   "receipt_ids": [
+    "E4",
+    "E6",
+    "E7"
+   ],
+   "inferred": false,
+   "narrative": "The sign is a hexed can; the code is horror merchandising, where cursed objects carry value precisely because they promise harm. The gap is that the curse is theater applied to the safest possible beverage. Authoring a defect into your own product inverts CPG logic, which is exactly what made it reportable."
+  },
+  {
+   "era_id": "era2",
+   "hop": "Trade press and metal media adopt the stunt as a story about marketing itself, giving the brand its first borrowed audiences",
+   "carrier": "MediaPost, Fox Business, Adweek, Loudwire, Bleeding Cool",
+   "channel": "earned press across ad trade and genre media",
+   "authorship": "for_you",
+   "receipt_ids": [
+    "E1",
+    "E2",
+    "E3",
+    "E5"
+   ],
+   "inferred": false,
+   "narrative": "The same stunt is decoded differently by each carrier: ad trades read it as ex-Netflix marketing genius, metal press reads it as one of ours making water. The brand authored the curse, but culture authored the meaning that mattered, that Liquid Death is an entertainment company. The gap: coverage is about the marketing, almost never about the water."
+  },
+  {
+   "era_id": "era2",
+   "hop": "Adweek frames the brand as a challenger to energy drinks, assigning it a category war it did not declare in the product itself",
+   "carrier": "Adweek",
+   "channel": "trade press analysis",
+   "authorship": "for_you",
+   "receipt_ids": [
+    "E8"
+   ],
+   "inferred": false,
+   "narrative": "Asking whether canned water can beat energy drinks at their own game names the code the can was borrowing and turns it into a competitive narrative. This framing does positioning work the brand could not credibly do alone: it treats a water startup as a peer of Monster rather than of Evian."
+  },
+  {
+   "era_id": "era3",
+   "hop": "Whole Foods shelf placement converts the bar joke into grocery legitimacy without dropping the death branding",
+   "carrier": "Whole Foods buyers, narrated by Eater",
+   "channel": "national retail distribution and food press",
+   "authorship": "you",
+   "receipt_ids": [
+    "E9"
+   ],
+   "inferred": false,
+   "narrative": "The sign is a skull tallboy in the temple of wellness retail. The code collision is the point: menace aesthetics inside clean-eating space. The gap now runs the other direction, since a brand performing outsider status is being stocked by the most establishment health retailer in America."
+  },
+  {
+   "era_id": "era3",
+   "hop": "The Vegan Cannibal Steakhouse stunt with Postmates extends the brand from beverage into staged entertainment events",
+   "carrier": "the pop-up itself, co-produced with Postmates",
+   "channel": "experiential stunt plus delivery platform PR",
+   "authorship": "you",
+   "receipt_ids": [
+    "E10"
+   ],
+   "inferred": false,
+   "narrative": "The sign is cannibalism-coded dining that is secretly vegan, the same one-move joke as the water: maximum menace signifier, harmless referent. Repeating the mechanism across formats establishes that the product is the bit, and the beverage is merch for it."
+  },
+  {
+   "era_id": "era3",
+   "hop": "7-Eleven and Paqui borrow Liquid Death for the One Slice Challenge, marking the moment other brands treat its menace as rentable equity",
+   "carrier": "7-Eleven and Paqui",
+   "channel": "co-branded retail promotion via press release",
+   "authorship": "for_you",
+   "receipt_ids": [
+    "E16"
+   ],
+   "inferred": false,
+   "narrative": "When mainstream convenience retail casts Liquid Death as the relief drink for a spicy-chip dare, the brand's danger code has become a legible ingredient other marketers can buy. Culture, here in corporate form, is now authoring placements onto the brand rather than the reverse."
+  },
+  {
+   "era_id": "era3",
+   "hop": "The website performs outsider kayfabe, claiming stores are too afraid to carry it while it sits in Whole Foods",
+   "carrier": "liquiddeath.com",
+   "channel": "owned website copy",
+   "authorship": "you",
+   "receipt_ids": [
+    "E22",
+    "E9"
+   ],
+   "inferred": false,
+   "narrative": "The sign is a scarcity line played as a gag. The code is wrestling-style kayfabe: everyone knows it is stocked nationally, and the copy winks at exactly that. The gap between claimed exile and actual shelf presence is acknowledged inside the joke, which is how the brand keeps transgressive credibility while scaling through ordinary retail."
+  },
+  {
+   "era_id": "era4",
+   "hop": "The brand softens its own front door: Don't Be Scared, It's Just Water, plus a store locator and a sparkling line",
+   "carrier": "liquiddeath.com",
+   "channel": "owned website copy and navigation",
+   "authorship": "you",
+   "receipt_ids": [
+    "E23"
+   ],
+   "inferred": false,
+   "narrative": "The sign shifts from menace to reassurance. Saying It's Just Water out loud collapses the founding gap on purpose, decoding its own joke for a mass shopper who arrives via a store locator rather than a metal meme. This is the brand renegotiating from cult object to everyday SKU while keeping the skull."
+  },
+  {
+   "era_id": "era4",
+   "hop": "Sober-curious and party-adjacent drinkers adopt the can as a social prop, doing the normalization work the brand's softened copy invites",
+   "carrier": "sober-curious consumers and nightlife adopters",
+   "channel": "social use and word of mouth",
+   "authorship": "for_you",
+   "receipt_ids": [],
+   "inferred": true,
+   "narrative": "The self-claim about water cool enough to bring to a party describes a use case the community had to ratify: holding a Liquid Death reads as drinking without explaining yourself. Evidence in this era is thin, so this adoption hop is inferred from the brand's own party framing rather than receipted directly."
+  },
+  {
+   "era_id": "era5",
+   "hop": "Iced tea launches by picking a fight with the Long Island Iced Tea, reusing the alcohol-adjacency code on a new category",
+   "carrier": "the iced tea campaign",
+   "channel": "brand campaign covered by genre press",
+   "authorship": "you",
+   "receipt_ids": [
+    "E17"
+   ],
+   "inferred": false,
+   "narrative": "The sign is tea positioned against a cocktail rather than against Lipton. The code is the same founding move, non-alcoholic contents wearing bar-culture clothes, now applied as a repeatable template. The gap is small and stable because the audience already knows the bit."
+  },
+  {
+   "era_id": "era5",
+   "hop": "Sparkling energy launches with an appetite-forward chicken wings spot, quietly moving the portfolio into the category the brand once parodied",
+   "carrier": "the sparkling energy campaign",
+   "channel": "brand advertising covered by genre press",
+   "authorship": "you",
+   "receipt_ids": [
+    "E18"
+   ],
+   "inferred": false,
+   "narrative": "The sign is an energy drink from the company that dressed water as one. The decoded gap cuts against the self-claim: a healthy beverage company now sells the product whose codes it originally borrowed ironically. The costume has become inventory, and the healthy framing is the curated half of the story."
+  },
+  {
+   "era_id": "era5",
+   "hop": "Behind the stunts, launches are now run on retail-media optimization infrastructure, revealing a conventional CPG machine under the entertainment brand",
+   "carrier": "Ibotta LiveLift",
+   "channel": "retail media and performance marketing, reported by The Drum",
+   "authorship": "you",
+   "receipt_ids": [
+    "E20"
+   ],
+   "inferred": false,
+   "narrative": "The sign here is invisible to consumers: real-time promotion optimization for a launch. The code is standard big-CPG growth practice. The gap is between the outsider entertainment persona and the receipted reality of dashboard-driven distribution marketing, the least punk artifact in the evidence set."
+  },
+  {
+   "era_id": "era5",
+   "hop": "The phrase liquid death circulates in health press as a generic warning label, semantic territory the brand named but does not control",
+   "carrier": "a heart surgeon quoted in tabloid health coverage",
+   "channel": "mainstream health press",
+   "authorship": "for_you",
+   "receipt_ids": [
+    "E19"
+   ],
+   "inferred": false,
+   "narrative": "A surgeon calling a drink liquid death, not the brand, shows the name operating as ambient mortality language. The sign the brand claimed as ironic now also circulates literally, attached to actual harm warnings. That is the standing risk of the founding joke: the brand does not own the words when someone else means them."
+  }
+ ],
+ "authorship_ratio": {
+  "you_pct": 69,
+  "for_you_pct": 31
+ },
+ "trace_one_line": "Liquid Death wrote its own menace, water in a killer's costume, then press, retailers, and partner brands ratified the joke into legitimacy; by 2026 the costume is inventory, with a real energy drink and a CPG optimization stack under the skull.",
+ "retrodiction": {
+  "per_era": [
+   {
+    "era_id": "era2",
+    "predicted": "The brand's next move is adoption not by the water/wellness aisle but by alcohol-adjacent culture: bars, live-music venues, and the sober/straight-edge punk scene pick up the tallboy can as a non-alcoholic prop, while distribution goes viral-social plus direct/Amazon rather than grocery. The position gets rewritten from 'joke can' to 'sobriety without softness,' and the health-water code is deferred; grocery retail follows only after the counterculture signal is established.",
+    "mechanism": "A tallboy that mimics beer trade dress solves a status problem for people holding water in drinking spaces, so the earliest real demand comes from contexts where looking like you are drinking matters. Thin-evidence launch brands with a strong visual gag typically convert attention through low-friction channels (social virality, e-commerce) before shelf placement, and the gag's meaning is set by whoever displays it first, which will be bartenders, musicians, and sober-scene members, not health shoppers. Inferred:true, as no receipts exist in the visible era.",
+    "confidence": "medium",
+    "match": false,
+    "note": "Direction is partially right: the health-water code stayed deferred and metal/genre media (Loudwire, Bleeding Cool) did adopt the brand as counterculture, per E1-E5. But the core mechanism fails. The prediction's engine was bottom-up adoption by people in drinking spaces (bartenders, musicians, sober-scene members using the can as a prop), with meaning set by those displayers and conversion via social/e-commerce. In the actual era, meaning was set top-down by brand-authored stunts (the curse campaign, the site's mock danger, E4, E6, E7, E21) and decoded by trade press as a marketing/entertainment story, and Adweek assigned the brand an energy-drink war, not a sobriety position (E8). No hop shows bars, sober-scene uptake, or the predicted distribution path; those elements remain inferred:true and unconfirmed."
+   },
+   {
+    "era_id": "era3",
+    "predicted": "Venture capital and mainstream retail pick the position up next: within roughly 12 to 18 months the stunt attention converts into a serious funding round with entertainment and celebrity investors and national retail distribution (natural grocery and convenience chains), while the brand attaches its death code to the health and anti-plastic sustainability frame ('death to plastic') and to the punk and metal live music scene as its distribution culture. The position strengthens rather than drifts, and the marketing trade press rewrites it from 'joke can' to canonical case study of entertainment-first branding.",
+    "mechanism": "The 2019 evidence shows the ad trade press (Adweek, The Drum, MediaPost) is already the primary amplifier, meaning the brand's real product is attention, not water. Attention economies of that shape monetize through investors and distribution deals, not direct-to-consumer sales, and the era-2 framing already pairs death branding with an anti-plastic-bottle claim (E1) and an energy-drink category challenge (E8), pointing the next attachment toward health/sustainability code carried into bars, venues, and heavy music culture where the tallboy can format natively lives (E21: 'only available online in select bars').",
+    "confidence": "high",
+    "match": true,
+    "note": "Core direction confirmed: the prediction named national retail pickup via natural grocery and convenience chains, and era3 delivers exactly that pairing, Whole Foods shelf placement (E9) and a 7-Eleven co-branded promotion (E16). The mechanism claim that attention itself is the monetizable product also occurred, with E16 showing the menace code rented as brand equity and E10 repeating the stunt format, while E22 kayfabe shows the position strengthening rather than drifting. However, the funding round with entertainment and celebrity investors, the anti-plastic health frame, and the punk and metal live music attachment do not appear in these hops and remain unsupported (inferred:true for those sub-claims). Judged a match because the distribution-deal mechanism and strengthening direction, the prediction's core, demonstrably occurred."
+   },
+   {
+    "era_id": "era4",
+    "predicted": "Liquid Death extends beyond plain canned water into adjacent beverage categories (flavored sparkling water and iced tea) within roughly the next two years, riding the Whole Foods and 7-Eleven retail beachhead into mass national retail and a step-change funding round at a soaring valuation, with celebrity and entertainment-world investors and partners (the ex-Netflix founder's network) publicly attaching to the brand. The death/anti-plastic code stays intact but is increasingly picked up by marketing-industry admirers as a case study, shifting the brand's position from stunt novelty to a legitimized 'entertainment company that sells beverages' platform.",
+    "mechanism": "The visible arc shows a repeatable engine: shock-code stunts (E1-E8) generate free press that converts into retail legitimacy (E9 Whole Foods, E16 7-Eleven co-promotions) faster than product substance alone could. Once a joke brand clears premium-grocery gatekeeping while stunts continue (E10), the scarce asset is the attention engine, not the water; the rational next move for a founder with Netflix pedigree (E2) is to amortize that engine across more SKUs and bigger capital, because plain water margins cannot fund escalating stunts. The 2021 site's merch store, Country Club membership, and Cutie Polluties (E22) already show diversification of the brand into an entertainment/merch platform, signaling category extension is next. Inferred:true for the specific celebrity-investor detail; the category-extension and valuation-jump core follows from the visible receipts.",
+    "confidence": "high",
+    "match": false,
+    "note": "Partial credit only: the sparkling line in E23 does confirm the predicted extension into adjacent sparkling water. But the prediction's core mechanism was capital and platform escalation, a step-change funding round, celebrity investors, and legitimization as an entertainment company, none of which appears in the era4 hops. The era's actual core move is the opposite of the predicted trajectory of an intact shock code scaling up: the brand softens its own sign (It's Just Water, store locator), decoding the joke to court mass shoppers, with normalization carried by sober-curious adopters (inferred:true in the trace). Direction on SKU extension matched; core mechanism did not."
+   },
+   {
+    "era_id": "era5",
+    "predicted": "Within roughly a year of the last visible era, Liquid Death expands beyond plain water into adjacent healthy beverage categories, most likely iced tea and flavored sparkling lines, and is picked up by mass mainstream retail and convenience channels (Target, 7-Eleven scale, Amazon) rather than remaining a bar and Whole Foods novelty. The death code stays intact as packaging and entertainment, but its ownership shifts: mainstream retail buyers, large ad-industry press, and celebrity or brand collab partners become the primary carriers of the position, while the original metal-bar subculture recedes to backdrop. The 'It's Just Water' softening visible in era4 is the leading edge of this rewrite, letting the brand keep the skull while reassuring the mass shopper, and the company raises a large late-stage round at a unicorn-scale valuation on the strength of the brand rather than the product.",
+    "mechanism": "The trajectory across visible eras is monotonic legitimization: joke can (2017), stunt press (2019), Whole Foods plus 7-Eleven co-promotions (2020-2021), then store locators, a sparkling line, and the reassuring 'Don't be scared, it's just water' copy (2023). A brand whose asset is attention rather than liquid has one dominant next move: amortize the attention over more SKUs and more shelves. The self_claim already frames the company as a 'healthy beverage company' that makes 'water and iced tea' cool, which signals category extension beyond water. The 2019 Adweek framing 'beat the energy drinks at their own game' (E8) shows the position was always defined against the energy-drink code, so expansion moves toward that adjacent set. The main risk to this prediction is that mainstreaming dilutes the transgressive code and growth stalls, but the era4 softening suggests the company is actively managing that trade rather than being rewritten against its will. Claims about specific retailers, the valuation round, and celebrity collabs are inferred:true extrapolations, not receipt-backed.",
+    "confidence": "high",
+    "match": true,
+    "note": "Core mechanism and direction confirmed. The prediction's central move, amortizing attention over more SKUs via category extension into iced tea and the energy-adjacent set, occurred literally: iced tea launched (E17) and sparkling energy launched (E18), the exact adjacent category the prediction identified via the 2019 anti-energy-drink framing. The predicted mainstreaming direction is receipted by retail-media optimization infrastructure under the entertainment brand (E20), matching the claim that conventional mass-retail machinery becomes the real carrier while the death code persists as packaging. Misses are peripheral: no receipt for the unicorn-scale round, specific retailers, or celebrity collabs, but the prediction itself marked those inferred:true. The one actual hop the prediction did not anticipate is semantic loss of control, the phrase circulating as a literal health warning (E19), an ownership shift outward rather than the predicted shift to mainstream buyers, but this does not contradict the core mechanism."
+   }
+  ],
+  "evidenced_eras": 3,
+  "matches": 2,
+  "score_pct": 67,
+  "gated": false,
+  "gate_reason": ""
+ },
+ "present": {
+  "branding": {
+   "self_language": [
+    "We are a healthy beverage company that makes water and iced tea cool enough to bring to a party, marketed like a brand that should be bad for you",
+    "Don't Be Scared, It's Just Water",
+    "Murder Your Thirst",
+    "Sell Your Soul"
+   ],
+   "received_language": [
+    "Heart surgeon warns one drink is liquid death and says avoid it - not alcohol",
+    "How Ibotta LiveLift drove real-time optimization for Liquid Death launch",
+    "Liquid Death Sparkling Energy Wants You To Have Chicken Wings",
+    "canned water challenger to energy drinks"
+   ],
+   "distance_note": "The self-language still narrates a costume: healthy contents wearing a dangerous brand, with the newer site copy decoding its own joke out loud. The received language has split in two directions the brand does not script. Trade and marketing press now describes it in pure CPG operations vocabulary, a launch optimized in real time by retail media tooling, which is the opposite of outsider menace. Health press meanwhile uses the phrase liquid death literally, as a doctor's warning label for genuinely harmful drinks. The distance is no longer between healthy and scary, which the brand controls as a bit; it is between the entertainment persona and the conventional machine, and between the ironic name and its literal circulation.",
+   "receipt_ids": [
+    "E19",
+    "E20",
+    "E18",
+    "E23",
+    "E8"
+   ]
+  },
+  "delivery": {
+   "sign_promise": "The skull tallboy promises transgression as entertainment: a vice-coded object you can hold at a party, a joke about danger that makes the buyer complicit in the bit and lets them drink water without reading as wellness.",
+   "system_delivery": "The system behind the sign delivers a nationally distributed multi-line beverage portfolio, stocked through mainstream retail since the Whole Foods era, launched with dashboard-driven retail media optimization, and now extended into an actual energy drink, the category the sign originally parodied.",
+   "gap_reframe": "The founding gap, maximum menace signifier over harmless referent, was the product, and the brand has managed it skillfully as kayfabe, even softening its own front door with It's Just Water. The live gap has migrated: it now sits between the outsider entertainment persona and the receipted big-CPG growth machine, and between ironic energy-drink cosplay and literal energy-drink inventory. Reframed, the brand is no longer selling danger dressed on safety; it is selling authenticity theater on top of conventional distribution, and the joke only holds while the audience feels in on it rather than sold to.",
+   "receipt_ids": [
+    "E20",
+    "E18",
+    "E23",
+    "E22",
+    "E9"
+   ]
+  },
+  "positioning": {
+   "codes": [
+    {
+     "code": "Punk and heavy metal menace aesthetics",
+     "trajectory": "curdling",
+     "note": "The code that founded the brand is now self-decoded on its own site with Don't Be Scared, It's Just Water, and has become rentable equity other marketers borrow, as in the 7-Eleven and Paqui promotion. A transgression code that is licensed to convenience chains and explained to shoppers is losing its charge even as it remains the brand's visual identity.",
+     "receipt_ids": [
+      "E23",
+      "E16"
+     ]
+    },
+    {
+     "code": "Sober-curious drinking and bar-adjacent non-alcohol",
+     "trajectory": "ascending",
+     "note": "The party-prop use case and the iced tea campaign staged against the Long Island cocktail keep the brand attached to drinking culture without alcohol, a code that is still gaining cultural momentum. This is currently the healthiest code the brand holds, though the adoption evidence in this trace is thin.",
+     "receipt_ids": [
+      "E17"
+     ],
+     "inferred": true
+    },
+    {
+     "code": "Energy drink category membership",
+     "trajectory": "curdling",
+     "note": "With Sparkling Energy the brand moved from parodying the category's codes to occupying them. It joins the category exactly as mainstream health press is coding energy-adjacent drinks as dangerous, sometimes using the phrase liquid death literally, which puts the brand's ironic name next to unironic harm warnings.",
+     "receipt_ids": [
+      "E18",
+      "E19"
+     ]
+    },
+    {
+     "code": "Anti-marketing entertainment brand",
+     "trajectory": "stable",
+     "note": "The company-as-entertainment code still generates coverage on schedule, but the Ibotta LiveLift reporting shows conventional performance-marketing infrastructure underneath it. The code holds with consumers while trade press increasingly narrates the machine rather than the show.",
+     "receipt_ids": [
+      "E20",
+      "E18",
+      "E17"
+     ]
+    }
+   ],
+   "worth_note": "The most exposed position is semantic: the brand named itself with ambient mortality language it does not own. A surgeon calling some other drink liquid death costs nothing today, but as the portfolio moves into energy drinks, the literal reading of the name and the actual shelf contents converge, and the joke's safety margin, that the contents were the safest possible beverage, narrows for the first time."
+  },
+  "decode_seam": [
+   "Who is actually holding the can now: metal-native early adopters, sober-curious drinkers, mass grocery shoppers arriving via the store locator, or all three in separate contexts that never meet?",
+   "Did the original transgression-ratifying audience churn out when the site began decoding its own joke, or do they read the softening as more kayfabe?",
+   "Does the Sparkling Energy buyer overlap with the water buyer, or is the brand quietly serving two audiences with opposed readings of the same skull?",
+   "In sober-curious settings, does the can still do social work, signaling drinking without explaining yourself, or has ubiquity made it read as just another SKU?",
+   "Which audience, if any, registers the retail-media-optimized CPG machine, and does knowing about it break the bit for them?"
+  ],
+  "one_line": "Liquid Death now operates a conventional CPG growth machine inside a menace costume it has publicly unzipped, and as it enters the energy category its own name has begun circulating literally in warnings it cannot script."
+ }
+}
