@@ -2,6 +2,11 @@
 -- Unlike cultural_events (0001/0002), these tables take NO anon writes: inserts happen
 -- server-side (service role) once the persistence function lands. Anon may read, which
 -- powers a future public "recent audits" panel; revisit before any client-confidential use.
+--
+-- Policy names are unquoted identifiers and the evidence timestamp column is evidence_date
+-- (not "date") so this applies cleanly across the CLI, the dashboard SQL editor, and psql.
+-- When the server-side persistence writer lands, map each evidence receipt's `date` field
+-- to the evidence_date column.
 
 create table if not exists audit_runs (
   id bigserial primary key,
@@ -26,7 +31,7 @@ create table if not exists audit_evidence (
   run_id bigint not null references audit_runs (id) on delete cascade,
   receipt_id text not null,
   source text,
-  date text,
+  evidence_date text,
   title text,
   url text,
   excerpt text,
@@ -39,5 +44,5 @@ create index if not exists audit_evidence_source_idx on audit_evidence (source);
 alter table audit_runs enable row level security;
 alter table audit_evidence enable row level security;
 
-create policy "anon read audit_runs" on audit_runs for select using (true);
-create policy "anon read audit_evidence" on audit_evidence for select using (true);
+create policy anon_read_audit_runs on audit_runs for select using (true);
+create policy anon_read_audit_evidence on audit_evidence for select using (true);
