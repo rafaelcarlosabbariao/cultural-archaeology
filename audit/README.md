@@ -48,6 +48,11 @@ runs persist to localStorage (`hindsight_runs`).
 
 ## Known debts / drift risks
 
+- GDELT enforces 1 req/5s per IP and escalates to temporary blocks on bursts (observed
+  during 2026-07-20 testing from both local and Netlify egress IPs). The client spaces
+  calls 6.5s apart, which is compliant in real runs; test bursts are not. If audits get
+  frequent, add server-side caching (Netlify Blobs) or an alternate archive source.
+
 - The demo generator (`gen_demo.py`, session scratchpad) mirrors the stage prompts from
   `audit-analyze.ts` by copy; if you edit one, edit both or regenerate the demo.
 - The retrodiction scorer currently reuses the `retrodict` stage in a judge role from
