@@ -32,7 +32,7 @@ exports.handler = async (event) => {
   // GDELT wants quoted phrases for multi-word subjects.
   const query = /\s/.test(q) && !q.startsWith('"') ? `"${q}"` : q;
   const start = (p.start || "20170101000000").padEnd(14, "0");
-  const end = (p.end || "").padEnd(14, "0") || undefined;
+  const end = p.end ? p.end.padEnd(14, "0") : undefined;
 
   try {
     const params = new URLSearchParams({ query, format: "json", startdatetime: start });
