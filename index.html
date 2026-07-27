@@ -2574,8 +2574,12 @@ async function callClaude(question, searchContext) {
       'anthropic-dangerous-direct-browser-access': 'true'
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 8000,
+      model: 'claude-sonnet-5',
+      // Sonnet 5 runs adaptive thinking unless told otherwise, and thinking
+      // tokens come out of max_tokens. This call wants one dense JSON object,
+      // not reasoning, so keep the whole budget for the answer.
+      thinking: { type: 'disabled' },
+      max_tokens: 12000,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: userMsg }]
     })
@@ -2583,11 +2587,28 @@ async function callClaude(question, searchContext) {
 
   if (!res.ok) {
     const errBody = await res.text();
-    throw new Error(`Claude API error (${res.status}): ${errBody.slice(0, 200)}`);
+    let detail = errBody.slice(0, 300);
+    try { detail = JSON.parse(errBody).error?.message || detail; } catch (e) { /* keep raw */ }
+    throw new Error(`Claude API error (${res.status}): ${detail}`);
   }
 
   const body = await res.json();
-  const text = body.content?.[0]?.text || '';
+  // content is a block list and the first block is not guaranteed to be text
+  // (a thinking block can lead). Take the text blocks only.
+  const text = (body.content || [])
+    .filter(b => b.type === 'text')
+    .map(b => b.text)
+    .join('');
+
+  if (body.stop_reason === 'max_tokens') {
+    throw new Error('Claude hit the output limit before finishing the JSON. Try a narrower question, or raise max_tokens in callClaude().');
+  }
+  if (body.stop_reason === 'refusal') {
+    throw new Error('Claude declined this request' + (body.stop_details?.category ? ` (${body.stop_details.category})` : '') + '. Try rephrasing the question.');
+  }
+  if (!text) {
+    throw new Error(`Claude returned no text (stop_reason: ${body.stop_reason}, blocks: ${(body.content || []).map(b => b.type).join(', ') || 'none'}).`);
+  }
 
   try {
     return JSON.parse(text);

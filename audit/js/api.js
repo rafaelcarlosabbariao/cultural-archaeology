@@ -119,7 +119,7 @@ export async function analyze(stage, payload, onDelta = () => {}) {
 
   const reader = res.body.getReader();
   const dec = new TextDecoder();
-  let buf = "", text = "";
+  let buf = "", text = "", stopReason = null, stopCategory = null;
   for (;;) {
     const { done, value } = await reader.read();
     if (done) break;
@@ -132,8 +132,14 @@ export async function analyze(stage, payload, onDelta = () => {}) {
       if (!data || data === "[DONE]") continue;
       try {
         const ev = JSON.parse(data);
-        const delta = ev.delta?.text ?? "";
+        // Only text deltas build the JSON. Thinking deltas carry .thinking and
+        // must never be concatenated into it.
+        const delta = ev.delta?.type === "text_delta" ? (ev.delta.text ?? "") : "";
         if (delta) { text += delta; onDelta(text.length); }
+        if (ev.type === "message_delta" && ev.delta?.stop_reason) {
+          stopReason = ev.delta.stop_reason;
+          stopCategory = ev.delta.stop_details?.category ?? null;
+        }
         if (ev.type === "error" || ev.error) throw new Error(JSON.stringify(ev.error || ev));
       } catch (e) {
         if (e instanceof SyntaxError) continue; // partial frame
@@ -141,7 +147,13 @@ export async function analyze(stage, payload, onDelta = () => {}) {
       }
     }
   }
+  if (stopReason === "max_tokens") {
+    throw new Error(`stage ${stage}: hit the output limit mid-object. Raise MAX_TOKENS in netlify/edge-functions/audit-analyze.ts.`);
+  }
+  if (stopReason === "refusal") {
+    throw new Error(`stage ${stage}: the model declined this request${stopCategory ? ` (${stopCategory})` : ""}.`);
+  }
   const m = text.match(/\{[\s\S]*\}/);
-  if (!m) throw new Error(`stage ${stage}: no JSON in response (${text.slice(0, 120)})`);
+  if (!m) throw new Error(`stage ${stage}: no JSON in response (stop_reason: ${stopReason ?? "unknown"}; text: ${text.slice(0, 120)})`);
   return JSON.parse(m[0]);
 }

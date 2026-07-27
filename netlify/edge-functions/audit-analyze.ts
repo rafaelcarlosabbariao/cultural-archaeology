@@ -8,7 +8,11 @@
 // The client accumulates content deltas and parses the final JSON object.
 
 const MODEL = "claude-sonnet-5";
-const MAX_TOKENS = 8000;
+// Sonnet 5 runs adaptive thinking by default and thinking tokens are drawn from
+// max_tokens. 8000 was sized for a non-thinking model and truncates stage JSON
+// mid-object; the client then fails with "no JSON in response". Headroom is a
+// ceiling, not a spend: only tokens actually produced are billed.
+const MAX_TOKENS = 24000;
 
 const JSON_RULES = `
 Return ONLY a single valid JSON object. No markdown fences, no commentary before or after.
