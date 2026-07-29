@@ -6,3 +6,6 @@ node_modules/
 supabase/.temp/
 supabase/.branches/
 .shots/
+
+# Third-party reference material — keep out of the repo
+docs/*.pdf

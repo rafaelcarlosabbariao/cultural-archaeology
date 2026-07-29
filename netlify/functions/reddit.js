@@ -11,7 +11,7 @@ const cors = {
   "Content-Type": "application/json",
 };
 
-const UA = { "User-Agent": "mcwhy/0.2 (research)" };
+const UA = { "User-Agent": "butwhy/0.2 (research)" };
 
 async function handleTop(t) {
   try {
