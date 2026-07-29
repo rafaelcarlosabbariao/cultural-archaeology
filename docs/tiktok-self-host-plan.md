@@ -1,4 +1,4 @@
-# Self-hosting davidteather/TikTok-Api for sincewhen
+# Self-hosting davidteather/TikTok-Api for But Why?
 
 **Goal:** Replace the tikwm.com third-party dependency in `netlify/functions/tiktok.js` with a self-hosted instance of `davidteather/TikTok-Api` running on free-tier infrastructure.
 
@@ -14,7 +14,7 @@
 ## Architecture
 
 ```
-sincewhen (Netlify)
+But Why? (Netlify)
   └── tiktok.js (Netlify Function)
         └── HTTP POST → tiktok-service.onrender.com/trending
               └── FastAPI wrapper
@@ -34,7 +34,7 @@ That lets `tiktok.js` swap its internal call from `tikwm.com` to `${TIKTOK_SERVI
 - Supports Docker, which is what TikTok-Api effectively needs (Playwright + Chromium)
 - 512 MB RAM (tight but workable for headless Chromium with single tab)
 - Free services spin down after 15 min idle → 30–60 s cold start
-- Cold start is fine for sincewhen's use case: user opens the TikTok tab, we show `loading…`, fetches resolve in under a minute
+- Cold start is fine for But Why?'s use case: user opens the TikTok tab, we show `loading…`, fetches resolve in under a minute
 
 Alternative: Fly.io (`fly launch`) — better for always-on, but no free compute anymore (trial credits). Pick Render unless you outgrow it.
 
@@ -209,7 +209,7 @@ msTokens rotate eventually (days to weeks). When TikTok calls start failing, gra
 6. Once live, test: `curl https://tiktok-service-xxxx.onrender.com/health` should return `{"ok": true, "ms_token_set": true}`
 7. Then: `curl "https://tiktok-service-xxxx.onrender.com/trending?country=US&count=30"` — first call will be slow (cold start), subsequent calls < 10s
 
-### 4. Wire sincewhen to it
+### 4. Wire But Why? to it
 
 Add env var to Netlify:
 - `TIKTOK_SERVICE_URL=https://tiktok-service-xxxx.onrender.com`
@@ -225,14 +225,14 @@ No UI change needed — `renderTikTok()` consumes the same shape.
 ### 5. Monitor
 
 - First failure mode: msToken expired. Symptom: `/trending` returns 502 with "tiktok-api error" message. Fix: grab fresh msToken, update Render env var, redeploy.
-- Second failure mode: Render free tier spins down. First request after idle is 30–60s. sincewhen's loading spinner handles it, but consider: if this becomes annoying, either (a) upgrade Render to $7/mo starter (always-on), or (b) add a cron that pings `/health` every 10 min to keep it warm.
+- Second failure mode: Render free tier spins down. First request after idle is 30–60s. But Why?'s loading spinner handles it, but consider: if this becomes annoying, either (a) upgrade Render to $7/mo starter (always-on), or (b) add a cron that pings `/health` every 10 min to keep it warm.
 - Third failure mode: TikTok-Api library breaks when TikTok ships a signature change. Fix: bump the `TikTokApi` version in requirements.txt, redeploy. Watch the repo for releases.
 
 ## Effort estimate
 
 - Repo setup + Docker + app.py: 30 min
 - Render deploy + msToken grab: 15 min
-- sincewhen wiring + deploy: 10 min
+- But Why? wiring + deploy: 10 min
 - Total: ~1 hour first time
 
 ## Cost

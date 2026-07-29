@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>But Why? / reports — Specimen №001: OnlyFans was the only way. Was it?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   BUT WHY? / reports — the Field Record espresso ground wearing
+   the stories layout. Charts and tables sit on the cream plate,
+   which never repaints between themes; the data pigments are the
+   plate steps (indigo, verdigris, madder), validated against
+   cream. Accent verdigris, spent once per view.
+   ═══════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  color-scheme: dark;
+  --ground: #1B150D;
+  --paper: #241D13;
+  --paper-2: #2B2318;
+  --ink: #F2EEE4;
+  --ink-dim: #B8AC97;
+  --ink-faint: #8A7F6B;
+  --rule: #3A3025;
+  --rule-soft: #2A2218;
+  --accent: #5FA891;          /* verdigris, espresso step */
+  --accent-wash: #21362F;
+  /* chrome keys for the espresso ground: text-labelled only, never chart fills */
+  --key-1: #6E86E0; --key-2: #2E9C74; --key-3: #D96A48;
+  /* the cream plate: constant in both themes */
+  --plate: #F2EEE4;
+  --plate-ink: #1A1813;
+  --plate-ink-2: #6E6759;
+  --plate-ink-3: #8C8474;
+  --plate-rule: #CBC3B0;
+  --plate-rule-2: #DED8C9;
+  --plate-accent: #2F6B5B;    /* verdigris, plate step */
+  /* data pigments, cream steps, fixed order, never cycled */
+  --d-indigo: #2F4C9B; --d-verdigris: #17805C; --d-madder: #BC4A2E;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-mono: 'DM Mono', 'Courier New', monospace;
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --ground: #EAE5D8;
+  --paper: #F7F4EC;
+  --paper-2: #F2EEE4;
+  --ink: #1A1813;
+  --ink-dim: #5F5849;
+  --ink-faint: #8C8474;
+  --rule: #CBC3B0;
+  --rule-soft: #DED8C9;
+  --accent: #2F6B5B;
+  --accent-wash: #DCE7E2;
+  --key-1: #2F4C9B; --key-2: #17805C; --key-3: #BC4A2E;
+}
+html, body { background: var(--ground); color: var(--ink); font-family: var(--font-mono); font-size: 13px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+body { overflow-x: hidden; }
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+::selection { background: var(--accent); color: var(--ground); }
+
+/* ─── chrome ─── */
+.progress { position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 60; pointer-events: none; }
+.progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width .12s linear; }
+.chrome { position: sticky; top: 0; z-index: 50; background: color-mix(in srgb, var(--ground) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--rule); padding: 14px 32px; display: flex; align-items: center; gap: 22px; }
+.brand { font-family: var(--font-display); font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+.brand .q { color: var(--accent); }
+.brand-slash { color: var(--ink-faint); margin: 0 6px; font-weight: 400; }
+.brand-section { color: var(--ink-dim); font-family: var(--font-mono); font-size: 12px; letter-spacing: 1px; }
+.chrome-nav { margin-left: auto; display: flex; gap: 24px; align-items: center; }
+.chrome-nav a, .chrome-nav button.navlink { background: none; border: 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1.8px; color: var(--ink-dim); transition: color .15s; cursor: pointer; }
+.chrome-nav a:hover, .chrome-nav button.navlink:hover, .chrome-nav button.navlink.on { color: var(--accent); }
+.theme-btn { background: var(--paper); color: var(--ink-dim); border: 1px solid var(--rule); padding: 6px 13px; border-radius: 20px; font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase; }
+.theme-btn:hover { color: var(--ink); border-color: var(--ink-faint); }
+
+/* ─── hero ─── */
+.hero { padding: 70px 32px 46px; max-width: 1280px; margin: 0 auto; position: relative; }
+.hero-eyebrow { display: flex; gap: 14px; align-items: center; font-size: 10px; text-transform: uppercase; letter-spacing: 2.5px; color: var(--ink-dim); margin-bottom: 34px; flex-wrap: wrap; }
+.hero-eyebrow .issue { color: var(--accent); font-weight: 500; }
+.hero-eyebrow .sep { color: var(--ink-faint); }
+.hero-headline { font-family: var(--font-display); font-weight: 900; font-size: clamp(48px, 8vw, 116px); line-height: 0.94; letter-spacing: -2.5px; text-wrap: balance; max-width: 15ch; }
+.hero-headline em { font-style: italic; font-weight: 700; color: var(--accent); }
+.hero-headline .underline { display: inline-block; padding: 0 4px; background: linear-gradient(to top, var(--accent-wash) 36%, transparent 36%); }
+.hero-deck { font-family: var(--font-display); font-size: 21px; font-style: italic; color: var(--ink-dim); margin-top: 30px; max-width: 620px; line-height: 1.45; text-wrap: pretty; }
+.hero-byline { margin-top: 44px; display: flex; gap: 28px; align-items: baseline; font-size: 11px; color: var(--ink-dim); flex-wrap: wrap; }
+.hero-byline .by { color: var(--ink); }
+.hero-byline .sep { color: var(--ink-faint); }
+
+/* the screen tally widget */
+.hero-counter { position: absolute; right: 32px; top: 70px; width: 216px; background: var(--paper); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; font-size: 11px; }
+.hero-counter .label { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--ink-dim); }
+.hero-counter .word { font-family: var(--font-display); font-size: 21px; font-weight: 700; margin: 2px 0 8px; letter-spacing: -0.5px; }
+.hero-counter .row { display: flex; justify-content: space-between; align-items: baseline; padding: 4px 0; border-top: 1px dashed var(--rule); }
+.hero-counter .row:first-of-type { border-top: none; }
+.hero-counter .row .v { color: var(--accent); font-weight: 500; font-variant-numeric: tabular-nums; }
+@media (max-width: 960px) { .hero-counter { position: static; width: 100%; max-width: 330px; margin-top: 38px; } }
+
+/* ─── tabs ─── */
+.tabs { max-width: 1280px; margin: 0 auto; padding: 0 32px; display: flex; gap: 4px; border-bottom: 1px solid var(--rule); }
+.tab { background: none; border: 0; border-bottom: 3px solid transparent; padding: 14px 18px 15px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 1.8px; text-transform: uppercase; color: var(--ink-dim); margin-bottom: -1px; }
+.tab .tn { color: var(--ink-faint); margin-right: 8px; }
+.tab:hover { color: var(--ink); }
+.tab.on { color: var(--ink); border-bottom-color: var(--accent); }
+.pane { display: none; }
+.pane.on { display: block; }
+
+/* ─── essay body ─── */
+.essay { padding: 0 32px 20px; max-width: 1280px; margin: 0 auto; }
+.chapter { padding: 78px 0 42px; }
+.chapter-head { display: grid; grid-template-columns: 80px 1fr; gap: 24px; margin-bottom: 30px; align-items: baseline; }
+.chapter-num { font-family: var(--font-display); font-style: italic; font-size: 54px; font-weight: 700; color: var(--accent); line-height: 0.9; }
+.chapter-meta .stage-label { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--ink-dim); }
+.chapter-meta .stage-title { font-family: var(--font-display); font-size: 40px; font-weight: 700; letter-spacing: -1px; line-height: 1.1; margin-top: 6px; }
+.chapter-meta .stage-sub { font-family: var(--font-display); font-style: italic; font-size: 16px; color: var(--ink-dim); margin-top: 9px; max-width: 620px; line-height: 1.45; }
+.prose { max-width: 640px; margin-left: 104px; font-size: 15.5px; line-height: 1.75; color: var(--ink); }
+.prose p { margin-top: 16px; text-wrap: pretty; }
+.prose p:first-child { margin-top: 0; }
+.prose p.lead::first-letter { font-family: var(--font-display); font-weight: 900; font-size: 60px; float: left; line-height: 0.85; padding: 6px 12px 0 0; color: var(--accent); }
+.prose .term { background: var(--accent-wash); padding: 0 4px; color: var(--accent); border-radius: 2px; font-weight: 500; }
+:root[data-theme="light"] .prose .term { color: var(--plate-accent); }
+.prose .pull { font-family: var(--font-display); font-style: italic; font-size: 24px; line-height: 1.35; color: var(--ink); border-left: 3px solid var(--accent); padding: 4px 0 4px 22px; margin: 26px 0; display: block; text-wrap: balance; }
+@media (max-width: 780px) { .prose { margin-left: 0; } .chapter-head { grid-template-columns: 52px 1fr; } }
+
+/* ─── the cream plate: every chart and table ─── */
+.viz { margin-top: 42px; }
+.plate { background: var(--plate); color: var(--plate-ink); border: 1px solid var(--plate-rule); border-radius: 10px; padding: 26px 30px; box-shadow: 0 2px 0 rgba(0,0,0,.22), 0 14px 34px rgba(0,0,0,.25); }
+.viz-cap { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 18px; gap: 16px; flex-wrap: wrap; }
+.viz-cap .v-title { font-family: var(--font-display); font-size: 21px; font-weight: 700; letter-spacing: -0.4px; color: var(--plate-ink); }
+.viz-cap .v-tag { font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--plate-ink-2); padding: 3px 10px; border: 1px solid var(--plate-rule); border-radius: 12px; white-space: nowrap; }
+.viz-cap .v-sub { font-family: var(--font-display); font-style: italic; color: var(--plate-ink-2); font-size: 13px; max-width: 460px; width: 100%; }
+.plate .foot { margin-top: 14px; font-size: 10px; letter-spacing: .6px; color: var(--plate-ink-3); }
+.plate a { color: var(--plate-accent); text-decoration: underline; text-decoration-color: var(--plate-rule); text-underline-offset: 3px; }
+
+/* the screen table */
+.screen-t { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.screen-t th { font-size: 9.5px; text-transform: uppercase; letter-spacing: 1.4px; color: var(--plate-ink-3); font-weight: 400; text-align: left; padding: 0 12px 8px 0; border-bottom: 1px solid var(--plate-rule); }
+.screen-t td { padding: 11px 12px 11px 0; border-bottom: 1px dashed var(--plate-rule-2); vertical-align: top; line-height: 1.55; }
+.screen-t tr:last-child td { border-bottom: none; }
+.screen-t .claim { font-family: var(--font-display); font-size: 14.5px; color: var(--plate-ink); max-width: 30ch; }
+.screen-t .truth { color: var(--plate-ink-2); max-width: 42ch; }
+.chip { display: inline-block; font-size: 9px; letter-spacing: 1.2px; text-transform: uppercase; padding: 3px 9px; border-radius: 11px; border: 1px solid; white-space: nowrap; }
+.chip.ok  { color: var(--d-verdigris); border-color: var(--d-verdigris); }
+.chip.bad { color: var(--d-madder); border-color: var(--d-madder); }
+
+/* shock stat cards */
+.shock-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+@media (max-width: 860px) { .shock-grid { grid-template-columns: 1fr; } }
+.shock { background: #FBF9F4; border: 1px solid var(--plate-rule-2); border-radius: 6px; padding: 16px 18px; }
+.shock .ev { font-size: 9.5px; text-transform: uppercase; letter-spacing: 1.4px; color: var(--plate-ink-3); }
+.shock .n { font-family: var(--font-display); font-size: 40px; font-weight: 700; color: var(--d-indigo); line-height: 1.05; letter-spacing: -1px; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.shock .nlbl { font-family: var(--font-display); font-style: italic; font-size: 12.5px; color: var(--plate-ink-2); margin-top: 6px; line-height: 1.45; }
+.shock .lat { margin-top: 10px; padding-top: 9px; border-top: 1px dashed var(--plate-rule-2); font-size: 10.5px; color: var(--plate-ink-2); }
+.shock .lat b { color: var(--plate-ink); font-weight: 500; }
+
+/* charts */
+.plate svg { display: block; width: 100%; height: auto; }
+.leg { display: flex; gap: 18px; font-size: 10px; color: var(--plate-ink-2); text-transform: uppercase; letter-spacing: 1px; margin-top: 12px; flex-wrap: wrap; }
+.leg .sw { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+
+/* timeline */
+.tl-wrap { overflow-x: auto; }
+.tl { min-width: 700px; }
+
+/* condition worksheet */
+.qca { width: 100%; border-collapse: collapse; font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.qca th { font-size: 9px; text-transform: uppercase; letter-spacing: 1.1px; color: var(--plate-ink-3); font-weight: 400; padding: 4px 8px 8px; border-bottom: 1px solid var(--plate-rule); text-align: center; }
+.qca th:first-child { text-align: left; padding-left: 0; }
+.qca td { padding: 8px; border-bottom: 1px dashed var(--plate-rule-2); text-align: center; color: var(--plate-ink-2); }
+.qca td:first-child { text-align: left; padding-left: 0; font-family: var(--font-display); font-size: 13.5px; color: var(--plate-ink); }
+.qca tr:last-child td { border-bottom: none; }
+.qca .one  { color: var(--plate-ink); font-weight: 500; }
+.qca .zero { color: var(--plate-ink-3); }
+.qca .unk  { color: var(--d-madder); }
+.qca .neg td:first-child { color: var(--plate-ink-2); }
+
+/* spec list (prediction) */
+.spec { display: grid; grid-template-columns: 120px 1fr; gap: 8px 18px; font-size: 12.5px; }
+.spec dt { font-size: 9.5px; text-transform: uppercase; letter-spacing: 1.3px; color: var(--plate-ink-3); padding-top: 2px; }
+.spec dd { color: var(--plate-ink-2); }
+.spec dd b { color: var(--plate-ink); font-weight: 500; }
+
+/* excavation cards */
+.x-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 42px; }
+@media (max-width: 860px) { .x-grid { grid-template-columns: 1fr; } }
+.x-card { background: var(--paper); border: 1px solid var(--rule); border-radius: 8px; padding: 20px 22px; }
+.x-card .xh { font-size: 9.5px; text-transform: uppercase; letter-spacing: 1.6px; color: var(--accent); }
+.x-card .xt { font-family: var(--font-display); font-size: 19px; font-weight: 700; letter-spacing: -0.4px; margin: 7px 0 8px; }
+.x-card p { font-size: 12.5px; color: var(--ink-dim); line-height: 1.6; }
+.x-card p b { color: var(--ink); font-weight: 500; }
+
+.x-rows { margin-top: 42px; border-top: 1px solid var(--rule); }
+.x-row { display: grid; grid-template-columns: 180px 1fr; gap: 20px; padding: 16px 0; border-bottom: 1px solid var(--rule-soft); }
+.x-row .xl { font-size: 10px; text-transform: uppercase; letter-spacing: 1.6px; color: var(--ink-dim); padding-top: 3px; }
+.x-row p { font-size: 13px; color: var(--ink-dim); max-width: 72ch; }
+.x-row p b { color: var(--ink); font-weight: 500; }
+@media (max-width: 700px) { .x-row { grid-template-columns: 1fr; gap: 6px; } }
+
+/* detectors table on plate */
+.det { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.det td { padding: 9px 12px 9px 0; border-bottom: 1px dashed var(--plate-rule-2); color: var(--plate-ink-2); vertical-align: top; }
+.det tr:last-child td { border-bottom: none; }
+.det .w { font-family: var(--font-display); font-size: 14px; color: var(--plate-ink); white-space: nowrap; }
+.det .y { font-variant-numeric: tabular-nums; color: var(--plate-ink-3); }
+
+/* conclusion + footer */
+.conclude { padding: 90px 0 70px; text-align: center; }
+.conclude-q { font-family: var(--font-display); font-style: italic; font-weight: 400; font-size: clamp(32px, 5.4vw, 58px); letter-spacing: -1.5px; line-height: 1.12; max-width: 20ch; margin: 0 auto; text-wrap: balance; }
+.conclude-a { font-family: var(--font-display); font-weight: 700; font-size: clamp(32px, 5.4vw, 58px); letter-spacing: -1.5px; margin-top: 8px; color: var(--accent); }
+.conclude-cite { font-size: 11px; color: var(--ink-dim); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 30px; }
+.footer { background: var(--paper); border-top: 1px solid var(--rule); padding: 54px 32px; margin-top: 40px; }
+.footer-inner { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 32px; }
+.footer h3 { font-family: var(--font-display); font-size: 26px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 10px; }
+.footer h3 .q { color: var(--accent); }
+.footer p { font-family: var(--font-display); font-style: italic; color: var(--ink-dim); font-size: 14px; max-width: 380px; line-height: 1.5; }
+.footer h4 { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--ink-faint); margin-bottom: 12px; }
+.footer ul { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+.footer ul a { color: var(--ink-dim); font-size: 12px; }
+.footer ul a:hover { color: var(--accent); }
+.footer-bottom { max-width: 1280px; margin: 30px auto 0; padding-top: 22px; border-top: 1px solid var(--rule); display: flex; justify-content: space-between; gap: 14px; font-size: 10px; color: var(--ink-faint); letter-spacing: 1px; text-transform: uppercase; flex-wrap: wrap; }
+@media (max-width: 800px) { .footer-inner { grid-template-columns: 1fr; } }
+
+.reveal { opacity: 0; transform: translateY(22px); transition: opacity .7s ease, transform .7s ease; }
+.reveal.in { opacity: 1; transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } .reveal { opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+
+<div class="progress"><div class="progress-fill" id="pf"></div></div>
+
+<div class="chrome">
+  <div class="brand">But<span class="q">Why?</span><span class="brand-slash">/</span><span class="brand-section">reports</span></div>
+  <div class="chrome-nav">
+    <button class="navlink on" data-goto="instrument">The instrument</button>
+    <button class="navlink" data-goto="excavation">The excavation</button>
+    <a href="#method">Method</a>
+    <button class="theme-btn" id="theme-go" type="button">◑ Theme</button>
+  </div>
+</div>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-eyebrow">
+    <span class="issue">Specimen №001</span><span class="sep">·</span>
+    <span>The DeStrange, run 001</span><span class="sep">·</span>
+    <span>16 min read</span>
+  </div>
+  <h1 class="hero-headline">OnlyFans was <em>the only way.</em><br><span class="underline">Was it?</span></h1>
+  <p class="hero-deck">
+    Everyone has a convergence story for OnlyFans. This report runs the branches
+    instead: five claims screened against sources, two natural experiments read
+    for magnitude and latency, one condition table pre-registered. The verdict
+    vocabulary is structure or scaffolding.
+  </p>
+  <div class="hero-byline">
+    <span><span class="by">By</span> the But Why? desk</span>
+    <span class="sep">·</span><span>Screen run <b style="color:var(--ink)">27–28 Jul 2026</b></span>
+    <span class="sep">·</span><span>15 platforms · 6 conditions · 2016→2027</span>
+  </div>
+  <div class="hero-counter">
+    <div class="label">The screen</div>
+    <div class="word">5 claims, checked</div>
+    <div class="row"><span>survived</span><span class="v">1</span></div>
+    <div class="row"><span>fabricated</span><span class="v">1</span></div>
+    <div class="row"><span>conflated</span><span class="v">1</span></div>
+    <div class="row"><span>misattributed</span><span class="v">2</span></div>
+  </div>
+</section>
+
+<!-- ═══ TABS ═══ -->
+<div class="tabs" id="method">
+  <button class="tab on" data-pane="instrument"><span class="tn">01</span>The instrument</button>
+  <button class="tab" data-pane="excavation"><span class="tn">02</span>The excavation</button>
+</div>
+
+<!-- ═════════════════════════════ PANE 1 — THE INSTRUMENT ═════════════════════════════ -->
+<div class="pane on" id="pane-instrument">
+<div class="essay">
+
+  <section class="chapter reveal">
+    <div class="chapter-head">
+      <div class="chapter-num">0</div>
+      <div class="chapter-meta">
+        <div class="stage-label">Before anything</div>
+        <div class="stage-title">The screen</div>
+        <div class="stage-sub">Every load-bearing claim in the source draft, checked against a source before a word of argument was kept.</div>
+      </div>
+    </div>
+    <div class="viz"><div class="plate">
+      <div class="viz-cap">
+        <span class="v-title">Five claims, one survivor</span>
+        <span class="v-tag">verified 27 jul 2026</span>
+      </div>
+      <table class="screen-t">
+        <tr><th>Claim in the draft</th><th>Status</th><th>What the sources say</th></tr>
+        <tr>
+          <td class="claim">Creators grew "7.5M in 2019 to 85M by 2022"</td>
+          <td><span class="chip bad">Fabricated</span></td>
+          <td class="truth">348K (2019) → 1.6M (2020) → 2.16M (2021) → 3.18M (2022). Off by ~25×. <a href="https://usesignhouse.com/blog/onlyfans-users/">SignHouse</a></td>
+        </tr>
+        <tr>
+          <td class="claim">US savings rate hit 33% in April 2020</td>
+          <td><span class="chip ok">Correct</span></td>
+          <td class="truth">BEA record, up from 12.7% in March; previous record 17.3% (1975). <a href="https://www.cnbc.com/2020/05/29/us-savings-rate-hits-record-33percent-as-coronavirus-causes-americans-to-stockpile-cash-curb-spending.html">CNBC</a></td>
+        </tr>
+        <tr>
+          <td class="claim">Women lost "1.4M more jobs than men"</td>
+          <td><span class="chip bad">Conflated</span></td>
+          <td class="truth">Two real stats spliced. Women were 55% of April 2020's 20.5M job losses; the 1.4M was the education-and-health sector count. <a href="https://www.nbcnews.com/business/business-news/women-hit-hardest-coronavirus-layoffs-are-we-heading-she-cession-n1226256">NBC</a> · <a href="https://www.bls.gov/opub/mlr/2020/beyond-bls/covid-19-recession-is-tougher-on-women.htm">BLS</a></td>
+        </tr>
+        <tr>
+          <td class="claim">Aug 2021 ban came from Mastercard/Visa pressure</td>
+          <td><span class="chip bad">Misattributed</span></td>
+          <td class="truth">The CEO named banks: JPMorgan, BNY Mellon, Metro. Mastercard publicly denied. The Aug 17 → Aug 25 timeline is accurate. <a href="https://edition.cnn.com/2021/08/20/tech/onlyfans-explicit-content-ban-payment">CNN</a></td>
+        </tr>
+        <tr>
+          <td class="claim">OnlyFans pioneered the creator economy</td>
+          <td><span class="chip bad">Misattributed</span></td>
+          <td class="truth">Patreon proved creator-direct subscription in 2013, three years before OnlyFans launched. <a href="https://research.contrary.com/company/patreon">Contrary Research</a></td>
+        </tr>
+      </table>
+      <div class="foot">Status vocabulary: correct · fabricated · conflated · misattributed. A screen row without a link is an opinion.</div>
+    </div></div>
+  </section>
+
+  <section class="chapter reveal">
+    <div class="chapter-head">
+      <div class="chapter-num">1</div>
+      <div class="chapter-meta">
+        <div class="stage-label">Slot one — stated so you can attack it</div>
+        <div class="stage-title">The claim</div>
+      </div>
+    </div>
+    <div class="prose">
+      <p class="lead">The claim under test is an only-way claim: that OnlyFans, or something
+      exactly like it, had to happen. Three systems are said to have converged and made it
+      so. A movement that installed the vocabulary of bodily sovereignty. A pandemic that
+      concentrated savings and displaced women from service work. Payment infrastructure
+      that had quietly matured. Remove any one, the story says, and the explosion never comes.</p>
+      <p>That story is unfalsifiable as written, and this trade is chronically suspected of
+      telling exactly that kind of story. So the claim is restated as something attackable:
+      for each proposed cause, is it <span class="term">structure</span> — remove it and the
+      thing stops — or <span class="term">scaffolding</span>, loud while the thing went up,
+      gone when you look back? The instrument that decides is the DeStrange, and its standing
+      question is: <b>how many branches did you run?</b></p>
+    </div>
+  </section>
+
+  <section class="chapter reveal">
+    <div class="chapter-head">
+      <div class="chapter-num">2</div>
+      <div class="chapter-meta">
+        <div class="stage-label">Slot two — before any result</div>
+        <div class="stage-title">Sample &amp; window</div>
+        <div class="stage-sub">Fifteen creator-monetization platforms, 2013–2026. Breakout threshold: ≥1M creators or ≥$1B annual gross volume within six years of launch. Coding rules frozen before outcomes were looked at.</div>
+      </div>
+    </div>
+    <div class="prose">
+      <p>The comparison set: OnlyFans, Patreon, Substack, Twitch, Cameo, Fansly, JustForFans,
+      ManyVids, Chaturbate, MyFreeCams, Pornhub's model program, Tumblr, Gumroad, Ko-fi, and
+      AVN Stars — which folded in 2022 and is the most valuable row in the table, because a
+      necessity test with no failures in it is worthless. Case list and coding rules are
+      committed with a timestamp before any outcome is coded; that one paragraph of
+      pre-registration is the cheapest possible cure for a story assembled around its ending.</p>
+    </div>
+  </section>
+
+  <section class="chapter reveal">
+    <div class="chapter-head">
+      <div class="chapter-num">3</div>
+      <div class="chapter-meta">
+        <div class="stage-label">Slot three — three runs</div>
+        <div class="stage-title">The instrument</div>
+        <div class="stage-sub">Where reality already removed a variable, read the response. Where it didn't, project the trend and subtract. Then put every case in one table and count.</div>
+      </div>
+    </div>
+
+    <div class="prose">
+      <p>You cannot switch off a platform's banking to see what happens. But reality ran that
+      experiment twice, and the responses have a magnitude and a latency.</p>
+    </div>
+
+    <div class="viz"><div class="plate">
+      <div class="viz-cap">
+        <span class="v-title">Run 1 — the shock test</span>
+        <span class="v-tag">natural experiments</span>
+        <span class="v-sub">What happens when payment rails, and only payment rails, are withdrawn.</span>
+      </div>
+      <div class="shock-grid">
+        <div class="shock">
+          <div class="ev">Pornhub · Dec 2020</div>
+          <div class="n">−78%</div>
+          <div class="nlbl">13.5M videos to 2.9M after Visa and Mastercard cut ties.</div>
+          <div class="lat">Latency: <b>~24 hours</b> · <a href="https://www.pressandjournal.co.uk/fp/news/world/3605445/millions-of-videos-removed-as-mastercard-and-visa-stop-people-using-cards-on-pornhub/">P&amp;J</a> · <a href="https://www.forbes.com/sites/siladityaray/2020/12/14/pornhub-takes-down-all-content-uploaded-by-unverified-uploaders/">Forbes</a></div>
+        </div>
+        <div class="shock">
+          <div class="ev">OnlyFans · Aug 2021</div>
+          <div class="n">8 days</div>
+          <div class="nlbl">From banning its own core content (Aug 17) to full reversal (Aug 25), once banking assurances were secured.</div>
+          <div class="lat">Both scaffolds at full strength; neither protected it. <a href="https://www.pbs.org/newshour/economy/onlyfans-reverses-explicit-content-ban-after-outcry">PBS</a></div>
+        </div>
+        <div class="shock">
+          <div class="ev">Tumblr · Dec 2018</div>
+          <div class="n">exit</div>
+          <div class="nlbl">Adult ban by policy; the affected population left the platform rather than the category.</div>
+          <div class="lat">Magnitude harvest: <b>pending</b> (Wayback + traffic archives)</div>
+        </div>
+      </div>
+      <div class="foot">Nothing comparable exists in the record for the withdrawal of a vocabulary or of a demand shock. That asymmetry is the finding, in numbers.</div>
+    </div></div>
+
+    <div class="viz"><div class="plate">
+      <div class="viz-cap">
+        <span class="v-title">Run 2 — the trend break</span>
+        <span class="v-tag">interrupted time series</span>
+        <span class="v-sub">COVID's measured contribution versus its asserted one. Creator counts, aggregator-sourced, flagged for triangulation.</span>
+      </div>
+      <svg viewBox="0 0 720 300" role="img" aria-label="OnlyFans creators 2019 to 2022: actual counts against the pre-COVID trajectory">
+        <!-- axis -->
+        <line x1="70" y1="20" x2="70" y2="252" stroke="#CBC3B0" stroke-width="1"/>
+        <line x1="70" y1="252" x2="690" y2="252" stroke="#CBC3B0" stroke-width="1"/>
+        <g font-family="DM Mono, monospace" font-size="11" fill="#8C8474">
+          <text x="60" y="256" text-anchor="end">0</text>
+          <text x="60" y="186" text-anchor="end">1M</text>
+          <text x="60" y="116" text-anchor="end">2M</text>
+          <text x="60" y="46"  text-anchor="end">3M</text>
+          <text x="120" y="274" text-anchor="middle">2019</text>
+          <text x="310" y="274" text-anchor="middle">2020</text>
+          <text x="500" y="274" text-anchor="middle">2021</text>
+          <text x="690" y="274" text-anchor="middle">2022</text>
+        </g>
+        <g stroke="#DED8C9" stroke-width="1">
+          <line x1="70" y1="186" x2="690" y2="186"/><line x1="70" y1="116" x2="690" y2="116"/><line x1="70" y1="46" x2="690" y2="46"/>
+        </g>
+        <!-- pre-COVID trajectory, projected (reference, dashed) -->
+        <polyline points="120,227.6 310,215 500,202 690,189" fill="none" stroke="#8C8474" stroke-width="2" stroke-dasharray="6 5"/>
+        <text x="688" y="178" text-anchor="end" font-family="DM Mono, monospace" font-size="10.5" fill="#8C8474">pre-COVID trajectory (illustrative)</text>
+        <!-- actual, indigo -->
+        <polyline points="120,227.6 310,140 500,100.7 690,29.3" fill="none" stroke="#2F4C9B" stroke-width="2.5"/>
+        <g fill="#2F4C9B" stroke="#F2EEE4" stroke-width="2">
+          <circle cx="120" cy="227.6" r="5"><title>2019 · 348K creators</title></circle>
+          <circle cx="310" cy="140" r="5"><title>2020 · 1.6M creators (+365%)</title></circle>
+          <circle cx="500" cy="100.7" r="5"><title>2021 · 2.16M creators</title></circle>
+          <circle cx="690" cy="29.3" r="5"><title>2022 · 3.18M creators</title></circle>
+        </g>
+        <g font-family="DM Mono, monospace" font-size="11" fill="#1A1813">
+          <text x="132" y="231">348K</text>
+          <text x="322" y="141">1.6M</text>
+          <text x="512" y="102">2.16M</text>
+          <text x="648" y="24">3.18M</text>
+        </g>
+        <!-- shock marker -->
+        <line x1="252" y1="20" x2="252" y2="252" stroke="#BC4A2E" stroke-width="1.5" stroke-dasharray="2 4"/>
+        <text x="258" y="32" font-family="DM Mono, monospace" font-size="10.5" fill="#BC4A2E">Mar 2020 · lockdowns</text>
+      </svg>
+      <div class="leg">
+        <span><span class="sw" style="background:#2F4C9B"></span>Actual creators</span>
+        <span><span class="sw" style="background:#8C8474"></span>Pre-COVID trajectory, projected</span>
+      </div>
+      <div class="foot">The residual between the lines is the accelerant's measured contribution. Projection is illustrative until the pre-2020 series is harvested (Wayback); run the same break on Patreon and Twitch as controls — if all three snap in March 2020, COVID is a sector effect, not an OnlyFans story. Counts: <a href="https://usesignhouse.com/blog/onlyfans-users/">SignHouse</a>, aggregator-sourced, to be triangulated against Fenix International's Companies House filings.</div>
+    </div></div>
+
+    <div class="viz"><div class="plate">
+      <div class="viz-cap">
+        <span class="v-title">The adoption timeline</span>
+        <span class="v-tag">2016 → 2027</span>
+        <span class="v-sub">The same timeline the excavation carries: emergence, inflection, capital infrastructure, the two rail shocks, and the forward test.</span>
+      </div>
+      <div class="tl-wrap"><svg class="tl" viewBox="0 0 720 150" role="img" aria-label="Adoption timeline 2016 to 2027">
+        <line x1="30" y1="80" x2="700" y2="80" stroke="#CBC3B0" stroke-width="1.5"/>
+        <g font-family="DM Mono, monospace" font-size="10" fill="#8C8474">
+          <text x="30" y="100" text-anchor="middle">2016</text>
+          <text x="180" y="100" text-anchor="middle">2019</text>
+          <text x="280" y="100" text-anchor="middle">2020</text>
+          <text x="420" y="100" text-anchor="middle">2021</text>
+          <text x="520" y="100" text-anchor="middle">2022</text>
+          <text x="670" y="100" text-anchor="middle">2027</text>
+        </g>
+        <!-- capital-infrastructure band -->
+        <line x1="30" y1="122" x2="280" y2="122" stroke="#DED8C9" stroke-width="4"/>
+        <text x="34" y="140" font-family="DM Mono, monospace" font-size="9.5" fill="#8C8474">CAPITAL BEAT: STRIPE-ERA RAILS + PARASOCIAL AUDIENCES MATURE</text>
+        <g fill="#1A1813">
+          <circle cx="30" cy="80" r="5"><title>2016 · launch — a solved mechanism (Patreon 2013) applied to the fenced-off category</title></circle>
+          <circle cx="180" cy="80" r="5"><title>2019 · 348K creators — niche</title></circle>
+          <circle cx="280" cy="80" r="6"><title>Mar 2020 · inflection — lockdowns; 33% savings rate; women 55% of 20.5M job losses</title></circle>
+          <circle cx="330" cy="80" r="5"><title>Aug 2020 · WAP moment — mainstream legibility</title></circle>
+          <circle cx="365" cy="80" r="5"><title>Dec 2020 · Pornhub purge — rails shock #1, −78% in ~24h</title></circle>
+          <circle cx="520" cy="80" r="5"><title>2022 · 3.18M creators</title></circle>
+        </g>
+        <circle cx="420" cy="80" r="7" fill="#2F6B5B"><title>Aug 2021 · the near-ban — rails shock #2: announced Aug 17, reversed Aug 25</title></circle>
+        <g font-family="DM Mono, monospace" font-size="9.5" fill="#6E6759">
+          <text x="30" y="62" text-anchor="middle">LAUNCH</text>
+          <text x="180" y="62" text-anchor="middle">NICHE</text>
+          <text x="280" y="40" text-anchor="middle">INFLECTION</text>
+          <text x="337" y="62" text-anchor="middle">WAP · PURGE</text>
+          <text x="420" y="26" text-anchor="middle" fill="#2F6B5B" font-weight="500">NEAR-BAN, 8 DAYS</text>
+          <text x="520" y="62" text-anchor="middle">3.18M</text>
+          <text x="670" y="62" text-anchor="middle">L:E TEST</text>
+        </g>
+        <circle cx="670" cy="80" r="5" fill="none" stroke="#1A1813" stroke-width="1.5" stroke-dasharray="2 2"><title>2027 · the forward run — labor-to-empowerment framing ratio crosses 1.0, or the prediction fails</title></circle>
+      </svg></div>
+    </div></div>
+
+    <div class="viz"><div class="plate">
+      <div class="viz-cap">
+        <span class="v-title">Run 3 — the condition table</span>
+        <span class="v-tag">worksheet · pre-registered, not yet run</span>
+        <span class="v-sub">Crisp-set QCA (Ragin). Consistency ≥ 0.90 reads as necessary; coverage guards against trivial necessity. Eight of fifteen rows shown.</span>
+      </div>
+      <table class="qca">
+        <tr><th>Case</th><th>A · adult ok</th><th>B · rails</th><th>C · audience</th><th>D · shock</th><th>E · vocabulary</th><th>F · rails held</th><th>Y · breakout</th></tr>
+        <tr><td>OnlyFans</td><td class="one">●</td><td class="one">●</td><td class="one">●</td><td class="one">●</td><td class="one">●</td><td class="one">●</td><td class="one">●</td></tr>
+        <tr><td>Patreon</td><td class="zero">○</td><td class="one">●</td><td class="one">●</td><td class="one">●</td><td class="unk">?</td><td class="one">●</td><td class="unk">?</td></tr>
+        <tr><td>Substack</td><td class="zero">○</td><td class="one">●</td><td class="one">●</td><td class="one">●</td><td class="zero">○</td><td class="one">●</td><td class="unk">?</td></tr>
+        <tr><td>Chaturbate</td><td class="one">●</td><td class="one">●</td><td class="zero">○</td><td class="zero">○</td><td class="zero">○</td><td class="one">●</td><td class="unk">?</td></tr>
+        <tr><td>Fansly</td><td class="one">●</td><td class="one">●</td><td class="unk">?</td><td class="one">●</td><td class="one">●</td><td class="one">●</td><td class="unk">?</td></tr>
+        <tr class="neg"><td>Tumblr (post-2018)</td><td class="zero">○</td><td class="one">●</td><td class="one">●</td><td class="zero">○</td><td class="zero">○</td><td class="zero">○</td><td class="zero">○</td></tr>
+        <tr class="neg"><td>Pornhub models (post-2020)</td><td class="one">●</td><td class="zero">○</td><td class="one">●</td><td class="one">●</td><td class="one">●</td><td class="zero">○</td><td class="zero">○</td></tr>
+        <tr class="neg"><td>AVN Stars (folded 2022)</td><td class="one">●</td><td class="one">●</td><td class="zero">○</td><td class="one">●</td><td class="one">●</td><td class="unk">?</td><td class="zero">○</td></tr>
+      </table>
+      <div class="foot">● = condition present · ○ = absent · ? = uncoded until the harvest (that is what pre-registration looks like).
+      Falsification, stated before running: <b>if condition E (legitimacy vocabulary) scores consistency ≥ 0.90, the original three-systems claim survives and this repositioning is wrong.</b></div>
+    </div></div>
+  </section>
+
+  <section class="chapter reveal">
+    <div class="chapter-head">
+      <div class="chapter-num">4</div>
+      <div class="chapter-meta">
+        <div class="stage-label">Slot four — what the test did to the prior</div>
+        <div class="stage-title">The finding, with the surprise</div>
+      </div>
+    </div>
+    <div class="prose">
+      <p class="lead">The opening hypothesis does not survive its own test. Three co-equal
+      systems goes in; one structure and two scaffolds come out. Remove the vocabulary and
+      the cam economy is already there, profitable, six years early — MeToo downgrades from
+      cause to legitimacy accelerant for the mainstream wave. Remove the pandemic and the
+      curve keeps its slope and loses its spike. Remove the rails and the thing stops: minus
+      78 percent in a day next door, eight days from policy to surrender at home.</p>
+      <span class="pull">Scaffolding fools retrodiction because it is loud while the building
+      goes up, and gone by the time you look back.</span>
+      <p>And the pioneer claim inverts. OnlyFans did not invent the creator economy; Patreon
+      had proved the mechanism in 2013. What OnlyFans did was apply a solved mechanism to
+      the one category every incumbent's terms of service had fenced off. The inevitability,
+      such as it was, belonged to the gap — a proven model, a excluded population, and the
+      only question being who would be willing.</p>
+    </div>
+  </section>
+
+  <section class="chapter reveal">
+    <div class="chapter-head">
+      <div class="chapter-num">5</div>
+      <div class="chapter-meta">
+        <div class="stage-label">Slot five — in public, not under questioning</div>
+        <div class="stage-title">The caveat</div>
+      </div>
+    </div>
+    <div class="prose">
+      <p>The load-bearing verdict rides on one eight-day crisis that was reversed: a
+      near-death, observed once, is inference, not proof. The creator counts are
+      aggregator-sourced until the Companies House triangulation lands. The trend-break
+      projection is illustrative until the pre-2020 series is harvested. And a condition
+      table with ? cells has, by definition, not yet been run — the falsification sentence
+      above is live, and it may fire.</p>
+    </div>
+  </section>
+
+  <section class="chapter reveal">
+    <div class="chapter-head">
+      <div class="chapter-num">6</div>
+      <div class="chapter-meta">
+        <div class="stage-label">Slot six — check me</div>
+        <div class="stage-title">The forward run</div>
+        <div class="stage-sub">One prediction, quantified before the window closes. If the threshold isn't met, the prediction failed, and the update saying so gets posted.</div>
+      </div>
+    </div>
+    <div class="viz"><div class="plate">
+      <div class="viz-cap">
+        <span class="v-title">By end of 2027: the frame flips from empowerment to labor</span>
+        <span class="v-tag">committed 28 jul 2026</span>
+      </div>
+      <dl class="spec">
+        <dt>Corpus</dt><dd>English-language news mentioning "OnlyFans," MediaCloud US national + digital-native collections, from 2019-01-01.</dd>
+        <dt>Unit</dt><dd>The article.</dd>
+        <dt>Coding rule</dt><dd>EMPOWERMENT on ≥1 hit from E = {empowerment, agency, reclaim, autonomy, own terms, sex-positive}; LABOR on ≥1 from L = {labor, worker, gig, exploitation, union, rights, precarity, platform dependency}; both → majority; ties dropped.</dd>
+        <dt>Metric</dt><dd>Annual L:E ratio.</dd>
+        <dt>Threshold</dt><dd><b>Lands if L:E &gt; 1.0 in calendar 2027</b>, having been &lt; 1.0 in 2020–21. Below 1.0 at year end = failed, posted as failed.</dd>
+        <dt>Caveat</dt><dd>A keyword set is a proxy for a frame, not the frame.</dd>
+      </dl>
+      <div class="foot">Data, coding sheet, and script publish with the piece — the check-me link is the whole point. Repo: pending first harvest.</div>
+    </div></div>
+  </section>
+
+  <section class="chapter reveal">
+    <div class="chapter-head">
+      <div class="chapter-num">7</div>
+      <div class="chapter-meta">
+        <div class="stage-label">Before it ships — how the report travels</div>
+        <div class="stage-title">The travel check</div>
+        <div class="stage-sub">The five moves Field Study 001 found recurring across the practitioners whose work lands, run against this report itself. Non-pass rows are build tasks, not excuses.</div>
+      </div>
+    </div>
+    <div class="viz"><div class="plate">
+      <div class="viz-cap">
+        <span class="v-title">Five patterns, scored against specimen 001</span>
+        <span class="v-tag">self-audit</span>
+      </div>
+      <table class="screen-t">
+        <tr><th>Pattern</th><th>Verdict</th><th>Where it stands</th></tr>
+        <tr>
+          <td class="claim">Named instrument</td>
+          <td><span class="chip ok">Pass</span></td>
+          <td class="truth">The DeStrange, run 001 — named, repeatable, standing question stated, specimen numbering implies the cadence.</td>
+        </tr>
+        <tr>
+          <td class="claim">Coinage</td>
+          <td><span class="chip ok">Pass</span></td>
+          <td class="truth">Structure vs scaffolding — the verdict vocabulary travels without the site. Collision-checked (jenga: taken; load-bearing: becoming LLM-speak; DeStrange: clear).</td>
+        </tr>
+        <tr>
+          <td class="claim">Linked deliverables</td>
+          <td><span class="chip bad">Partial</span></td>
+          <td class="truth">Sources linked where they stand, but the repo — data, coding sheet, script — publishes with the first harvest. Until it exists, "check me" is a promise.</td>
+        </tr>
+        <tr>
+          <td class="claim">Declared lens</td>
+          <td><span class="chip ok">Pass</span></td>
+          <td class="truth">The deck declares it — runs the branches instead — and six chapters demonstrate it. The author's personal lens belongs to the essay this report backs.</td>
+        </tr>
+        <tr>
+          <td class="claim">Open door</td>
+          <td><span class="chip bad">Partial</span></td>
+          <td class="truth">The tally widget orients a cold reader in ten seconds, but the plain-text method note that doubles as a start-here page is still owed. One page, no design, hardest-working thing on the site.</td>
+        </tr>
+      </table>
+      <div class="foot">Two build tasks before this ships: the repo, and the plain door. Patterns per <b>Field Study 001 §05</b>: one instrument on a cadence · name the thing · publish the method · declare the lens · give the cold reader a door.</div>
+    </div></div>
+  </section>
+
+  <div class="conclude reveal">
+    <div class="conclude-q">So — was it the only way?</div>
+    <div class="conclude-a">One rail was. The rest was weather.</div>
+    <div class="conclude-cite">Structure: payment rails · Scaffolding: vocabulary, pandemic · Specimen №001, the DeStrange</div>
+  </div>
+
+</div>
+</div>
+
+<!-- ═════════════════════════════ PANE 2 — THE EXCAVATION ═════════════════════════════ -->
+<div class="pane" id="pane-excavation">
+<div class="essay">
+
+  <section class="chapter reveal">
+    <div class="chapter-head">
+      <div class="chapter-num">◆</div>
+      <div class="chapter-meta">
+        <div class="stage-label">The classic register · signal: OnlyFans · consumption/behavioral · grounded</div>
+        <div class="stage-title">The excavation</div>
+        <div class="stage-sub">One line: when a movement handed women the vocabulary, a lockdown handed them the audience, and the rails were already laid, the platform's only remaining job was to be willing.</div>
+      </div>
+    </div>
+
+    <div class="x-grid">
+      <div class="x-card">
+        <div class="xh">Move 1 — decode the sign</div>
+        <div class="xt">Ownership, at last</div>
+        <p>The sign says: your body, your terms, your business — the studio, the agency, and
+        the algorithm all fired at once. The myth sold to participants and audience alike is
+        <b>disintermediation as empowerment</b>.</p>
+      </div>
+      <div class="x-card">
+        <div class="xh">Move 2 — name the code</div>
+        <div class="xt">The processor's veto</div>
+        <p>The rule set producing the sign is not feminism or lockdown boredom; it is
+        <b>which work a bank will process</b>. Every incumbent's ToS fenced off the category;
+        the code stays invisible because processors prefer it that way.</p>
+      </div>
+      <div class="x-card">
+        <div class="xh">Move 3 — expose the gap</div>
+        <div class="xt">Rented independence</div>
+        <p><b>Sign promise:</b> ownership without gatekeepers. <b>System delivery:</b> access
+        contingent on banking tolerance, decided in eight days in Aug 2021, at 20% rent.
+        <b>Gap reframe:</b> OnlyFans is not replacing the gatekeepers. It is replacing the
+        studio's cut with the processor's veto.</p>
+      </div>
+    </div>
+
+    <div class="viz"><div class="plate">
+      <div class="viz-cap">
+        <span class="v-title">The adoption timeline</span>
+        <span class="v-tag">2016 → 2027</span>
+        <span class="v-sub">Emergence → inflection → capital infrastructure → mainstream crossing → current status. The same timeline the instrument reads for shocks.</span>
+      </div>
+      <div class="tl-wrap"><svg class="tl" viewBox="0 0 720 150" role="img" aria-label="Adoption timeline 2016 to 2027">
+        <line x1="30" y1="80" x2="700" y2="80" stroke="#CBC3B0" stroke-width="1.5"/>
+        <g font-family="DM Mono, monospace" font-size="10" fill="#8C8474">
+          <text x="30" y="100" text-anchor="middle">2016</text>
+          <text x="180" y="100" text-anchor="middle">2019</text>
+          <text x="280" y="100" text-anchor="middle">2020</text>
+          <text x="420" y="100" text-anchor="middle">2021</text>
+          <text x="520" y="100" text-anchor="middle">2022</text>
+          <text x="670" y="100" text-anchor="middle">2027</text>
+        </g>
+        <line x1="30" y1="122" x2="280" y2="122" stroke="#DED8C9" stroke-width="4"/>
+        <text x="34" y="140" font-family="DM Mono, monospace" font-size="9.5" fill="#8C8474">CAPITAL BEAT: STRIPE-ERA RAILS + PARASOCIAL AUDIENCES MATURE</text>
+        <g fill="#1A1813">
+          <circle cx="30" cy="80" r="5"><title>2016 · launch</title></circle>
+          <circle cx="180" cy="80" r="5"><title>2019 · 348K creators — niche</title></circle>
+          <circle cx="280" cy="80" r="6"><title>Mar 2020 · inflection — lockdowns</title></circle>
+          <circle cx="330" cy="80" r="5"><title>Aug 2020 · WAP moment — mainstream legibility</title></circle>
+          <circle cx="365" cy="80" r="5"><title>Dec 2020 · Pornhub purge</title></circle>
+          <circle cx="520" cy="80" r="5"><title>2022 · 3.18M creators</title></circle>
+        </g>
+        <circle cx="420" cy="80" r="7" fill="#2F6B5B"><title>Aug 2021 · near-ban and reversal, 8 days</title></circle>
+        <g font-family="DM Mono, monospace" font-size="9.5" fill="#6E6759">
+          <text x="30" y="62" text-anchor="middle">LAUNCH</text>
+          <text x="180" y="62" text-anchor="middle">NICHE</text>
+          <text x="280" y="40" text-anchor="middle">INFLECTION</text>
+          <text x="337" y="62" text-anchor="middle">WAP · PURGE</text>
+          <text x="420" y="26" text-anchor="middle" fill="#2F6B5B" font-weight="500">NEAR-BAN, 8 DAYS</text>
+          <text x="520" y="62" text-anchor="middle">3.18M</text>
+          <text x="670" y="62" text-anchor="middle">L:E TEST</text>
+        </g>
+        <circle cx="670" cy="80" r="5" fill="none" stroke="#1A1813" stroke-width="1.5" stroke-dasharray="2 2"><title>2027 · the forward run</title></circle>
+      </svg></div>
+    </div></div>
+
+    <div class="x-rows">
+      <div class="x-row">
+        <div class="xl">Diffusion path</div>
+        <p>Cam-adjacent professionals (the pre-2016 base) → service and gig workers displaced
+        by the she-cession → influencers with importable Instagram/TikTok audiences (the
+        Spring 2020 social-proof wave) → mainstream celebrity stunts, 2021.</p>
+      </div>
+      <div class="x-row">
+        <div class="xl">Socioeconomic anchor</div>
+        <p><b>Primary:</b> lockdowns concentrated spendable money (savings rate 33%, April
+        2020, a BEA record) while displacing the female-majority service workforce (women were
+        55% of April's 20.5M job losses). <b>Secondary:</b> lockdown privatized consumption —
+        the social-surveillance cost of subscribing collapsed. <b>Tertiary:</b> the rails were
+        already frictionless.</p>
+      </div>
+      <div class="x-row">
+        <div class="xl">Virality mechanism</div>
+        <p>Complex contagion on the creator side — joining required multiple reinforcing
+        exposures and social proof (Centola 2010) — with winner-take-all outcome distribution
+        on the earnings side (Salganik, Dodds &amp; Watts 2006). Identity split: informational
+        adoption (income) and identity-performative adoption (the destigmatized-entrepreneur
+        persona; Van Bavel &amp; Packer).</p>
+      </div>
+      <div class="x-row">
+        <div class="xl">Five avenues, compact</div>
+        <p><b>Network:</b> hub amplification via celebrity joins, winner-take-all topology.
+        <b>Contagion:</b> complex, bridge-width dependent — each join widened the bridge for
+        second-degree ties. <b>Statistical physics:</b> homophily bred creator subcultures
+        that later seeded the counter-signal. <b>Micro-motives:</b> a Schelling cascade —
+        mild individual decisions, non-linear collective outcome, tipping ~Spring 2020.
+        <b>Generative test:</b> the micro-rules (direct pay, subscription, 20% cut, no feed)
+        grow the macro outcome; the near-ban shows the rules' emergent behavior surprising
+        the platform itself.</p>
+      </div>
+      <div class="x-row">
+        <div class="xl">Counter-signals</div>
+        <p><b>Within-frame:</b> creator disavowal and migration toward owned infrastructure —
+        private Discords, direct subscriptions — after the 2021 rent-and-rails scare.
+        <b>Exit:</b> the platform-labor reframe: union talk, gig-work analogies, rights
+        language reconstructing the employment protections the empowerment frame skipped.
+        Exit is the stronger bet, and it is the one the forward run measures.</p>
+      </div>
+    </div>
+
+    <div class="viz"><div class="plate">
+      <div class="viz-cap">
+        <span class="v-title">Cultural detectors — what the arts caught first</span>
+        <span class="v-tag">art before data</span>
+      </div>
+      <table class="det">
+        <tr><td class="w">Cam</td><td class="y">2018</td><td>Platform dependency and performer identity, two years before the mainstream conversation.</td></tr>
+        <tr><td class="w">Normal People</td><td class="y">2018</td><td>Female desire narrated from the inside — the literary parallel to what the platform commercialized.</td></tr>
+        <tr><td class="w">Hustlers</td><td class="y">2019</td><td>Monetizing male desire as financial reclamation, released the year before breakout.</td></tr>
+        <tr><td class="w">WAP</td><td class="y">2020</td><td>August 2020, peak growth: explicit female sexual agency as mainstream entertainment.</td></tr>
+        <tr><td class="w">I May Destroy You</td><td class="y">2020</td><td>Bodily sovereignty and consent, aired simultaneously with the platform's peak growth.</td></tr>
+      </table>
+    </div></div>
+
+    <div class="prose" style="margin-top:42px">
+      <span class="pull">The empowerment was real, and rented. The landlord was a payment processor.</span>
+      <p><b>Strategist:</b> position against rails-risk, not on empowerment copy — the gap is
+      where the durable story is. <b>Creator:</b> the exit bet beats the within-frame bet;
+      own the rail relationship or own nothing. <b>Researcher:</b> the leading indicator is
+      processor policy language and the L:E framing ratio — both move before the metrics do.</p>
+    </div>
+
+    <div class="x-rows" style="margin-top:42px">
+      <div class="x-row">
+        <div class="xl">Glossary</div>
+        <p><b>QCA</b> — Qualitative Comparative Analysis; codes cases as condition sets to test
+        necessity/sufficiency in small samples. <b>Consistency</b> — how reliably a condition
+        accompanies the outcome (≥0.90 ≈ necessary). <b>Coverage</b> — how much of the outcome
+        the condition explains; guards against trivial necessity. <b>Natural experiment</b> —
+        reality removes a variable so you don't have to. <b>Interrupted time series</b> — fit
+        the pre-shock trend, project, subtract. <b>Complex contagion</b> — adoption requiring
+        multiple reinforcing exposures. <b>Schelling cascade</b> — mild local preferences,
+        extreme collective outcome. <b>Structure / scaffolding</b> — remove it and the thing
+        stops, versus remove it and the thing merely slows. <b>Pre-registration</b> — freezing
+        rules before outcomes are looked at. <b>Sign / code / gap</b> — what it signals, the
+        rule set producing it, and the distance between promise and delivery.</p>
+      </div>
+    </div>
+
+  </section>
+</div>
+</div>
+
+<!-- ═══ FOOTER ═══ -->
+<div class="footer">
+  <div class="footer-inner">
+    <div>
+      <h3>But<span class="q">Why?</span></h3>
+      <p>Reverse cultural archaeology with the receipts attached. Formerly sincewhen,
+      formerly McWhy. The name is the question the engine answers.</p>
+    </div>
+    <div>
+      <h4>This specimen</h4>
+      <ul>
+        <li><a href="https://usesignhouse.com/blog/onlyfans-users/">Creator counts (aggregator)</a></li>
+        <li><a href="https://edition.cnn.com/2021/08/20/tech/onlyfans-explicit-content-ban-payment">The near-ban, attributed</a></li>
+        <li><a href="https://www.pbs.org/newshour/economy/onlyfans-reverses-explicit-content-ban-after-outcry">The reversal</a></li>
+        <li><a href="https://www.pressandjournal.co.uk/fp/news/world/3605445/millions-of-videos-removed-as-mastercard-and-visa-stop-people-using-cards-on-pornhub/">The Pornhub purge</a></li>
+        <li><a href="https://research.contrary.com/company/patreon">Patreon, 2013</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>The method</h4>
+      <ul>
+        <li><a href="#method">The six-slot skeleton</a></li>
+        <li><a href="#method">The DeStrange</a></li>
+        <li><a href="#method">Structure vs scaffolding</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>But Why? / reports · Specimen №001</span>
+    <span>Screen run 27–28 Jul 2026 · claims linked where they stand</span>
+    <span>Anatomy per Field Study 001 §04</span>
+  </div>
+</div>
+
+<script>
+// tabs
+const panes = { instrument: document.getElementById('pane-instrument'), excavation: document.getElementById('pane-excavation') };
+function showPane(which) {
+  Object.keys(panes).forEach(k => panes[k].classList.toggle('on', k === which));
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.pane === which));
+  document.querySelectorAll('.navlink[data-goto]').forEach(n => n.classList.toggle('on', n.dataset.goto === which));
+  revealScan();
+}
+document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => showPane(t.dataset.pane)));
+document.querySelectorAll('.navlink[data-goto]').forEach(n => n.addEventListener('click', () => {
+  showPane(n.dataset.goto);
+  document.getElementById('method').scrollIntoView({ behavior: 'smooth' });
+}));
+
+// theme — manual toggle only, never prefers-color-scheme; the plate never repaints
+const themeBtn = document.getElementById('theme-go');
+try { if (localStorage.getItem('butwhy-theme') === 'light') document.documentElement.setAttribute('data-theme','light'); } catch (e) {}
+themeBtn.addEventListener('click', () => {
+  const light = document.documentElement.getAttribute('data-theme') !== 'light';
+  if (light) document.documentElement.setAttribute('data-theme','light');
+  else document.documentElement.removeAttribute('data-theme');
+  try { localStorage.setItem('butwhy-theme', light ? 'light' : 'dark'); } catch (e) {}
+});
+
+// progress
+addEventListener('scroll', () => {
+  const h = document.documentElement;
+  document.getElementById('pf').style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight) * 100) + '%';
+}, { passive: true });
+
+// reveal
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); }), { threshold: 0.08 });
+function revealScan() { document.querySelectorAll('.pane.on .reveal, .conclude.reveal').forEach(el => io.observe(el)); }
+revealScan();
+</script>
+</body>
+</html>
