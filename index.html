@@ -2032,7 +2032,8 @@ html, body {
       <button class="live-close" id="live-close" title="Close">&#x2715;</button>
     </div>
     <div class="live-tabs">
-      <button class="live-tab active" data-tab="searches">Searches</button>
+      <button class="live-tab active" data-tab="radar">Radar</button>
+      <button class="live-tab" data-tab="searches">Searches</button>
       <button class="live-tab" data-tab="topics">Topics</button>
       <button class="live-tab" data-tab="videos">Videos</button>
       <button class="live-tab" data-tab="formats">Formats</button>
@@ -2041,7 +2042,8 @@ html, body {
       <button class="live-tab" data-tab="audio">Audio</button>
     </div>
     <div id="live-body">
-      <div class="live-pane active" data-pane="searches"><div class="live-pane-loading">loading…</div></div>
+      <div class="live-pane active" data-pane="radar"><div class="live-pane-loading">loading…</div></div>
+      <div class="live-pane" data-pane="searches"></div>
       <div class="live-pane" data-pane="topics"></div>
       <div class="live-pane" data-pane="videos"></div>
       <div class="live-pane" data-pane="formats"></div>
@@ -4652,7 +4654,7 @@ function escHtml(s) {
 
 async function openLiveTrends() {
   document.getElementById('live-overlay').classList.add('open');
-  if (!liveLoaded.searches) await loadLiveTab('searches');
+  if (!liveLoaded.radar) await loadLiveTab('radar');
 }
 function closeLiveTrends() {
   document.getElementById('live-overlay').classList.remove('open');
@@ -4682,9 +4684,13 @@ async function loadLiveTab(tab, force) {
   if (liveLoaded[tab] && !force) return;
   pane.innerHTML = '<div class="live-pane-loading">loading…</div>';
   try {
-    if (tab === 'searches') {
+    if (tab === 'radar') {
+      const data = await fetchRadar();
+      liveCache.radar = data;
+      pane.innerHTML = renderRadar(data);
+    } else if (tab === 'searches') {
       const [gt, rd] = await Promise.all([
-        fetchJson('/.netlify/functions/trends?mode=daily&geo=US'),
+        fetchRadarGtrends(),
         fetchJson('/.netlify/functions/reddit?mode=top&t=day'),
       ]);
       liveCache.searches = { gt, rd };
@@ -4721,6 +4727,122 @@ async function loadLiveTab(tab, force) {
   }
 }
 
+// ── pw-radar (shared peoplewatching DB) ─────────────────
+// The Radar tab reads the studio's own instrument: pw-radar ingests ~12 feeds
+// daily into the same Supabase project this app's library lives in, and its
+// public read views (climate deviations, editorially reviewed signals, the
+// Google trending capture) are anon-readable with the client we already have.
+
+async function fetchRadarGtrends() {
+  // Google retired the public dailytrends API this tab fetched (404 since
+  // mid-2026); pw-radar captures the surviving trending RSS daily, so the
+  // Google half of Searches reads that capture instead.
+  if (!sb) return { items: [], error: 'shared library client unavailable' };
+  const { data, error } = await sb
+    .from('radar_gtrends_daily')
+    .select('title, url, published_at, approx_traffic, news_source')
+    .order('published_at', { ascending: false })
+    .limit(20);
+  if (error) return { items: [], error: error.message };
+  return {
+    items: (data || []).map((r) => ({
+      title: r.title,
+      traffic: r.approx_traffic ? r.approx_traffic + ' searches' : '',
+      articles: r.url ? [{ url: r.url, source: r.news_source || 'news' }] : [],
+    })),
+  };
+}
+
+async function fetchRadar() {
+  if (!sb) return { error: 'shared library client unavailable' };
+  const [climate, signals, gtrends] = await Promise.all([
+    sb.from('climate_scores_live')
+      .select('scan_run, scope_key, deviation, n, confidence, computed_at')
+      .eq('scope_type', 'domain').eq('window_key', '7d')
+      .order('computed_at', { ascending: false }).limit(40),
+    sb.from('radar_signals_reviewed')
+      .select('title, type, migration_stage, why_now, domain, pressure_system, confidence, first_seen')
+      .limit(20),
+    sb.from('radar_gtrends_daily')
+      .select('title, approx_traffic, published_at')
+      .order('published_at', { ascending: false }).limit(10),
+  ]);
+  return {
+    climate: climate.data || [], climateError: climate.error?.message,
+    signals: signals.data || [], signalsError: signals.error?.message,
+    gtrends: gtrends.data || [],
+  };
+}
+
+function renderRadar(data) {
+  if (data.error) return `<div class="live-pane-empty">${escHtml(data.error)}</div>`;
+  const out = [];
+
+  // Latest run only: rows are ordered by computed_at desc, keep first per domain.
+  const seen = new Set();
+  const domains = [];
+  for (const row of data.climate) {
+    if (seen.has(row.scope_key)) continue;
+    seen.add(row.scope_key);
+    domains.push(row);
+  }
+  domains.sort((a, b) => (b.deviation ?? 0) - (a.deviation ?? 0));
+  if (domains.length) {
+    const run = domains[0].scan_run || '';
+    out.push(`<div class="live-section-label">pw-radar · cultural climate · 7-day deviation vs baseline${run ? ' · run ' + escHtml(run) : ''}</div>`);
+    out.push('<div class="trend-grid">');
+    for (const d of domains) {
+      const dev = Number(d.deviation) || 0;
+      const sign = dev >= 0 ? '+' : '';
+      out.push(`
+        <div class="trend-item">
+          <div class="trend-item-title">${escHtml(d.scope_key)}</div>
+          <div class="trend-item-meta">
+            <span>${sign}${dev.toFixed(2)}σ</span>
+            <span>${d.n ?? 0} items</span>
+            <span>${escHtml(d.confidence || '')}</span>
+          </div>
+        </div>`);
+    }
+    out.push('</div>');
+  } else {
+    out.push(`<div class="live-pane-empty">no climate scores${data.climateError ? ' — ' + escHtml(data.climateError) : ''}</div>`);
+  }
+
+  out.push(`<div class="live-section-label">reviewed signals</div>`);
+  if (data.signals.length) {
+    out.push('<div class="trend-grid">');
+    for (const s of data.signals) {
+      out.push(`
+        <div class="trend-item" data-q="${escHtml('Why is this happening: ' + s.title)}">
+          <div class="trend-item-title">${escHtml(s.title)}</div>
+          <div class="trend-item-meta">
+            ${s.domain ? `<span>${escHtml(s.domain)}</span>` : ''}
+            ${s.migration_stage ? `<span>${escHtml(s.migration_stage)}</span>` : ''}
+            ${s.pressure_system ? `<span>${escHtml(s.pressure_system)}</span>` : ''}
+          </div>
+        </div>`);
+    }
+    out.push('</div>');
+  } else {
+    out.push(`<div class="live-pane-empty">none published yet — drafts are waiting on the editorial gate</div>`);
+  }
+
+  if (data.gtrends.length) {
+    out.push(`<div class="live-section-label">today's captured trending searches</div>`);
+    out.push('<div class="trend-grid">');
+    for (const g of data.gtrends) {
+      out.push(`
+        <div class="trend-item" data-q="${escHtml('Why is ' + g.title + ' trending today?')}">
+          <div class="trend-item-title">${escHtml(g.title)}</div>
+          <div class="trend-item-meta">${g.approx_traffic ? `<span>${escHtml(g.approx_traffic)} searches</span>` : ''}</div>
+        </div>`);
+    }
+    out.push('</div>');
+  }
+  return out.join('');
+}
+
 function renderSearches(gt, rd) {
   const out = [];
   const items = (gt && gt.items) || [];
@@ -4729,7 +4851,7 @@ function renderSearches(gt, rd) {
     return `<div class="live-pane-empty">no results${gt?.error ? ' — ' + escHtml(gt.error) : ''}</div>`;
   }
   if (items.length) {
-    out.push(`<div class="live-section-label">Google Trends · today</div>`);
+    out.push(`<div class="live-section-label">Google Trends · daily capture via pw-radar</div>`);
     out.push(`<div class="trend-grid">`);
     for (const it of items.slice(0, 20)) {
       const firstArticle = (it.articles || [])[0];
