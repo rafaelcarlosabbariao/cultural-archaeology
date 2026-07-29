@@ -209,31 +209,30 @@ html, body {
 .tf-chip[data-cat="science"]   { color: var(--science);  border-color: var(--science); }
 .tf-chip[data-cat="cultural"]  { color: var(--cultural); border-color: var(--cultural); }
 .tf-chip .mt-year { opacity: 0.6; margin-right: 6px; }
-/* Thumbnail specimen pinned to a pill — printed on the parchment, not pasted
-   over it: sepia-leaned and slightly dimmed so 64 photos don't shout over the
-   type. Full color is reserved for the chip you've caught. */
+/* Thumbnail specimen pinned to a pill: large enough to read at a glance,
+   with only a faint warm cast so it sits in the parchment world instead of
+   shouting over it. The caught chip goes fully vivid. */
 .tf-thumb {
   flex: none;
-  width: 26px;
-  height: 26px;
-  margin-left: -4px;
-  border-radius: 3px;
+  width: 42px;
+  height: 42px;
+  margin-left: -6px;
+  border-radius: 4px;
   object-fit: cover;
-  filter: sepia(0.35) saturate(0.7) contrast(0.92);
-  opacity: 0.85;
+  filter: sepia(0.12) saturate(0.95);
 }
 .tf-chip.tf-hot .tf-thumb,
-.tf-chip:focus-visible .tf-thumb { filter: none; opacity: 1; }
+.tf-chip:focus-visible .tf-thumb { filter: none; }
 /* Live Trends cards: same specimen treatment, larger plate. */
-.trend-item.has-thumb { display: flex; align-items: center; gap: 12px; }
+.trend-item.has-thumb { display: flex; align-items: center; gap: 14px; }
 .trend-item.has-thumb .trend-item-body { min-width: 0; flex: 1; }
 .trend-thumb {
   flex: none;
-  width: 44px;
-  height: 44px;
-  border-radius: 4px;
+  width: 68px;
+  height: 68px;
+  border-radius: 5px;
   object-fit: cover;
-  filter: sepia(0.25) saturate(0.8);
+  filter: sepia(0.1) saturate(0.95);
 }
 .trend-item.has-thumb:hover .trend-thumb { filter: none; }
 #landing > #landing-logo,
