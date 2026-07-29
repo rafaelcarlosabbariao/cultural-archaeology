@@ -166,6 +166,9 @@ html, body {
   position: absolute;
   left: 50%;
   top: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-family: var(--font-mono);
   font-size: 12px;
   letter-spacing: 1px;
@@ -206,6 +209,33 @@ html, body {
 .tf-chip[data-cat="science"]   { color: var(--science);  border-color: var(--science); }
 .tf-chip[data-cat="cultural"]  { color: var(--cultural); border-color: var(--cultural); }
 .tf-chip .mt-year { opacity: 0.6; margin-right: 6px; }
+/* Thumbnail specimen pinned to a pill — printed on the parchment, not pasted
+   over it: sepia-leaned and slightly dimmed so 64 photos don't shout over the
+   type. Full color is reserved for the chip you've caught. */
+.tf-thumb {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  margin-left: -4px;
+  border-radius: 3px;
+  object-fit: cover;
+  filter: sepia(0.35) saturate(0.7) contrast(0.92);
+  opacity: 0.85;
+}
+.tf-chip.tf-hot .tf-thumb,
+.tf-chip:focus-visible .tf-thumb { filter: none; opacity: 1; }
+/* Live Trends cards: same specimen treatment, larger plate. */
+.trend-item.has-thumb { display: flex; align-items: center; gap: 12px; }
+.trend-item.has-thumb .trend-item-body { min-width: 0; flex: 1; }
+.trend-thumb {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 4px;
+  object-fit: cover;
+  filter: sepia(0.25) saturate(0.8);
+}
+.trend-item.has-thumb:hover .trend-thumb { filter: none; }
 #landing > #landing-logo,
 #landing > #landing-tagline,
 #landing > #landing-input-wrap,
@@ -4740,7 +4770,7 @@ async function fetchRadarGtrends() {
   if (!sb) return { items: [], error: 'shared library client unavailable' };
   const { data, error } = await sb
     .from('radar_gtrends_daily')
-    .select('title, url, published_at, approx_traffic, news_source')
+    .select('title, url, published_at, approx_traffic, news_source, picture')
     .order('published_at', { ascending: false })
     .limit(20);
   if (error) return { items: [], error: error.message };
@@ -4748,6 +4778,7 @@ async function fetchRadarGtrends() {
     items: (data || []).map((r) => ({
       title: r.title,
       traffic: r.approx_traffic ? r.approx_traffic + ' searches' : '',
+      image: r.picture || null,
       articles: r.url ? [{ url: r.url, source: r.news_source || 'news' }] : [],
     })),
   };
@@ -4764,7 +4795,7 @@ async function fetchRadar() {
       .select('title, type, migration_stage, why_now, domain, pressure_system, confidence, first_seen')
       .limit(20),
     sb.from('radar_gtrends_daily')
-      .select('title, approx_traffic, published_at')
+      .select('title, approx_traffic, published_at, picture')
       .order('published_at', { ascending: false }).limit(10),
   ]);
   return {
@@ -4832,10 +4863,15 @@ function renderRadar(data) {
     out.push(`<div class="live-section-label">today's captured trending searches</div>`);
     out.push('<div class="trend-grid">');
     for (const g of data.gtrends) {
+      const thumb = g.picture
+        ? `<img class="trend-thumb" src="${escHtml(g.picture)}" alt="" loading="lazy" onerror="this.closest('.trend-item').classList.remove('has-thumb'); this.remove()">`
+        : '';
       out.push(`
-        <div class="trend-item" data-q="${escHtml('Why is ' + g.title + ' trending today?')}">
-          <div class="trend-item-title">${escHtml(g.title)}</div>
-          <div class="trend-item-meta">${g.approx_traffic ? `<span>${escHtml(g.approx_traffic)} searches</span>` : ''}</div>
+        <div class="trend-item${thumb ? ' has-thumb' : ''}" data-q="${escHtml('Why is ' + g.title + ' trending today?')}">
+          ${thumb}<div class="trend-item-body">
+            <div class="trend-item-title">${escHtml(g.title)}</div>
+            <div class="trend-item-meta">${g.approx_traffic ? `<span>${escHtml(g.approx_traffic)} searches</span>` : ''}</div>
+          </div>
         </div>`);
     }
     out.push('</div>');
@@ -4858,12 +4894,17 @@ function renderSearches(gt, rd) {
       const articleLink = firstArticle
         ? `<a href="${escHtml(firstArticle.url)}" target="_blank" rel="noopener">${escHtml(firstArticle.source || 'article')}</a>`
         : '';
+      const thumb = it.image
+        ? `<img class="trend-thumb" src="${escHtml(it.image)}" alt="" loading="lazy" onerror="this.closest('.trend-item').classList.remove('has-thumb'); this.remove()">`
+        : '';
       out.push(`
-        <div class="trend-item" data-q="${escHtml('Why is ' + it.title + ' trending today?')}">
-          <div class="trend-item-title">${escHtml(it.title)}</div>
-          <div class="trend-item-meta">
-            ${it.traffic ? `<span>${escHtml(it.traffic)}</span>` : ''}
-            ${articleLink}
+        <div class="trend-item${thumb ? ' has-thumb' : ''}" data-q="${escHtml('Why is ' + it.title + ' trending today?')}">
+          ${thumb}<div class="trend-item-body">
+            <div class="trend-item-title">${escHtml(it.title)}</div>
+            <div class="trend-item-meta">
+              ${it.traffic ? `<span>${escHtml(it.traffic)}</span>` : ''}
+              ${articleLink}
+            </div>
           </div>
         </div>`);
     }
@@ -5352,6 +5393,7 @@ function renderTrendField() {
     node.type = 'button';
     node.className = 'tf-chip';
     node.dataset.cat = t.c;
+    node.dataset.label = t.l;
     node.title = `Excavate: ${t.l}`;
     node.innerHTML = `<span class="mt-year">'${String(t.y).slice(-2)}</span>${escHtml(t.l)}`;
     // Keyboard path: chips are real buttons, so Tab + Enter still works even
@@ -5437,6 +5479,33 @@ function relativeDate(d) {
 }
 
 renderTrendField();
+
+// Thumbnail specimens for the field: harvested Wikipedia lead images keyed by
+// trend term (public.trend_images, scripts/harvest_trend_images.py). Applied
+// after the fetch resolves — chips fly imageless until then, and terms with no
+// honest image simply stay bare. Chip hit-rects re-measure on respawn, so the
+// width added by a thumb corrects itself within one flight cycle.
+const trendThumbs = {};
+async function loadTrendThumbs() {
+  if (!sb) return;
+  try {
+    const { data, error } = await sb.from('trend_images').select('term, thumb_url');
+    if (error || !data) return;
+    data.forEach((r) => { trendThumbs[r.term.toLowerCase()] = r.thumb_url; });
+    document.querySelectorAll('.tf-chip[data-label]').forEach((node) => {
+      const url = trendThumbs[node.dataset.label.toLowerCase()];
+      if (!url || node.querySelector('.tf-thumb')) return;
+      const img = document.createElement('img');
+      img.className = 'tf-thumb';
+      img.src = url;
+      img.alt = '';
+      img.loading = 'lazy';
+      img.addEventListener('error', () => img.remove());
+      node.prepend(img);
+    });
+  } catch (_) { /* thumbs are decoration; the field works without them */ }
+}
+loadTrendThumbs();
 
 // Apply saved theme (default: light)
 setTheme(localStorage.getItem('mcwhy_theme') || 'light');
