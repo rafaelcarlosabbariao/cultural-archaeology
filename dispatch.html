@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>sincewhen — Dispatch</title>
+<title>But Why? — Dispatch</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -11,36 +11,40 @@
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-  --signal: #c85318;
-  --counter: #1a6ea8;
   --font-display: 'Playfair Display', Georgia, serif;
   --font-body: 'EB Garamond', Georgia, 'Times New Roman', serif;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
+/* Light = Stories parchment (Sincewhen Stories standalone palette) */
 [data-theme="light"] {
-  --paper: #F8F5EE;
-  --paper-2: #F0ECE2;
-  --ink: #1A1815;
-  --ink-soft: #3D3933;
-  --muted: #6B665E;
-  --rule: #D9D3C5;
-  --rule-soft: #E8E2D4;
-  --accent: #c85318;
-  --accent-soft: #f4dccc;
-  --shadow: rgba(26, 24, 21, 0.06);
+  --paper: #F0EDE2;
+  --paper-2: #E6E2D2;
+  --ink: #1A1A17;
+  --ink-soft: #2C2C25;
+  --muted: #65645B;
+  --rule: #C8C2AD;
+  --rule-soft: #D4CFB9;
+  --signal: #4F5728;
+  --counter: #1A6EA8;
+  --accent: #4F5728;
+  --accent-soft: rgba(79, 87, 40, 0.12);
+  --shadow: rgba(26, 26, 23, 0.06);
 }
 
+/* Dark = Field Record espresso ground, verdigris accent */
 [data-theme="dark"] {
-  --paper: #14130F;
-  --paper-2: #1C1A16;
-  --ink: #ECE6D8;
-  --ink-soft: #B8B2A4;
-  --muted: #8A857C;
-  --rule: #2A2823;
-  --rule-soft: #1E1C18;
-  --accent: #e87544;
-  --accent-soft: #3a2418;
+  --paper: #1B150D;
+  --paper-2: #241D13;
+  --ink: #F2EEE4;
+  --ink-soft: #B8AC97;
+  --muted: #8A7F6B;
+  --rule: #3A3025;
+  --rule-soft: #2A2218;
+  --signal: #5FA891;
+  --counter: #6E86E0;
+  --accent: #5FA891;
+  --accent-soft: #21362F;
   --shadow: rgba(0, 0, 0, 0.4);
 }
 
@@ -504,7 +508,7 @@ details.method .method-body strong { color: var(--ink); }
 
 <header class="masthead">
   <div class="masthead-left">
-    <span class="wordmark">since<span class="accent">when</span></span>
+    <span class="wordmark">But <span class="accent">Why?</span></span>
     <span class="sep">·</span>
     <span>Dispatch</span>
     <span class="sep">·</span>
@@ -537,7 +541,7 @@ details.method .method-body strong { color: var(--ink); }
       <a href="dispatch.html">← Read another dispatch</a>
     </div>
     <div class="row">
-      <span class="footer-mark">since<span class="accent">when</span> · dispatch</span>
+      <span class="footer-mark">But <span class="accent">Why?</span> · dispatch</span>
       <span style="color: var(--muted)">Cultural archaeology in plain English.</span>
     </div>
   </div>
@@ -865,7 +869,7 @@ function renderMethod(data) {
     <details class="method">
       <summary>Sources & method</summary>
       <div class="method-body">
-        <p><strong>How this dispatch was built.</strong> sincewhen runs a three-move semiotic analysis: <em>decode the sign</em> (what the trend signals), <em>name the code</em> (the rule set producing it), and <em>expose the gap</em> (the distance between what it promises and what the system actually delivers). The gap is the strategic insight; everything else is supporting evidence.</p>
+        <p><strong>How this dispatch was built.</strong> But Why? runs a three-move semiotic analysis: <em>decode the sign</em> (what the trend signals), <em>name the code</em> (the rule set producing it), and <em>expose the gap</em> (the distance between what it promises and what the system actually delivers). The gap is the strategic insight; everything else is supporting evidence.</p>
         <p>The reading is grounded against live data from across the social web — Reddit, YouTube, Bluesky, Google Trends, academic citations — plus the analyst's training. When the live grounding fails, the analysis is labeled accordingly.</p>
         ${detectors ? `<p style="margin-top:18px"><strong>Cultural detectors</strong> — works that saw it before the data did.</p><div class="concept-grid">${detectors}</div>` : ''}
         ${conceptHtml ? `<p style="margin-top:18px"><strong>Key concepts in plain English.</strong></p><div class="concept-grid">${conceptHtml}</div>` : ''}
@@ -909,7 +913,7 @@ function renderArticle(question, entry) {
   });
 
   document.getElementById('masthead-date').textContent = filed;
-  document.title = `${deriveHeadline(question, data)} — sincewhen dispatch`;
+  document.title = `${deriveHeadline(question, data)} — But Why? dispatch`;
   document.getElementById('article-view').classList.remove('hidden');
 }
 
@@ -1051,7 +1055,7 @@ function buildMarkdown(question, entry) {
     if (i.researcher)  lines.push(`- **Researchers:** ${i.researcher}`);
   }
 
-  lines.push('', '---', '', `_From sincewhen — ${window.location.href}_`);
+  lines.push('', '---', '', `_From But Why? — ${window.location.href}_`);
   return lines.join('\n');
 }
 

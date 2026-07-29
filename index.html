@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>sincewhen — Reverse Cultural Simulation Engine</title>
+<title>But Why? — Reverse Cultural Simulation Engine</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
@@ -14,41 +14,54 @@
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-  --signal: #c85318;
-  --counter: #1a6ea8;
-  --science: #7048c0;
-  --social: #c45c1a;
-  --economic: #EF9F27;
-  --platform: #1a6ea8;
-  --cultural: #1D9E75;
-  --counter-node: #888780;
-  --gap: #b23a48;
   --font-display: 'Playfair Display', Georgia, serif;
   --font-mono: 'DM Mono', 'Courier New', monospace;
 }
 
+/* Light = Stories parchment (Sincewhen Stories standalone palette) */
 [data-theme="light"] {
-  --bg: #FAFAF8;
-  --text: #1A1815;
-  --text-dim: #6B665E;
-  --surface: #F0EDE8;
-  --surface-2: #E8E4DE;
-  --border: #D9D3CB;
-  --edge-color: rgba(0,0,0,0.2);
-  --edge-hover: rgba(0,0,0,0.45);
-  --node-stroke: #FAFAF8;
+  --bg: #F0EDE2;
+  --text: #1A1A17;
+  --text-dim: #65645B;
+  --surface: #E6E2D2;
+  --surface-2: #DCD7C2;
+  --border: #C8C2AD;
+  --edge-color: rgba(26,26,23,0.22);
+  --edge-hover: rgba(26,26,23,0.5);
+  --node-stroke: #F0EDE2;
+  --signal: #4F5728;
+  --signal-soft: rgba(79,87,40,0.10);
+  --counter: #1A6EA8;
+  --science: #7048C0;
+  --social: #C45C1A;
+  --economic: #C49A12;
+  --platform: #1A6EA8;
+  --cultural: #1D9E75;
+  --counter-node: #8A8578;
+  --gap: #B23A48;
 }
 
+/* Dark = Field Record espresso ground, verdigris accent */
 [data-theme="dark"] {
-  --bg: #0a0908;
-  --text: #ede8df;
-  --text-dim: #8a8578;
-  --surface: #161412;
-  --surface-2: #1e1b18;
-  --border: #2a2520;
-  --edge-color: rgba(255,255,255,0.18);
-  --edge-hover: rgba(255,255,255,0.4);
-  --node-stroke: #0a0908;
+  --bg: #1B150D;
+  --text: #F2EEE4;
+  --text-dim: #B8AC97;
+  --surface: #241D13;
+  --surface-2: #2B2318;
+  --border: #3A3025;
+  --edge-color: rgba(242,238,228,0.18);
+  --edge-hover: rgba(242,238,228,0.4);
+  --node-stroke: #1B150D;
+  --signal: #5FA891;
+  --signal-soft: rgba(95,168,145,0.12);
+  --counter: #6E86E0;
+  --science: #9B7EE0;
+  --social: #D96A48;
+  --economic: #D9A94E;
+  --platform: #6E86E0;
+  --cultural: #2E9C74;
+  --counter-node: #8A7F6B;
+  --gap: #D97781;
 }
 
 html, body {
@@ -120,7 +133,7 @@ html, body {
 
 #landing-input:focus {
   border-color: var(--signal);
-  box-shadow: 0 0 0 3px rgba(200, 83, 24, 0.1);
+  box-shadow: 0 0 0 3px var(--signal-soft);
 }
 
 #landing-input::placeholder { color: var(--text-dim); }
@@ -132,154 +145,73 @@ html, body {
   text-align: center;
 }
 
-#landing-discover {
-  width: 100%;
-  max-width: 880px;
-  margin-top: 48px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-}
-.landing-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  min-width: 0;
-}
-.landing-panel-head {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  color: var(--text-dim);
-  padding-bottom: 6px;
-  border-bottom: 1px solid var(--border);
-}
-.landing-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  max-height: 280px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-}
-.landing-list::-webkit-scrollbar { width: 4px; }
-.landing-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-.landing-row {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.12s, color 0.12s;
-  font-family: var(--font-mono);
-}
-.landing-row:hover { background: var(--surface); }
-.landing-row-title {
-  flex: 1;
-  min-width: 0;
-  font-size: 13px;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.landing-row-meta {
-  font-size: 10px;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  flex-shrink: 0;
-}
-.landing-row-kind {
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 1.2px;
-  padding: 2px 6px;
-  border-radius: 3px;
-  border: 1px solid var(--signal);
-  color: var(--signal);
-  flex-shrink: 0;
-}
-.landing-row-kind[data-kind="historical"] { border-color: var(--platform); color: var(--platform); }
-.landing-row-kind[data-kind="question"]   { border-color: var(--science);  color: var(--science); }
-.landing-empty {
-  font-size: 12px;
-  color: var(--text-dim);
-  font-style: italic;
-  padding: 6px 10px;
-}
-.landing-note {
-  padding: 4px 10px 8px;
-  opacity: 0.7;
-  border-bottom: 1px dashed var(--border);
-  margin-bottom: 4px;
-}
-
-/* ── Pop-culture trends mosaic (landing background) ── */
-#landing-mosaic {
+/* ── 3D trend field (landing background) ─────────────────────
+   Pop-culture trend chips fly out of the deep toward the viewer,
+   as if the archive is streaming past while you move forward.
+   Chips are real buttons — catch one to excavate it. */
+#landing-trendfield {
   position: absolute;
   inset: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  grid-auto-rows: 34px;
-  gap: 6px;
-  padding: 18px;
-  pointer-events: none;
   z-index: 0;
   overflow: hidden;
-  mask-image: radial-gradient(ellipse 70% 55% at center, transparent 0%, transparent 28%, rgba(0,0,0,0.9) 70%, #000 100%);
-  -webkit-mask-image: radial-gradient(ellipse 70% 55% at center, transparent 0%, transparent 28%, rgba(0,0,0,0.9) 70%, #000 100%);
+  perspective: 900px;
+  perspective-origin: 50% 50%;
+  pointer-events: none;
+  /* Keep the hero zone quiet: the deep center fades out, chips surface as
+     they radiate past the wordmark. */
+  mask-image: radial-gradient(ellipse 62% 52% at center, transparent 0%, transparent 16%, rgba(0,0,0,0.85) 52%, #000 82%);
+  -webkit-mask-image: radial-gradient(ellipse 62% 52% at center, transparent 0%, transparent 16%, rgba(0,0,0,0.85) 52%, #000 82%);
 }
-.mosaic-tile {
+.tf-chip {
+  position: absolute;
+  left: 50%;
+  top: 50%;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 1px;
   text-transform: uppercase;
-  padding: 6px 8px;
+  padding: 7px 12px;
   border: 1px solid var(--border);
-  border-radius: 3px;
+  border-radius: 4px;
   color: var(--text-dim);
-  background: transparent;
+  background: color-mix(in srgb, var(--bg) 76%, transparent);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  opacity: 0.12;
-  animation: mosaic-pulse 18s ease-in-out infinite;
+  /* All mouse interaction is hit-tested per frame in JS against the chip's
+     projected rect — DOM hover can't track a target moving under a still
+     cursor. Chips stay real buttons for keyboard focus. */
+  pointer-events: none;
+  will-change: transform, opacity;
+  transition: background 0.12s, box-shadow 0.12s;
 }
-.mosaic-tile[data-cat="signal"]    { color: var(--signal);   border-color: var(--signal); }
-.mosaic-tile[data-cat="counter"]   { color: var(--counter);  border-color: var(--counter); }
-.mosaic-tile[data-cat="platform"]  { color: var(--platform); border-color: var(--platform); }
-.mosaic-tile[data-cat="science"]   { color: var(--science);  border-color: var(--science); }
-.mosaic-tile[data-cat="cultural"]  { color: var(--cultural); border-color: var(--cultural); }
-.mosaic-tile .mt-year { opacity: 0.6; margin-right: 6px; }
-@keyframes mosaic-pulse {
-  0%, 100% { opacity: 0.08; }
-  50%      { opacity: 0.22; }
+.tf-chip.tf-hot,
+.tf-chip:focus-visible {
+  background: var(--surface);
+  box-shadow: 0 0 0 1.5px currentColor, 0 6px 24px -8px currentColor;
 }
-@media (prefers-reduced-motion: reduce) {
-  .mosaic-tile { animation: none; opacity: 0.12; }
+/* Catching a chip swaps the cursor for the brand question mark — the same
+   green as the wordmark in each theme, haloed in the ground color so it
+   stays legible over chips. (Cursors are static images, so one per theme.)
+   The .tf-chip rule covers the reduced-motion static field's native hover. */
+[data-theme="light"] #landing.tf-catch,
+[data-theme="light"] .tf-chip {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28"><path d="M9.5 10.5a4.5 4.5 0 1 1 6.4 4.1c-1.6.8-1.9 1.5-1.9 3.1" fill="none" stroke="%23F0EDE2" stroke-width="6.5" stroke-linecap="round"/><circle cx="14" cy="21.8" r="1.8" fill="%234F5728" stroke="%23F0EDE2" stroke-width="3.4" paint-order="stroke"/><path d="M9.5 10.5a4.5 4.5 0 1 1 6.4 4.1c-1.6.8-1.9 1.5-1.9 3.1" fill="none" stroke="%234F5728" stroke-width="2.6" stroke-linecap="round"/></svg>') 14 14, pointer;
 }
+[data-theme="dark"] #landing.tf-catch,
+[data-theme="dark"] .tf-chip {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28"><path d="M9.5 10.5a4.5 4.5 0 1 1 6.4 4.1c-1.6.8-1.9 1.5-1.9 3.1" fill="none" stroke="%231B150D" stroke-width="6.5" stroke-linecap="round"/><circle cx="14" cy="21.8" r="1.8" fill="%235FA891" stroke="%231B150D" stroke-width="3.4" paint-order="stroke"/><path d="M9.5 10.5a4.5 4.5 0 1 1 6.4 4.1c-1.6.8-1.9 1.5-1.9 3.1" fill="none" stroke="%235FA891" stroke-width="2.6" stroke-linecap="round"/></svg>') 14 14, pointer;
+}
+.tf-chip[data-cat="signal"]    { color: var(--signal);   border-color: var(--signal); }
+.tf-chip[data-cat="counter"]   { color: var(--counter);  border-color: var(--counter); }
+.tf-chip[data-cat="platform"]  { color: var(--platform); border-color: var(--platform); }
+.tf-chip[data-cat="science"]   { color: var(--science);  border-color: var(--science); }
+.tf-chip[data-cat="cultural"]  { color: var(--cultural); border-color: var(--cultural); }
+.tf-chip .mt-year { opacity: 0.6; margin-right: 6px; }
 #landing > #landing-logo,
 #landing > #landing-tagline,
 #landing > #landing-input-wrap,
-#landing > #landing-hint,
-#landing > #landing-discover,
-#landing > #landing-controls {
+#landing > #landing-hint {
   position: relative;
   z-index: 2;
-}
-#landing-discover .landing-panel {
-  background: color-mix(in srgb, var(--bg) 82%, transparent);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  border-radius: 6px;
-  padding: 10px 12px;
-}
-@media (max-width: 720px) {
-  #landing-discover { grid-template-columns: 1fr; max-width: 420px; gap: 20px; margin-top: 32px; }
-  .landing-list { max-height: 180px; }
 }
 
 
@@ -289,6 +221,7 @@ html, body {
   right: 20px;
   display: flex;
   gap: 8px;
+  z-index: 2;
 }
 
 #landing-controls button {
@@ -1893,24 +1826,13 @@ html, body {
 
 <!-- ═══ LANDING SCREEN ═══ -->
 <div id="landing">
-  <div id="landing-mosaic" aria-hidden="true"></div>
-  <div id="landing-logo">sincewhen</div>
+  <div id="landing-trendfield"></div>
+  <div id="landing-logo">But Why?</div>
   <div id="landing-tagline">Cultural archaeology. Trace any trend back to its origin.</div>
   <div id="landing-input-wrap">
     <input id="landing-input" type="text" placeholder="Why is aura-farming everywhere?" autocomplete="off">
   </div>
-  <div id="landing-hint">Press Enter to begin excavation</div>
-
-  <div id="landing-discover">
-    <div class="landing-panel">
-      <div class="landing-panel-head">Recent searches</div>
-      <div id="landing-history" class="landing-list"><div class="landing-empty">loading…</div></div>
-    </div>
-    <div class="landing-panel">
-      <div class="landing-panel-head">Try a simulation</div>
-      <div id="landing-trends" class="landing-list"></div>
-    </div>
-  </div>
+  <div id="landing-hint">Press Enter to begin excavation &mdash; or catch a trend as it flies past</div>
 
   <div id="landing-controls">
     <button id="landing-theme-btn" title="Toggle light/dark mode">&#x263D;</button>
@@ -1923,7 +1845,7 @@ html, body {
 
 <!-- ═══ TOP BAR ═══ -->
 <div id="top-bar">
-  <div id="logo">sincewhen</div>
+  <div id="logo">But Why?</div>
   <button id="new-search-btn" title="Start new search">+ New search</button>
   <div id="input-wrap">
     <input id="signal-input" type="text" placeholder="Why is aura-farming everywhere?" autocomplete="off">
@@ -2369,7 +2291,7 @@ async function braveSearch(signal) {
 // ══════════════════════════════════════════════
 // CLAUDE API — SYSTEM PROMPT
 // ══════════════════════════════════════════════
-const SYSTEM_PROMPT = `You are sincewhen — a reverse cultural simulation engine. You perform cultural archaeology: given a natural language question about a cultural trend, behavior, or shift, you trace it backward through time to explain when it appeared, how it spread, why it moved the way it did, and what socioeconomic conditions made the ground fertile.
+const SYSTEM_PROMPT = `You are "But Why?" — a reverse cultural simulation engine. You perform cultural archaeology: given a natural language question about a cultural trend, behavior, or shift, you trace it backward through time to explain when it appeared, how it spread, why it moved the way it did, and what socioeconomic conditions made the ground fertile.
 
 THE SEMIOTIC METHOD — NON-NEGOTIABLE THREE MOVES
 
@@ -2545,7 +2467,7 @@ IMPORTANT:
 - Include at least 5 event_log entries at different time positions
 - Include at least 5 related_terms
 - Both counter_signal.within_frame.strength_pct and counter_signal.exit.strength_pct should be 0-100
-- pull_quote must express the gap_reframe, not sympathize with the phenomenon. Adversarial posture to the sign is the sincewhen voice. A sympathetic pull quote means move three was not completed
+- pull_quote must express the gap_reframe, not sympathize with the phenomenon. Adversarial posture to the sign is the But Why? voice. A sympathetic pull quote means move three was not completed
 - implications is required. All three audiences (strategist, creator, researcher) get one paragraph each, written as a directive — what to DO with this insight. The strategist paragraph must point at a positioning move grounded in the gap_reframe, not paraphrase the gap. The creator paragraph must commit to either the within-frame backlash or the exit move as the more interesting bet for durable audience, with reasoning. The researcher paragraph must name a single leading indicator to watch — a specific behavior, signal, or population whose movement will mark the next phase
 - semiotic_stages MUST have exactly 6 entries in order: seed, subculture, crossover, mainstream, parody, revival. Each entry needs signifier (the observable form), signified (what it denotes at that stage), and myth (the connotation that hardens — use "—" only for the seed stage where no myth has accreted yet). The signs MUST MUTATE across stages; copying the same signifier across rows is a bug.
 - opposition_axes MUST have 3–4 entries. Each "values" array is exactly 6 numbers in [-1, 1], one per stage, representing Saussurean drift. Pick axes specific to the phenomenon (not generic filler). The values should tell a story: something meaningful happens between seed and revival.
@@ -4622,7 +4544,7 @@ document.getElementById('graph-export').addEventListener('click', () => {
     canvas.toBlob((pngBlob) => {
       const a = document.createElement('a');
       a.href = URL.createObjectURL(pngBlob);
-      a.download = `sincewhen-graph-${Date.now()}.png`;
+      a.download = `butwhy-graph-${Date.now()}.png`;
       a.click();
       URL.revokeObjectURL(a.href);
     }, 'image/png');
@@ -4683,7 +4605,6 @@ document.getElementById('new-search-btn').addEventListener('click', () => {
   state.data = null;
   state.scrubber = 0;
   state.ungrounded = false;
-  renderLandingHistory();
 });
 
 document.getElementById('landing-settings-btn').addEventListener('click', () => {
@@ -5159,18 +5080,11 @@ document.getElementById('library-overlay').addEventListener('click', (e) => {
 // INIT
 // ══════════════════════════════════════════════
 // ══════════════════════════════════════════════
-// LANDING DISCOVER — recent searches + canon sim trends
+// LANDING TREND FIELD — the archive streaming past
 // ══════════════════════════════════════════════
-const LANDING_CANON = [
-  { id: 'mob-wife',      name: 'Mob wife aesthetic',                 kind: 'current'    },
-  { id: 'skinny-jeans',  name: 'Skinny jeans (2005–2020)',           kind: 'historical' },
-  { id: 'raw-milk',      name: 'Raw milk',                           kind: 'current'    },
-  { id: 'cringe-weapon', name: 'Why did "cringe" become a weapon?',  kind: 'question'   },
-];
-
 // Curated archive of pop-culture trends (decade • label • category) for the
-// landing-page mosaic. Purely decorative — an "archive wall" behind the hero.
-// Categories map to existing palette tokens so the wall also reads as a legend:
+// landing-page 3D field. Every chip is selectable — clicking one excavates it.
+// Categories map to existing palette tokens so the field also reads as a legend:
 //   signal=fashion/aesthetic, counter=slang/language,
 //   platform=meme/format, science=consumption/tech, cultural=moment/movement
 const POP_TRENDS = [
@@ -5240,32 +5154,145 @@ const POP_TRENDS = [
   { y: 2025, l: 'Clean Girl',      c: 'signal'   },
 ];
 
-function renderLandingMosaic() {
-  const el = document.getElementById('landing-mosaic');
-  if (!el) return;
-  const shuffled = POP_TRENDS.slice().sort(() => Math.random() - 0.5);
-  el.innerHTML = shuffled.map((t, i) => {
-    const delay = ((i * 0.37) % 18).toFixed(2);
-    const yy = String(t.y).slice(-2);
-    return `<div class="mosaic-tile" data-cat="${t.c}" style="animation-delay:-${delay}s">
-      <span class="mt-year">'${yy}</span>${escHtml(t.l)}
-    </div>`;
-  }).join('');
-}
+function renderTrendField() {
+  const field = document.getElementById('landing-trendfield');
+  if (!field) return;
+  const landing = document.getElementById('landing');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-function renderLandingTrends() {
-  const el = document.getElementById('landing-trends');
-  el.innerHTML = LANDING_CANON.map((tr) => `
-    <div class="landing-row" data-trend-id="${tr.id}" data-trend-name="${escHtml(tr.name)}">
-      <span class="landing-row-title">${escHtml(tr.name)}</span>
-      <span class="landing-row-kind" data-kind="${tr.kind}">${tr.kind}</span>
-    </div>
-  `).join('');
-  el.querySelectorAll('.landing-row').forEach((row) => {
-    row.addEventListener('click', () => {
-      openSimulationForTrend(row.dataset.trendId, row.dataset.trendName);
-    });
+  const PERSP = 900;   // must match #landing-trendfield's CSS perspective
+  const DEPTH = 2800;  // spawn distance (px behind the screen plane)
+  const NEAR  = 220;   // z at which a chip has flown past the camera
+  const PAD   = 6;     // hit-test forgiveness ring (screen px)
+
+  // Spawn on an elliptical annulus around the center so chip paths radiate
+  // outward past the hero instead of plowing straight through the wordmark.
+  function respawn(c, z) {
+    const w = field.clientWidth  || window.innerWidth;
+    const h = field.clientHeight || window.innerHeight;
+    const a = Math.random() * Math.PI * 2;
+    c.x = Math.cos(a) * (0.18 + Math.random() * 0.42) * w;
+    c.y = Math.sin(a) * (0.16 + Math.random() * 0.40) * h;
+    c.z = (z !== undefined) ? z : -DEPTH;
+    // Re-measure on respawn so late webfont swaps can't stale the hit rect.
+    c.w = c.node.offsetWidth  || c.w;
+    c.h = c.node.offsetHeight || c.h;
+  }
+
+  // ── Pixel-perfect hover ──────────────────────────────────────
+  // CSS :hover can't track a moving target: browsers only re-evaluate hover
+  // on pointer events, so a chip drifting under a stationary cursor never
+  // lights up (and mouseover/mouseout never fire). Instead the pointer is
+  // hit-tested every frame against each chip's *projected* screen rect,
+  // computed with the same perspective math the compositor uses to draw it:
+  // screen = plane · s, size = box · s, where s = PERSP / (PERSP - z).
+  // Highlight, slowdown, and click all resolve from this one picked chip,
+  // so what you see lit is — by construction — exactly what you catch.
+  let mx = null, my = null;   // pointer, relative to field center
+  let hot = null;             // chip currently under the pointer
+
+  function projectedHit(c) {
+    if (!c.catchable || mx === null) return false;
+    const s = PERSP / (PERSP - c.z);
+    return Math.abs(mx - c.x * s) <= (c.w * s) / 2 + PAD
+        && Math.abs(my - c.y * s) <= (c.h * s) / 2 + PAD;
+  }
+
+  function pick() {
+    let best = null;
+    for (const c of chips) {
+      if (projectedHit(c) && (!best || c.z > best.z)) best = c;  // nearest wins
+    }
+    return best;
+  }
+
+  function paint(c, dt) {
+    const s = PERSP / (PERSP - c.z);
+    const fadeIn  = Math.min(1, (c.z + DEPTH) / (DEPTH * 0.25));
+    const fadeOut = c.z > 60 ? Math.max(0, 1 - (c.z - 60) / (NEAR - 60)) : 1;
+    // Catchable = has arrived, hasn't blown past, and isn't projected over
+    // the hero, where the container mask has faded it out anyway.
+    const overHero = Math.abs(c.x * s) < 340 && Math.abs(c.y * s) < 230;
+    c.catchable = !overHero && c.z > -1400 && fadeOut > 0.4;
+    // The caught chip eases up to a slight pop; released chips ease back.
+    c.pop += ((c === hot ? 1.08 : 1) - c.pop) * Math.min(1, (dt || 1) * 12);
+    c.node.style.transform =
+      `translate(-50%,-50%) translate3d(${c.x}px, ${c.y}px, ${c.z}px) scale(${c.pop.toFixed(4)})`;
+    c.node.style.opacity = (c === hot) ? '1' : (0.9 * fadeIn * fadeOut).toFixed(3);
+    c.node.style.zIndex = Math.round(c.z + DEPTH);  // nearer chips paint on top
+  }
+
+  const chips = POP_TRENDS.map((t) => {
+    const node = document.createElement('button');
+    node.type = 'button';
+    node.className = 'tf-chip';
+    node.dataset.cat = t.c;
+    node.title = `Excavate: ${t.l}`;
+    node.innerHTML = `<span class="mt-year">'${String(t.y).slice(-2)}</span>${escHtml(t.l)}`;
+    // Keyboard path: chips are real buttons, so Tab + Enter still works even
+    // though all mouse interaction goes through the per-frame hit-test.
+    node.addEventListener('click', () => openSimulationForTrend(null, t.l));
+    field.appendChild(node);
+    const c = { node, trend: t, x: 0, y: 0, z: 0, w: 120, h: 32,
+                v: 0.75 + Math.random() * 0.5, pop: 1, catchable: false };
+    respawn(c, -Math.random() * DEPTH);  // stagger initial depths
+    paint(c);                            // position immediately, before any frame fires
+    return c;
   });
+
+  if (reduced) {
+    // Static constellation — no motion, so native DOM hover is reliable here.
+    chips.forEach((c) => {
+      c.node.style.transform = `translate(-50%,-50%) translate3d(${c.x}px, ${c.y}px, ${Math.max(c.z, -900)}px)`;
+      c.node.style.opacity = '0.55';
+      c.node.style.pointerEvents = 'auto';
+      c.node.addEventListener('mouseenter', () => c.node.classList.add('tf-hot'));
+      c.node.addEventListener('mouseleave', () => c.node.classList.remove('tf-hot'));
+    });
+    return;
+  }
+
+  landing.addEventListener('pointermove', (e) => {
+    const r = field.getBoundingClientRect();
+    mx = e.clientX - (r.left + r.width / 2);
+    my = e.clientY - (r.top + r.height / 2);
+  });
+  landing.addEventListener('pointerleave', () => { mx = my = null; });
+
+  // Click resolves against the same picked chip that drives the highlight.
+  // Real controls sit at z-index 2 above the field and keep their own clicks.
+  landing.addEventListener('click', (e) => {
+    if (!hot || landing.classList.contains('hidden')) return;
+    if (e.target.closest('#landing-input-wrap, #landing-controls, #landing-logo, #landing-tagline, #landing-hint')) return;
+    openSimulationForTrend(null, hot.trend.l);
+  });
+
+  const SPEED = 150;  // px/s toward the viewer
+  let mult = 1;
+  let last = performance.now();
+  function tick(now) {
+    const dt = Math.min((now - last) / 1000, 0.1);
+    last = now;
+    if (!landing.classList.contains('hidden')) {
+      // Ease the whole field toward slow-motion while a chip is caught…
+      mult += ((hot ? 0.08 : 1) - mult) * Math.min(1, dt * 6);
+      for (const c of chips) {
+        // …and hold the caught chip itself almost still.
+        c.z += SPEED * c.v * mult * (c === hot ? 0.1 : 1) * dt;
+        if (c.z > NEAR) { if (c === hot) hot = null; respawn(c); }
+        paint(c, dt);
+      }
+      const next = pick();
+      if (next !== hot) {
+        if (hot) hot.node.classList.remove('tf-hot');
+        if (next) next.node.classList.add('tf-hot');
+        hot = next;
+        landing.classList.toggle('tf-catch', !!hot);
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
 }
 
 function openSimulationForTrend(trendId, trendName) {
@@ -5273,86 +5300,6 @@ function openSimulationForTrend(trendId, trendName) {
   document.getElementById('app').classList.add('active');
   setMode('simulation');
   submitQuery(trendName);
-}
-
-function paintHistoryRows(el, rows, note) {
-  if (!rows.length) {
-    el.innerHTML = `<div class="landing-empty">${escHtml(note || 'no past searches yet')}</div>`;
-    return;
-  }
-  const noteHtml = note
-    ? `<div class="landing-empty landing-note">${escHtml(note)}</div>`
-    : '';
-  el.innerHTML = noteHtml + rows.map((r) => {
-    const rel = relativeDate(new Date(r.created_at));
-    const idAttr = r.id == null ? '' : String(r.id);
-    return `
-      <div class="landing-row" data-id="${escHtml(idAttr)}" data-q="${escHtml(r.question)}">
-        <span class="landing-row-title">${escHtml(r.question)}</span>
-        <span class="landing-row-meta">${rel}</span>
-      </div>`;
-  }).join('');
-  el.querySelectorAll('.landing-row').forEach((row) => {
-    row.addEventListener('click', () => rehydrateFromLibrary(row.dataset.id, row.dataset.q));
-  });
-}
-
-function mergeHistoryRows(remote, local) {
-  const seen = new Set();
-  const out = [];
-  const push = (r) => {
-    const key = r.question;
-    if (seen.has(key)) return;
-    seen.add(key);
-    out.push(r);
-  };
-  (remote || []).forEach(push);
-  (local || []).forEach(push);
-  out.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-  return out.slice(0, 8);
-}
-
-async function renderLandingHistory() {
-  const el = document.getElementById('landing-history');
-  const cached = readRecentCache();
-
-  // Paint from cache first so the panel never sits on "loading…".
-  paintHistoryRows(el, cached.slice(0, 8));
-
-  if (!sb) {
-    if (!cached.length) {
-      paintHistoryRows(el, [], 'history unavailable — Supabase not configured');
-    }
-    return;
-  }
-
-  try {
-    const { data, error } = await sb
-      .from('cultural_events')
-      .select('id, question, signal_type, created_at')
-      .order('created_at', { ascending: false })
-      .limit(8);
-    if (error) throw error;
-    const merged = mergeHistoryRows(data, cached);
-    if (!merged.length) {
-      paintHistoryRows(el, [], 'no past searches yet');
-      return;
-    }
-    paintHistoryRows(el, merged);
-  } catch (err) {
-    console.warn('[mcwhy] recent searches load failed:', err);
-    const msg = String(err?.message || err || '');
-    const code = err?.code;
-    let note;
-    if (code === '42501' || /permission denied|row[- ]level security|rls/i.test(msg)) {
-      note = 'history permissions — showing local cache';
-    } else if (/failed to fetch|network|NetworkError/i.test(msg)) {
-      note = 'offline — showing local cache';
-    } else {
-      note = `history unavailable (${msg.slice(0, 60)}) — showing local cache`;
-    }
-    paintHistoryRows(el, cached.slice(0, 8), cached.length ? note : note.replace(' — showing local cache', ''));
-  }
 }
 
 function relativeDate(d) {
@@ -5364,9 +5311,7 @@ function relativeDate(d) {
   return d.toLocaleDateString();
 }
 
-renderLandingMosaic();
-renderLandingTrends();
-renderLandingHistory();
+renderTrendField();
 
 // Apply saved theme (default: light)
 setTheme(localStorage.getItem('mcwhy_theme') || 'light');
