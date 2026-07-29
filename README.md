@@ -105,6 +105,7 @@ docs/                      plans, media
 - The CA spread simulation is **illustrative, not predictive** — it visualizes a plausible diffusion regime, it does not forecast.
 - Analyses are LLM-generated cultural interpretation grounded in live evidence where available; where evidence calls fail, the report says so rather than pretending.
 - Library writes require the Supabase RLS policies in `supabase/`; without them the app falls back to local-only history.
+- Since 2026-07-29 the library lives in the shared peoplewatching production Supabase project (the same database pw-radar writes to), not a standalone one. The migrations in `supabase/` were re-applied there verbatim; the old project is retired.
 
 ## License
 

@@ -2114,8 +2114,11 @@ function writeRecentCache(entry) {
 }
 
 // ── Supabase (Phase 2 CulturalEvent store) ──────────────
-const SUPABASE_URL = 'https://qqakimheqsqomeftdekm.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFxYWtpbWhlcXNxb21lZnRkZWttIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNjk5MDgsImV4cCI6MjA5MDc0NTkwOH0.nZ5OH5LXDixoyo9X4tjOfxsjLZMd7-c0dt_tpaRQ88c';
+// Consolidated 2026-07-29 into the shared peoplewatching production project
+// (same DB as pw-radar's radar.* schema); the old standalone project
+// qqakimheqsqomeftdekm is retired. Key is publishable/anon scope.
+const SUPABASE_URL = 'https://ylqrjtdgcmpuddzforpn.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_UGQkm-f3QQsA__xMSo0BfA_4VRsz7AR';
 const sb = (window.supabase && window.supabase.createClient)
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
