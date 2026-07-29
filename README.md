@@ -4,6 +4,8 @@
 
 > Formerly `sincewhen`, formerly `McWhy`. The name is the question the engine answers.
 
+**Live:** [butwhy-app.netlify.app](https://butwhy-app.netlify.app)
+
 ![But Why? landing — the trend archive streaming past in 3D](docs/media/landing-dark.jpg)
 
 ## The method
