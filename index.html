@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>But Why? — Reverse Cultural Simulation Engine</title>
+<title>WhatTheFad? — Reverse Cultural Simulation Engine</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
@@ -1819,7 +1819,15 @@ html, body {
 #error-msg {
   color: #e85a4f;
   font-size: 13px;
-  max-width: 400px;
+  max-width: 680px;
+  /* Diagnostics arrive multi-line with a marked-up JSON window. Centering and
+     collapsing whitespace made them unreadable, so this box keeps its own
+     alignment and scrolls rather than pushing the layout around. */
+  text-align: left;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 40vh;
+  overflow-y: auto;
 }
 
 #report-content { display: none; }
@@ -1856,7 +1864,7 @@ html, body {
 <!-- ═══ LANDING SCREEN ═══ -->
 <div id="landing">
   <div id="landing-trendfield"></div>
-  <div id="landing-logo">But Why?</div>
+  <div id="landing-logo">WhatTheFad?</div>
   <div id="landing-tagline">Cultural archaeology. Trace any trend back to its origin.</div>
   <div id="landing-input-wrap">
     <input id="landing-input" type="text" placeholder="Why is aura-farming everywhere?" autocomplete="off">
@@ -1874,7 +1882,7 @@ html, body {
 
 <!-- ═══ TOP BAR ═══ -->
 <div id="top-bar">
-  <div id="logo">But Why?</div>
+  <div id="logo">WhatTheFad?</div>
   <button id="new-search-btn" title="Start new search">+ New search</button>
   <div id="input-wrap">
     <input id="signal-input" type="text" placeholder="Why is aura-farming everywhere?" autocomplete="off">
@@ -2114,12 +2122,42 @@ const state = {
 // ══════════════════════════════════════════════
 // SETTINGS / STORAGE
 // ══════════════════════════════════════════════
-function getKey(name) { return localStorage.getItem('mcwhy_' + name) || ''; }
-function setKey(name, val) { localStorage.setItem('mcwhy_' + name, val); }
+
+// The storage prefix moved to `whatthefad_` with the rename; it had been `mcwhy_`
+// since the McWhy era, through two rebrands. Copy anything still under the old
+// prefix so existing visitors keep their API keys, saved analyses, and theme
+// instead of arriving at an empty app. One-way copy, never deletes, safe to run
+// on every load. Must execute before the first read of any key below.
+(function migrateStoragePrefix() {
+  // Built from parts so a future bulk rename pass can't silently collapse
+  // OLD into NEW and turn this migration into a no-op. It already happened once.
+  const OLD = 'mc' + 'why_', NEW = 'whatthefad_';
+  try {
+    // Collect first: writing new keys while walking by index reorders the store.
+    const stale = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(OLD)) stale.push(k);
+    }
+    for (const oldKey of stale) {
+      const newKey = NEW + oldKey.slice(OLD.length);
+      if (localStorage.getItem(newKey) === null) {
+        localStorage.setItem(newKey, localStorage.getItem(oldKey));
+      }
+    }
+  } catch (e) {
+    // Storage disabled or over quota — fall through to defaults rather than
+    // breaking boot. Worst case the visitor re-enters their key.
+    console.warn('[whatthefad] storage migration skipped:', e.message || e);
+  }
+})();
+
+function getKey(name) { return localStorage.getItem('whatthefad_' + name) || ''; }
+function setKey(name, val) { localStorage.setItem('whatthefad_' + name, val); }
 
 // Local cache of Recent Searches so the landing page always has something to
 // render even when Supabase is unreachable or RLS is blocking the anon read.
-const RECENT_CACHE_KEY = 'mcwhy_recent_searches';
+const RECENT_CACHE_KEY = 'whatthefad_recent_searches';
 const RECENT_CACHE_MAX = 20;
 function readRecentCache() {
   try {
@@ -2190,15 +2228,15 @@ async function persistCulturalEvent(question, data, trendsSeries) {
     if (error) throw error;
     return { id: inserted.id };
   } catch (err) {
-    console.warn('[mcwhy] supabase insert failed:', err.message || err);
+    console.warn('[whatthefad] supabase insert failed:', err.message || err);
     return { error: String(err.message || err) };
   }
 }
 
 function saveAnalysis(question, data) {
-  const analyses = JSON.parse(localStorage.getItem('mcwhy_analyses') || '{}');
+  const analyses = JSON.parse(localStorage.getItem('whatthefad_analyses') || '{}');
   analyses[question] = { data, timestamp: Date.now() };
-  localStorage.setItem('mcwhy_analyses', JSON.stringify(analyses));
+  localStorage.setItem('whatthefad_analyses', JSON.stringify(analyses));
   refreshMemoryList();
   // Populate Recent Searches cache immediately so the landing page reflects
   // the new search even if Supabase is unreachable.
@@ -2210,7 +2248,7 @@ function saveAnalysis(question, data) {
   // Fire-and-forget Supabase persistence; localStorage is the offline fallback.
   persistCulturalEvent(question, data).then((res) => {
     if (res?.id) {
-      console.log('[mcwhy] saved to Supabase as event #' + res.id);
+      console.log('[whatthefad] saved to Supabase as event #' + res.id);
       writeRecentCache({
         id: res.id,
         question,
@@ -2222,7 +2260,7 @@ function saveAnalysis(question, data) {
 }
 
 function getAnalyses() {
-  return JSON.parse(localStorage.getItem('mcwhy_analyses') || '{}');
+  return JSON.parse(localStorage.getItem('whatthefad_analyses') || '{}');
 }
 
 function refreshMemoryList() {
@@ -2325,7 +2363,7 @@ async function braveSearch(signal) {
 // ══════════════════════════════════════════════
 // CLAUDE API — SYSTEM PROMPT
 // ══════════════════════════════════════════════
-const SYSTEM_PROMPT = `You are "But Why?" — a reverse cultural simulation engine. You perform cultural archaeology: given a natural language question about a cultural trend, behavior, or shift, you trace it backward through time to explain when it appeared, how it spread, why it moved the way it did, and what socioeconomic conditions made the ground fertile.
+const SYSTEM_PROMPT = `You are "WhatTheFad?" — a reverse cultural simulation engine. You perform cultural archaeology: given a natural language question about a cultural trend, behavior, or shift, you trace it backward through time to explain when it appeared, how it spread, why it moved the way it did, and what socioeconomic conditions made the ground fertile.
 
 THE SEMIOTIC METHOD — NON-NEGOTIABLE THREE MOVES
 
@@ -2501,7 +2539,7 @@ IMPORTANT:
 - Include at least 5 event_log entries at different time positions
 - Include at least 5 related_terms
 - Both counter_signal.within_frame.strength_pct and counter_signal.exit.strength_pct should be 0-100
-- pull_quote must express the gap_reframe, not sympathize with the phenomenon. Adversarial posture to the sign is the But Why? voice. A sympathetic pull quote means move three was not completed
+- pull_quote must express the gap_reframe, not sympathize with the phenomenon. Adversarial posture to the sign is the WhatTheFad? voice. A sympathetic pull quote means move three was not completed
 - implications is required. All three audiences (strategist, creator, researcher) get one paragraph each, written as a directive — what to DO with this insight. The strategist paragraph must point at a positioning move grounded in the gap_reframe, not paraphrase the gap. The creator paragraph must commit to either the within-frame backlash or the exit move as the more interesting bet for durable audience, with reasoning. The researcher paragraph must name a single leading indicator to watch — a specific behavior, signal, or population whose movement will mark the next phase
 - semiotic_stages MUST have exactly 6 entries in order: seed, subculture, crossover, mainstream, parody, revival. Each entry needs signifier (the observable form), signified (what it denotes at that stage), and myth (the connotation that hardens — use "—" only for the seed stage where no myth has accreted yet). The signs MUST MUTATE across stages; copying the same signifier across rows is a bug.
 - opposition_axes MUST have 3–4 entries. Each "values" array is exactly 6 numbers in [-1, 1], one per stage, representing Saussurean drift. Pick axes specific to the phenomenon (not generic filler). The values should tell a story: something meaningful happens between seed and revival.
@@ -2510,6 +2548,52 @@ IMPORTANT:
 // ══════════════════════════════════════════════
 // CLAUDE API CALL
 // ══════════════════════════════════════════════
+// JSON.parse messages differ by engine: V8 reports "at position N", SpiderMonkey
+// and JSC report "line L column C", and some JSC builds report neither. Recover
+// an offset from whichever form is present.
+function jsonFaultOffset(message, text) {
+  const byPos = /position (\d+)/i.exec(message);
+  if (byPos) return Math.min(Number(byPos[1]), text.length);
+
+  const byLineCol = /line (\d+) column (\d+)/i.exec(message);
+  if (byLineCol) {
+    const line = Number(byLineCol[1]);
+    const col = Number(byLineCol[2]);
+    let offset = 0;
+    for (let i = 1; i < line; i++) {
+      const nl = text.indexOf('\n', offset);
+      if (nl === -1) return -1;
+      offset = nl + 1;
+    }
+    return Math.min(offset + col - 1, text.length);
+  }
+  return -1;
+}
+
+// The old error printed the first 500 chars of a ~10k-char response, which never
+// contains the fault. Report the parser's own message and a window around the
+// point where it gave up.
+function describeJsonFault(err, text) {
+  const at = jsonFaultOffset(err.message, text);
+  const parts = [err.message, `Response length: ${text.length} chars.`];
+
+  if (at >= 0) {
+    const from = Math.max(0, at - 240);
+    const to = Math.min(text.length, at + 240);
+    parts.push(
+      `Fault at offset ${at}:`,
+      (from > 0 ? '…' : '') + text.slice(from, at) +
+        '  ⟦FAULT⟧  ' + text.slice(at, to) + (to < text.length ? '…' : '')
+    );
+  } else {
+    parts.push(
+      'Parser reported no position. Head and tail:',
+      text.slice(0, 300) + '\n   …\n' + text.slice(-300)
+    );
+  }
+  return parts.join('\n\n');
+}
+
 async function callClaude(question, searchContext) {
   const key = getKey('claude');
   if (!key) throw new Error('Claude API key not set. Click the gear icon to add your key.');
@@ -2531,11 +2615,14 @@ async function callClaude(question, searchContext) {
     },
     body: JSON.stringify({
       model: 'claude-sonnet-5',
-      // Sonnet 5 runs adaptive thinking unless told otherwise, and thinking
-      // tokens come out of max_tokens. This call wants one dense JSON object,
-      // not reasoning, so keep the whole budget for the answer.
-      thinking: { type: 'disabled' },
-      max_tokens: 12000,
+      // Thinking stays on. Disabling it on the 5-series makes the model more
+      // likely to spill reasoning prose into the visible text, which is one of
+      // the ways this call comes back as unparseable JSON. Low effort keeps the
+      // thinking cheap; max_tokens has to cover thinking plus the answer now,
+      // hence the raise from 12000.
+      thinking: { type: 'adaptive' },
+      output_config: { effort: 'low' },
+      max_tokens: 16000,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: userMsg }]
     })
@@ -2574,7 +2661,7 @@ async function callClaude(question, searchContext) {
     if (match) {
       try { return JSON.parse(match[0]); } catch (e2) { /* fall through */ }
     }
-    throw new Error('Claude returned malformed JSON. Raw response:\n' + text.slice(0, 500));
+    throw new Error('Claude returned malformed JSON.\n\n' + describeJsonFault(e, text));
   }
 }
 
@@ -4578,7 +4665,7 @@ document.getElementById('graph-export').addEventListener('click', () => {
     canvas.toBlob((pngBlob) => {
       const a = document.createElement('a');
       a.href = URL.createObjectURL(pngBlob);
-      a.download = `butwhy-graph-${Date.now()}.png`;
+      a.download = `whatthefad-graph-${Date.now()}.png`;
       a.click();
       URL.revokeObjectURL(a.href);
     }, 'image/png');
@@ -4657,7 +4744,7 @@ document.getElementById('landing-theme-btn').addEventListener('click', () => {
 // ══════════════════════════════════════════════
 function setTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
-  localStorage.setItem('mcwhy_theme', theme);
+  localStorage.setItem('whatthefad_theme', theme);
   const icon = theme === 'dark' ? '&#x2600;' : '&#x263D;';
   document.getElementById('theme-btn').innerHTML = icon;
   const landingBtn = document.getElementById('landing-theme-btn');
@@ -5507,13 +5594,13 @@ async function loadTrendThumbs() {
 loadTrendThumbs();
 
 // Apply saved theme (default: light)
-setTheme(localStorage.getItem('mcwhy_theme') || 'light');
+setTheme(localStorage.getItem('whatthefad_theme') || 'light');
 
 refreshMemoryList();
 
 // ── "Read as dispatch →" handoff ──────────────────────────
 // The dispatch view at /dispatch.html is a strategist-friendly editorial
-// surface that consumes the same `mcwhy_analyses` localStorage entries.
+// surface that consumes the same `whatthefad_analyses` localStorage entries.
 // We route by query string so it can pick up the result.
 document.getElementById('dispatch-btn').addEventListener('click', () => {
   const q = (document.getElementById('signal-input').value || state.query || '').trim();

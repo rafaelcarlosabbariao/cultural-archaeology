@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>But Why? / reports — Specimen №001: OnlyFans was the only way. Was it?</title>
+<title>WhatTheFad? / reports — Specimen №001: OnlyFans was the only way. Was it?</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 /* ═══════════════════════════════════════════════════════════════
-   BUT WHY? / reports — the Field Record espresso ground wearing
+   WHATTHEFAD? / reports — the Field Record espresso ground wearing
    the stories layout. Charts and tables sit on the cream plate,
    which never repaints between themes; the data pigments are the
    plate steps (indigo, verdigris, madder), validated against
@@ -233,7 +233,7 @@ button { font-family: inherit; cursor: pointer; }
 <div class="progress"><div class="progress-fill" id="pf"></div></div>
 
 <div class="chrome">
-  <div class="brand">But<span class="q">Why?</span><span class="brand-slash">/</span><span class="brand-section">reports</span></div>
+  <div class="brand">WhatThe<span class="q">Fad?</span><span class="brand-slash">/</span><span class="brand-section">reports</span></div>
   <div class="chrome-nav">
     <button class="navlink on" data-goto="instrument">The instrument</button>
     <button class="navlink" data-goto="excavation">The excavation</button>
@@ -257,7 +257,7 @@ button { font-family: inherit; cursor: pointer; }
     vocabulary is structure or scaffolding.
   </p>
   <div class="hero-byline">
-    <span><span class="by">By</span> the But Why? desk</span>
+    <span><span class="by">By</span> the WhatTheFad? desk</span>
     <span class="sep">·</span><span>Screen run <b style="color:var(--ink)">27–28 Jul 2026</b></span>
     <span class="sep">·</span><span>15 platforms · 6 conditions · 2016→2027</span>
   </div>
@@ -821,9 +821,9 @@ button { font-family: inherit; cursor: pointer; }
 <div class="footer">
   <div class="footer-inner">
     <div>
-      <h3>But<span class="q">Why?</span></h3>
-      <p>Reverse cultural archaeology with the receipts attached. Formerly sincewhen,
-      formerly McWhy. The name is the question the engine answers.</p>
+      <h3>WhatThe<span class="q">Fad?</span></h3>
+      <p>Reverse cultural archaeology with the receipts attached. Formerly But Why?,
+      formerly sincewhen, formerly McWhy. The name is the question the engine answers.</p>
     </div>
     <div>
       <h4>This specimen</h4>
@@ -845,7 +845,7 @@ button { font-family: inherit; cursor: pointer; }
     </div>
   </div>
   <div class="footer-bottom">
-    <span>But Why? / reports · Specimen №001</span>
+    <span>WhatTheFad? / reports · Specimen №001</span>
     <span>Screen run 27–28 Jul 2026 · claims linked where they stand</span>
     <span>Anatomy per Field Study 001 §04</span>
   </div>
@@ -868,12 +868,12 @@ document.querySelectorAll('.navlink[data-goto]').forEach(n => n.addEventListener
 
 // theme — manual toggle only, never prefers-color-scheme; the plate never repaints
 const themeBtn = document.getElementById('theme-go');
-try { if (localStorage.getItem('butwhy-theme') === 'light') document.documentElement.setAttribute('data-theme','light'); } catch (e) {}
+try { if (localStorage.getItem('whatthefad-theme') === 'light') document.documentElement.setAttribute('data-theme','light'); } catch (e) {}
 themeBtn.addEventListener('click', () => {
   const light = document.documentElement.getAttribute('data-theme') !== 'light';
   if (light) document.documentElement.setAttribute('data-theme','light');
   else document.documentElement.removeAttribute('data-theme');
-  try { localStorage.setItem('butwhy-theme', light ? 'light' : 'dark'); } catch (e) {}
+  try { localStorage.setItem('whatthefad-theme', light ? 'light' : 'dark'); } catch (e) {}
 });
 
 // progress

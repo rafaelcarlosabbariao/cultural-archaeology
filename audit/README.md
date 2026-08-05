@@ -2,7 +2,7 @@
 
 Working build of the re-hauled tool, per `~/peoplewatching/docs/hindsight-audit.md`
 (design ratified segment by segment 2026-07-20; naming provisional, not client-facing
-until ratified). Lives alongside But Why? v1, which is untouched at the site root.
+until ratified). Lives alongside WhatTheFad? v1, which is untouched at the site root.
 
 ## What it does
 

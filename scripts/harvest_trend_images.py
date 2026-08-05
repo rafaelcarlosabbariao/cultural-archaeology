@@ -93,7 +93,7 @@ SKIP = {
 API = "https://en.wikipedia.org/w/api.php"
 HEADERS = {
     # Wikimedia etiquette: descriptive UA with a contact.
-    "User-Agent": "butwhy-app/0.1 (https://butwhy-app.netlify.app; rafael.abbariao@gmail.com)",
+    "User-Agent": "whatthefad/0.1 (https://whatthefad.netlify.app; rafael.abbariao@gmail.com)",
 }
 
 

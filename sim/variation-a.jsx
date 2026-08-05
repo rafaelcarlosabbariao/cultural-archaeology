@@ -1,6 +1,6 @@
 // Variation A: Petri / ink-in-water
 // Warm paper background, ink blots softly blooming across a social field.
-// The primary But Why? aesthetic — literary, warm, signal-orange ink, counter-blue ink.
+// The primary WhatTheFad? aesthetic — literary, warm, signal-orange ink, counter-blue ink.
 
 function VariationA({ snapshot, cells, rules, playing, stage }) {
   const W = 520, H = 340;
