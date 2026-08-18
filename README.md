@@ -2,8 +2,6 @@
 
 **A cultural archaeology engine.** Ask why a trend exists — *Why is everyone drinking raw milk? Since when is "cringe" a weapon?* — and it traces the phenomenon backward through time: when it appeared, how it spread, what socioeconomic conditions made the ground fertile, and what the trend actually signals versus what it promises.
 
-> Formerly `But Why?`, formerly `sincewhen`, formerly `McWhy`. The name is the question the engine answers.
-
 **Live:** [whatthefad.netlify.app](https://whatthefad.netlify.app)
 
 ![WhatTheFad? landing — the trend archive streaming past in 3D](docs/media/landing-dark.jpg)
